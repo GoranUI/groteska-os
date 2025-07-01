@@ -5,6 +5,47 @@ import { useAuth } from '@/hooks/useAuth';
 import { Client, Income, Expense, Savings } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
+// Transform functions to convert database format to our interface format
+const transformClient = (dbClient: any): Client => ({
+  id: dbClient.id,
+  name: dbClient.name,
+  email: dbClient.email,
+  company: dbClient.company,
+  status: dbClient.status as "active" | "inactive",
+  createdAt: dbClient.created_at,
+});
+
+const transformIncome = (dbIncome: any): Income => ({
+  id: dbIncome.id,
+  amount: Number(dbIncome.amount),
+  currency: dbIncome.currency as "USD" | "EUR" | "RSD",
+  client: dbIncome.client,
+  clientId: dbIncome.client_id,
+  date: dbIncome.date,
+  category: dbIncome.category as "full-time" | "one-time",
+  description: dbIncome.description,
+});
+
+const transformExpense = (dbExpense: any): Expense => ({
+  id: dbExpense.id,
+  amount: Number(dbExpense.amount),
+  currency: dbExpense.currency as "USD" | "EUR" | "RSD",
+  date: dbExpense.date,
+  category: dbExpense.category as "Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office",
+  description: dbExpense.description,
+  isRecurring: dbExpense.is_recurring,
+  recurringFrequency: dbExpense.recurring_frequency as "weekly" | "monthly" | "yearly" | undefined,
+});
+
+const transformSaving = (dbSaving: any): Savings => ({
+  id: dbSaving.id,
+  amount: Number(dbSaving.amount),
+  currency: dbSaving.currency as "USD" | "EUR" | "RSD",
+  date: dbSaving.date,
+  type: dbSaving.type as "deposit" | "withdrawal",
+  description: dbSaving.description,
+});
+
 export const useSupabaseData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -52,10 +93,11 @@ export const useSupabaseData = () => {
 
       if (savingsError) throw savingsError;
 
-      setClients(clientsData || []);
-      setIncomes(incomesData || []);
-      setExpenses(expensesData || []);
-      setSavings(savingsData || []);
+      // Transform and set data
+      setClients((clientsData || []).map(transformClient));
+      setIncomes((incomesData || []).map(transformIncome));
+      setExpenses((expensesData || []).map(transformExpense));
+      setSavings((savingsData || []).map(transformSaving));
     } catch (error: any) {
       toast({
         title: "Error fetching data",
@@ -86,7 +128,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setClients(prev => [data, ...prev]);
+    setClients(prev => [transformClient(data), ...prev]);
     toast({
       title: "Client added",
       description: `${client.name} has been added successfully.`,
@@ -110,7 +152,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setClients(prev => prev.map(client => client.id === id ? data : client));
+    setClients(prev => prev.map(client => client.id === id ? transformClient(data) : client));
     toast({
       title: "Client updated",
       description: "Client has been updated successfully.",
@@ -143,9 +185,16 @@ export const useSupabaseData = () => {
   const addIncome = useCallback(async (income: Omit<Income, 'id'>) => {
     if (!user) return;
 
+    const dbIncome = {
+      ...income,
+      client_id: income.clientId,
+      user_id: user.id
+    };
+    delete (dbIncome as any).clientId;
+
     const { data, error } = await supabase
       .from('incomes')
-      .insert([{ ...income, user_id: user.id }])
+      .insert([dbIncome])
       .select()
       .single();
 
@@ -158,7 +207,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setIncomes(prev => [data, ...prev]);
+    setIncomes(prev => [transformIncome(data), ...prev]);
     toast({
       title: "Income added",
       description: "Income has been added successfully.",
@@ -166,9 +215,15 @@ export const useSupabaseData = () => {
   }, [user, toast]);
 
   const updateIncome = useCallback(async (id: string, updates: Partial<Income>) => {
+    const dbUpdates = { ...updates };
+    if (updates.clientId !== undefined) {
+      (dbUpdates as any).client_id = updates.clientId;
+      delete (dbUpdates as any).clientId;
+    }
+
     const { data, error } = await supabase
       .from('incomes')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -182,7 +237,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setIncomes(prev => prev.map(income => income.id === id ? data : income));
+    setIncomes(prev => prev.map(income => income.id === id ? transformIncome(data) : income));
     toast({
       title: "Income updated",
       description: "Income has been updated successfully.",
@@ -215,9 +270,18 @@ export const useSupabaseData = () => {
   const addExpense = useCallback(async (expense: Omit<Expense, 'id'>) => {
     if (!user) return;
 
+    const dbExpense = {
+      ...expense,
+      is_recurring: expense.isRecurring,
+      recurring_frequency: expense.recurringFrequency,
+      user_id: user.id
+    };
+    delete (dbExpense as any).isRecurring;
+    delete (dbExpense as any).recurringFrequency;
+
     const { data, error } = await supabase
       .from('expenses')
-      .insert([{ ...expense, user_id: user.id }])
+      .insert([dbExpense])
       .select()
       .single();
 
@@ -230,7 +294,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setExpenses(prev => [data, ...prev]);
+    setExpenses(prev => [transformExpense(data), ...prev]);
     toast({
       title: "Expense added",
       description: "Expense has been added successfully.",
@@ -238,9 +302,19 @@ export const useSupabaseData = () => {
   }, [user, toast]);
 
   const updateExpense = useCallback(async (id: string, updates: Partial<Expense>) => {
+    const dbUpdates = { ...updates };
+    if (updates.isRecurring !== undefined) {
+      (dbUpdates as any).is_recurring = updates.isRecurring;
+      delete (dbUpdates as any).isRecurring;
+    }
+    if (updates.recurringFrequency !== undefined) {
+      (dbUpdates as any).recurring_frequency = updates.recurringFrequency;
+      delete (dbUpdates as any).recurringFrequency;
+    }
+
     const { data, error } = await supabase
       .from('expenses')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -254,7 +328,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setExpenses(prev => prev.map(expense => expense.id === id ? data : expense));
+    setExpenses(prev => prev.map(expense => expense.id === id ? transformExpense(data) : expense));
     toast({
       title: "Expense updated",
       description: "Expense has been updated successfully.",
@@ -302,7 +376,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setSavings(prev => [data, ...prev]);
+    setSavings(prev => [transformSaving(data), ...prev]);
     toast({
       title: "Savings added",
       description: "Savings entry has been added successfully.",
@@ -326,7 +400,7 @@ export const useSupabaseData = () => {
       return;
     }
 
-    setSavings(prev => prev.map(saving => saving.id === id ? data : saving));
+    setSavings(prev => prev.map(saving => saving.id === id ? transformSaving(data) : saving));
     toast({
       title: "Savings updated",
       description: "Savings has been updated successfully.",
