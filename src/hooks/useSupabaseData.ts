@@ -7,6 +7,8 @@ import { useClientData } from './data/useClientData';
 import { useIncomeData } from './data/useIncomeData';
 import { useExpenseData } from './data/useExpenseData';
 import { useSavingsData } from './data/useSavingsData';
+import { useProjectData } from './data/useProjectData';
+import { useSubTaskData } from './data/useSubTaskData';
 import { useFinancialCalculations } from './data/useFinancialCalculations';
 
 export const useSupabaseData = () => {
@@ -19,6 +21,8 @@ export const useSupabaseData = () => {
   const incomeHook = useIncomeData();
   const expenseHook = useExpenseData();
   const savingsHook = useSavingsData();
+  const projectHook = useProjectData();
+  const subTaskHook = useSubTaskData();
   const calculations = useFinancialCalculations();
 
   // Check if all individual hooks are done loading
@@ -26,12 +30,14 @@ export const useSupabaseData = () => {
     const allHooksLoaded = !clientHook.loading && 
                           !incomeHook.loading && 
                           !expenseHook.loading && 
-                          !savingsHook.loading;
+                          !savingsHook.loading &&
+                          !projectHook.loading &&
+                          !subTaskHook.loading;
     
     if (allHooksLoaded) {
       setLoading(false);
     }
-  }, [clientHook.loading, incomeHook.loading, expenseHook.loading, savingsHook.loading]);
+  }, [clientHook.loading, incomeHook.loading, expenseHook.loading, savingsHook.loading, projectHook.loading, subTaskHook.loading]);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -58,6 +64,16 @@ export const useSupabaseData = () => {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'savings' }, () => {
           savingsHook.fetchSavings();
         }),
+      supabase
+        .channel('projects_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+          projectHook.fetchProjects();
+        }),
+      supabase
+        .channel('sub_tasks_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'sub_tasks' }, () => {
+          subTaskHook.fetchSubTasks();
+        }),
     ];
 
     channels.forEach(channel => channel.subscribe());
@@ -65,7 +81,7 @@ export const useSupabaseData = () => {
     return () => {
       channels.forEach(channel => supabase.removeChannel(channel));
     };
-  }, [user, clientHook, incomeHook, expenseHook, savingsHook]);
+  }, [user, clientHook, incomeHook, expenseHook, savingsHook, projectHook, subTaskHook]);
 
   return {
     // Data
@@ -73,6 +89,8 @@ export const useSupabaseData = () => {
     incomes: incomeHook.incomes,
     expenses: expenseHook.expenses,
     savings: savingsHook.savings,
+    projects: projectHook.projects,
+    subTasks: subTaskHook.subTasks,
     loading,
     
     // Client CRUD
@@ -96,6 +114,17 @@ export const useSupabaseData = () => {
     addSavings: savingsHook.addSavings,
     updateSavings: savingsHook.updateSavings,
     deleteSavings: savingsHook.deleteSavings,
+    
+    // Project CRUD
+    addProject: projectHook.addProject,
+    updateProject: projectHook.updateProject,
+    deleteProject: projectHook.deleteProject,
+    
+    // SubTask CRUD
+    addSubTask: subTaskHook.addSubTask,
+    updateSubTask: subTaskHook.updateSubTask,
+    deleteSubTask: subTaskHook.deleteSubTask,
+    markAsPaid: subTaskHook.markAsPaid,
     
     // Utilities
     getTotalBalance: (incomes, expenses) => calculations.getTotalBalance(incomes || incomeHook.incomes, expenses || expenseHook.expenses),
