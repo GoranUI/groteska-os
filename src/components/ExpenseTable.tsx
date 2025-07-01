@@ -18,7 +18,7 @@ type FilterPeriod = "week" | "2weeks" | "month" | "quarter" | "year" | "lastyear
 
 export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("all");
 
   const getCategoryColor = (category: string) => {

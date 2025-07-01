@@ -206,6 +206,32 @@ export const useSupabaseData = () => {
     });
   }, [user, toast]);
 
+  // Bulk income import - optimized for performance
+  const addIncomeBulk = useCallback(async (incomes: Omit<Income, 'id'>[]) => {
+    if (!user) return { success: 0, failed: 0 };
+
+    const dbIncomes = incomes.map(income => ({
+      ...income,
+      user_id: user.id
+    }));
+
+    const { data, error } = await supabase
+      .from('incomes')
+      .insert(dbIncomes)
+      .select();
+
+    if (error) {
+      console.error('Bulk insert error:', error);
+      return { success: 0, failed: incomes.length };
+    }
+
+    // Update the state with new incomes without triggering individual toasts
+    const newIncomes = (data || []).map(transformIncome);
+    setIncomes(prev => [...newIncomes, ...prev]);
+
+    return { success: data?.length || 0, failed: incomes.length - (data?.length || 0) };
+  }, [user]);
+
   const updateIncome = useCallback(async (id: string, updates: Partial<Income>) => {
     const { data, error } = await supabase
       .from('incomes')
@@ -538,6 +564,7 @@ export const useSupabaseData = () => {
     
     // Income CRUD
     addIncome,
+    addIncomeBulk,
     updateIncome,
     deleteIncome,
     

@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { IncomeForm } from "@/components/IncomeForm";
 import { IncomeList } from "@/components/IncomeList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { ImportIncomes } from "@/components/import/ImportIncomes";
 
 const IncomePage = () => {
   const { incomes, clients, addIncome, updateIncome, deleteIncome, loading } = useSupabaseData();
@@ -24,24 +26,37 @@ const IncomePage = () => {
         <p className="text-gray-600">Track your income from clients and projects</p>
       </div>
 
-      <IncomeForm
-        clients={clients}
-        onSubmit={editingIncome ? 
-          (data) => {
-            updateIncome(editingIncome.id, data);
-            setEditingIncome(null);
-          } :
-          addIncome
-        }
-        initialData={editingIncome}
-        onCancel={() => setEditingIncome(null)}
-      />
+      <Tabs defaultValue="manual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+          <TabsTrigger value="import">Import Incomes</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="manual" className="space-y-8">
+          <IncomeForm
+            clients={clients}
+            onSubmit={editingIncome ? 
+              (data) => {
+                updateIncome(editingIncome.id, data);
+                setEditingIncome(null);
+              } :
+              addIncome
+            }
+            initialData={editingIncome}
+            onCancel={() => setEditingIncome(null)}
+          />
 
-      <IncomeList
-        incomes={incomes}
-        onEdit={setEditingIncome}
-        onDelete={deleteIncome}
-      />
+          <IncomeList
+            incomes={incomes}
+            onEdit={setEditingIncome}
+            onDelete={deleteIncome}
+          />
+        </TabsContent>
+        
+        <TabsContent value="import">
+          <ImportIncomes />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -1,7 +1,8 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, Users, Calendar, Receipt, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Calendar, Receipt, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Income, Expense } from "@/types";
 
 interface DashboardProps {
@@ -14,6 +15,9 @@ interface DashboardProps {
 const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5'];
 
 const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardProps) => {
+  const [recentTransactionsPage, setRecentTransactionsPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Calculate totals by currency
   const totalIncomeByCurrency = incomes.reduce((acc, income) => {
     acc[income.currency] = (acc[income.currency] || 0) + income.amount;
@@ -43,13 +47,16 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
     value: amount,
   }));
 
-  // Recent transactions
-  const recentTransactions = [
+  // Recent transactions with pagination
+  const allTransactions = [
     ...incomes.map(i => ({ ...i, type: 'income' as const })),
     ...expenses.map(e => ({ ...e, type: 'expense' as const }))
   ]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5);
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const totalTransactionPages = Math.ceil(allTransactions.length / itemsPerPage);
+  const startIndex = (recentTransactionsPage - 1) * itemsPerPage;
+  const paginatedTransactions = allTransactions.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="space-y-6">
@@ -194,12 +201,39 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
       {/* Recent Transactions */}
       <Card className="border-0 shadow-sm ring-1 ring-gray-200">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-gray-900">Recent Transactions</CardTitle>
-          <p className="text-sm text-gray-600">Latest income and expense entries</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-900">Recent Transactions</CardTitle>
+              <p className="text-sm text-gray-600">Latest income and expense entries</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRecentTransactionsPage(Math.max(1, recentTransactionsPage - 1))}
+                disabled={recentTransactionsPage === 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-gray-600">
+                {recentTransactionsPage} of {totalTransactionPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRecentTransactionsPage(Math.min(totalTransactionPages, recentTransactionsPage + 1))}
+                disabled={recentTransactionsPage === totalTransactionPages}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pb-6">
           <div className="space-y-4">
-            {recentTransactions.map((transaction) => (
+            {paginatedTransactions.map((transaction) => (
               <div 
                 key={`${transaction.type}-${transaction.id}`} 
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
