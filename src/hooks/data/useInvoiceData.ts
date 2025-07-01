@@ -15,6 +15,7 @@ const transformInvoice = (dbInvoice: any, items: any[]): Invoice => ({
   invoiceDate: dbInvoice.invoice_date,
   dueDate: dbInvoice.due_date,
   status: dbInvoice.status as "draft" | "sent" | "paid" | "overdue",
+  billingType: (dbInvoice.billing_type || "project") as "hourly" | "project",
   subtotal: Number(dbInvoice.subtotal),
   taxRate: Number(dbInvoice.tax_rate || 0),
   taxAmount: Number(dbInvoice.tax_amount),
