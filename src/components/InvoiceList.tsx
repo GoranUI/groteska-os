@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Edit, Trash2, Eye } from "lucide-react";
+import { FileText, Edit, Trash2, Eye, Download } from "lucide-react";
 import { Invoice } from "@/types";
+import { PDFGenerator } from "@/utils/pdfGenerator";
 
 interface InvoiceListProps {
   invoices: Invoice[];
@@ -25,6 +26,10 @@ export const InvoiceList = ({ invoices, onEdit, onDelete, onView }: InvoiceListP
       default:
         return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
     }
+  };
+
+  const handleDownloadPDF = (invoice: Invoice) => {
+    PDFGenerator.generateInvoicePDF(invoice);
   };
 
   return (
@@ -99,6 +104,14 @@ export const InvoiceList = ({ invoices, onEdit, onDelete, onView }: InvoiceListP
                           className="h-8 w-8 p-0"
                         >
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadPDF(invoice)}
+                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                        >
+                          <Download className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"

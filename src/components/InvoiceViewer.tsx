@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Invoice } from "@/types";
-import { FileText, X } from "lucide-react";
+import { FileText, X, Download } from "lucide-react";
+import { PDFGenerator } from "@/utils/pdfGenerator";
 
 interface InvoiceViewerProps {
   invoice: Invoice;
@@ -25,30 +25,47 @@ export const InvoiceViewer = ({ invoice, onClose }: InvoiceViewerProps) => {
     }
   };
 
+  const handleDownloadPDF = () => {
+    PDFGenerator.generateInvoicePDF(invoice);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <Card className="border-0 shadow-xl">
           <CardHeader className="pb-4 relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="absolute right-4 top-4 h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <FileText className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-semibold text-gray-900">
+                    Invoice {invoice.invoiceNumber}
+                  </CardTitle>
+                  <Badge className={getStatusColor(invoice.status)}>
+                    {invoice.status}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-xl font-semibold text-gray-900">
-                  Invoice {invoice.invoiceNumber}
-                </CardTitle>
-                <Badge className={getStatusColor(invoice.status)}>
-                  {invoice.status}
-                </Badge>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadPDF}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardHeader>
