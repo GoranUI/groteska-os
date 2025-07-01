@@ -1,17 +1,18 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, Users, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Calendar, Receipt, DollarSign } from "lucide-react";
 import { Income, Expense } from "@/hooks/useFinancialData";
 
 interface DashboardProps {
   incomes: Income[];
   expenses: Expense[];
+  rsdTotals: { income: number; expense: number; balance: number };
+  activeClients: number;
 }
 
 const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5'];
 
-const Dashboard = ({ incomes, expenses }: DashboardProps) => {
+const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardProps) => {
   // Calculate totals by currency
   const totalIncomeByCurrency = incomes.reduce((acc, income) => {
     acc[income.currency] = (acc[income.currency] || 0) + income.amount;
@@ -57,19 +58,18 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
         <p className="text-gray-600">Overview of your financial performance</p>
       </div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-0 shadow-sm ring-1 ring-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600">Total Income</p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {Object.values(totalIncomeByCurrency).reduce((a, b) => a + b, 0).toLocaleString()}
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Income (RSD)</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {rsdTotals.income.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                 </p>
-                <p className="text-sm text-gray-500">Across all currencies</p>
               </div>
-              <div className="p-3 bg-green-50 rounded-xl">
+              <div className="p-3 bg-green-50 rounded-full">
                 <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
             </div>
@@ -79,15 +79,14 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
         <Card className="border-0 shadow-sm ring-1 ring-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600">Total Expenses</p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {Object.values(totalExpenseByCurrency).reduce((a, b) => a + b, 0).toLocaleString()}
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Expenses (RSD)</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {rsdTotals.expense.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                 </p>
-                <p className="text-sm text-gray-500">Across all currencies</p>
               </div>
-              <div className="p-3 bg-red-50 rounded-xl">
-                <TrendingDown className="h-6 w-6 text-red-600" />
+              <div className="p-3 bg-red-50 rounded-full">
+                <Receipt className="h-6 w-6 text-red-600" />
               </div>
             </div>
           </CardContent>
@@ -96,32 +95,28 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
         <Card className="border-0 shadow-sm ring-1 ring-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div className="space-y-2">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Net Balance (RSD)</p>
+                <p className={`text-2xl font-bold ${rsdTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {rsdTotals.balance >= 0 ? '+' : ''}{rsdTotals.balance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+              <div className={`p-3 rounded-full ${rsdTotals.balance >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                <DollarSign className={`h-6 w-6 ${rsdTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-sm font-medium text-gray-600">Active Clients</p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {new Set(incomes.map(i => i.client)).size}
-                </p>
-                <p className="text-sm text-gray-500">Unique clients</p>
+                <p className="text-2xl font-bold text-blue-600">{activeClients}</p>
               </div>
-              <div className="p-3 bg-orange-50 rounded-xl">
-                <Users className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-600">This Month</p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {incomes.filter(i => new Date(i.date).getMonth() === new Date().getMonth()).length}
-                </p>
-                <p className="text-sm text-gray-500">Income records</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-xl">
-                <Calendar className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-50 rounded-full">
+                <Users className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>

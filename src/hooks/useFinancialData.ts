@@ -1,34 +1,34 @@
 
 import { useState, useCallback } from "react";
-
-export interface Income {
-  id: string;
-  amount: number;
-  currency: "USD" | "EUR" | "RSD";
-  client: string;
-  date: string;
-  category: "full-time" | "one-time";
-  description?: string;
-}
-
-export interface Expense {
-  id: string;
-  amount: number;
-  currency: "USD" | "EUR" | "RSD";
-  date: string;
-  category: "Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday";
-  description: string;
-  isRecurring?: boolean;
-  recurringFrequency?: "weekly" | "monthly" | "yearly";
-}
+import { Client, Income, Expense, Savings } from "@/types";
 
 export const useFinancialData = () => {
+  const [clients, setClients] = useState<Client[]>([
+    {
+      id: "1",
+      name: "Tech Corp",
+      email: "contact@techcorp.com",
+      company: "Tech Corp Inc.",
+      status: "active",
+      createdAt: "2024-01-15"
+    },
+    {
+      id: "2",
+      name: "Design Studio",
+      email: "hello@designstudio.com",
+      company: "Design Studio LLC",
+      status: "active",
+      createdAt: "2024-02-10"
+    }
+  ]);
+
   const [incomes, setIncomes] = useState<Income[]>([
     {
       id: "1",
       amount: 5000,
       currency: "USD",
       client: "Tech Corp",
+      clientId: "1",
       date: "2024-07-01",
       category: "full-time",
       description: "Monthly salary"
@@ -38,6 +38,7 @@ export const useFinancialData = () => {
       amount: 800,
       currency: "EUR",
       client: "Design Studio",
+      clientId: "2",
       date: "2024-06-28",
       category: "one-time",
       description: "Website design project"
@@ -65,6 +66,38 @@ export const useFinancialData = () => {
     }
   ]);
 
+  const [savings, setSavings] = useState<Savings[]>([
+    {
+      id: "1",
+      amount: 1000,
+      currency: "USD",
+      date: "2024-07-01",
+      type: "deposit",
+      description: "Emergency fund"
+    }
+  ]);
+
+  // Client CRUD
+  const addClient = useCallback((client: Omit<Client, "id" | "createdAt">) => {
+    const newClient: Client = {
+      ...client,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setClients(prev => [...prev, newClient]);
+  }, []);
+
+  const updateClient = useCallback((id: string, updates: Partial<Client>) => {
+    setClients(prev => prev.map(client => 
+      client.id === id ? { ...client, ...updates } : client
+    ));
+  }, []);
+
+  const deleteClient = useCallback((id: string) => {
+    setClients(prev => prev.filter(client => client.id !== id));
+  }, []);
+
+  // Income CRUD
   const addIncome = useCallback((income: Omit<Income, "id">) => {
     const newIncome: Income = {
       ...income,
@@ -73,6 +106,17 @@ export const useFinancialData = () => {
     setIncomes(prev => [...prev, newIncome]);
   }, []);
 
+  const updateIncome = useCallback((id: string, updates: Partial<Income>) => {
+    setIncomes(prev => prev.map(income => 
+      income.id === id ? { ...income, ...updates } : income
+    ));
+  }, []);
+
+  const deleteIncome = useCallback((id: string) => {
+    setIncomes(prev => prev.filter(income => income.id !== id));
+  }, []);
+
+  // Expense CRUD
   const addExpense = useCallback((expense: Omit<Expense, "id">) => {
     const newExpense: Expense = {
       ...expense,
@@ -81,15 +125,50 @@ export const useFinancialData = () => {
     setExpenses(prev => [...prev, newExpense]);
   }, []);
 
+  const updateExpense = useCallback((id: string, updates: Partial<Expense>) => {
+    setExpenses(prev => prev.map(expense => 
+      expense.id === id ? { ...expense, ...updates } : expense
+    ));
+  }, []);
+
+  const deleteExpense = useCallback((id: string) => {
+    setExpenses(prev => prev.filter(expense => expense.id !== id));
+  }, []);
+
+  // Savings CRUD
+  const addSavings = useCallback((saving: Omit<Savings, "id">) => {
+    const newSaving: Savings = {
+      ...saving,
+      id: Date.now().toString()
+    };
+    setSavings(prev => [...prev, newSaving]);
+  }, []);
+
+  const updateSavings = useCallback((id: string, updates: Partial<Savings>) => {
+    setSavings(prev => prev.map(saving => 
+      saving.id === id ? { ...saving, ...updates } : saving
+    ));
+  }, []);
+
+  const deleteSavings = useCallback((id: string) => {
+    setSavings(prev => prev.filter(saving => saving.id !== id));
+  }, []);
+
+  // Exchange rates (mock - in real app would fetch from API)
+  const exchangeRates = { USD: 1, EUR: 1.1, RSD: 0.009 };
+
+  const convertToRSD = useCallback((amount: number, currency: "USD" | "EUR" | "RSD") => {
+    if (currency === "RSD") return amount;
+    return amount / exchangeRates[currency];
+  }, []);
+
   const getTotalBalance = useCallback(() => {
     const balances = { USD: 0, EUR: 0, RSD: 0 };
     
-    // Add incomes
     incomes.forEach(income => {
       balances[income.currency] += income.amount;
     });
     
-    // Subtract expenses
     expenses.forEach(expense => {
       balances[expense.currency] -= expense.amount;
     });
@@ -97,27 +176,50 @@ export const useFinancialData = () => {
     return balances;
   }, [incomes, expenses]);
 
-  const getIncomeByCategory = useCallback(() => {
-    const fullTime = incomes.filter(i => i.category === "full-time").reduce((sum, i) => sum + i.amount, 0);
-    const oneTime = incomes.filter(i => i.category === "one-time").reduce((sum, i) => sum + i.amount, 0);
-    return { fullTime, oneTime };
-  }, [incomes]);
+  const getTotalInRSD = useCallback(() => {
+    const totalIncomeRSD = incomes.reduce((sum, income) => 
+      sum + convertToRSD(income.amount, income.currency), 0);
+    const totalExpenseRSD = expenses.reduce((sum, expense) => 
+      sum + convertToRSD(expense.amount, expense.currency), 0);
+    
+    return { income: totalIncomeRSD, expense: totalExpenseRSD, balance: totalIncomeRSD - totalExpenseRSD };
+  }, [incomes, expenses, convertToRSD]);
 
-  const getExpensesByCategory = useCallback(() => {
-    const categories = expenses.reduce((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-      return acc;
-    }, {} as Record<string, number>);
-    return categories;
-  }, [expenses]);
+  const getActiveClients = useCallback(() => {
+    return clients.filter(client => client.status === "active").length;
+  }, [clients]);
 
   return {
+    // Data
+    clients,
     incomes,
     expenses,
+    savings,
+    
+    // Client CRUD
+    addClient,
+    updateClient,
+    deleteClient,
+    
+    // Income CRUD
     addIncome,
+    updateIncome,
+    deleteIncome,
+    
+    // Expense CRUD
     addExpense,
+    updateExpense,
+    deleteExpense,
+    
+    // Savings CRUD
+    addSavings,
+    updateSavings,
+    deleteSavings,
+    
+    // Utilities
     getTotalBalance,
-    getIncomeByCategory,
-    getExpensesByCategory
+    getTotalInRSD,
+    getActiveClients,
+    convertToRSD
   };
 };
