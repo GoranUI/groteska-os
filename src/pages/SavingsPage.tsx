@@ -3,10 +3,11 @@ import { useState } from "react";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { SavingsForm } from "@/components/SavingsForm";
 import { SavingsList } from "@/components/SavingsList";
+import SavingsTracker from "@/components/SavingsTracker";
 import { Loader2 } from "lucide-react";
 
 const SavingsPage = () => {
-  const { savings, addSavings, updateSavings, deleteSavings, loading } = useSupabaseData();
+  const { savings, addSavings, updateSavings, deleteSavings, convertToRSD, loading } = useSupabaseData();
   const [editingSaving, setEditingSaving] = useState(null);
 
   if (loading) {
@@ -23,6 +24,8 @@ const SavingsPage = () => {
         <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Savings Tracker</h1>
         <p className="text-gray-600">Track your savings deposits and withdrawals</p>
       </div>
+
+      <SavingsTracker savings={savings} convertToRSD={convertToRSD} />
 
       <SavingsForm
         onSubmit={editingSaving ? 

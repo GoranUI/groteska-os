@@ -36,9 +36,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching profile:', error);
         return;
       }
@@ -117,19 +117,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: { message: 'No user logged in' } };
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select()
-      .single();
+    try {
+      // First check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    if (error) {
-      return { error };
+      if (fetchError) {
+        return { error: fetchError };
+      }
+
+      let data, error;
+
+      if (existingProfile) {
+        // Update existing profile
+        const result = await supabase
+          .from('profiles')
+          .update(updates)
+          .eq('id', user.id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else {
+        // Create new profile
+        const result = await supabase
+          .from('profiles')
+          .insert([{ id: user.id, ...updates }])
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
+
+      if (error) {
+        return { error };
+      }
+
+      setProfile(data);
+      return { error: null };
+    } catch (err) {
+      console.error('Profile update error:', err);
+      return { error: { message: 'Failed to update profile' } };
     }
-
-    setProfile(data);
-    return { error: null };
   };
 
   const value = {

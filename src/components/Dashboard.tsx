@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, Users, Calendar, Receipt, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, TrendingDown, Users, Receipt, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Income, Expense } from "@/types";
+import MonthlyExpenseChart from "@/components/MonthlyExpenseChart";
 
 interface DashboardProps {
   incomes: Income[];
@@ -11,8 +13,6 @@ interface DashboardProps {
   rsdTotals: { income: number; expense: number; balance: number };
   activeClients: number;
 }
-
-const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5'];
 
 const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardProps) => {
   const [recentTransactionsPage, setRecentTransactionsPage] = useState(1);
@@ -29,23 +29,12 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
     return acc;
   }, {} as Record<string, number>);
 
-  // Prepare chart data
+  // Prepare chart data for income vs expenses
   const currencyData = ['USD', 'EUR', 'RSD'].map(currency => ({
     currency,
     income: totalIncomeByCurrency[currency] || 0,
     expenses: totalExpenseByCurrency[currency] || 0,
-  }));
-
-  // Expense breakdown
-  const expenseCategories = expenses.reduce((acc, expense) => {
-    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const expensePieData = Object.entries(expenseCategories).map(([category, amount]) => ({
-    name: category,
-    value: amount,
-  }));
+  })).filter(data => data.income > 0 || data.expenses > 0);
 
   // Recent transactions with pagination
   const allTransactions = [
@@ -162,40 +151,7 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">Expense Breakdown</CardTitle>
-            <p className="text-sm text-gray-600">Distribution by category</p>
-          </CardHeader>
-          <CardContent className="pb-6">
-            <ResponsiveContainer width="100%" height={320}>
-              <PieChart>
-                <Pie
-                  data={expensePieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {expensePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <MonthlyExpenseChart expenses={expenses} />
       </div>
 
       {/* Recent Transactions */}
