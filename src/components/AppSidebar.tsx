@@ -38,19 +38,12 @@ export function AppSidebar() {
             <BarChart3 className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Financial Tracker</h2>
-            <p className="text-xs text-gray-500">Multi-currency management</p>
+            <h2 className="text-base font-semibold text-gray-900">Stacks Flow</h2>
+            <p className="text-xs text-gray-500">Finance management</p>
           </div>
         </div>
         
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <SidebarInput 
-            placeholder="Search..." 
-            className="pl-10 h-9 bg-white border-gray-200 text-sm placeholder:text-gray-400"
-          />
-        </div>
+
       </SidebarHeader>
       
       <SidebarContent className="bg-transparent px-3">
