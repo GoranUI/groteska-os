@@ -38,3 +38,30 @@ export interface Savings {
   type: "deposit" | "withdrawal";
   description: string;
 }
+
+export interface InvoiceItem {
+  id?: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  clientId?: string;
+  clientName: string;
+  clientEmail?: string;
+  clientAddress?: string;
+  invoiceDate: string;
+  dueDate: string;
+  status: "draft" | "sent" | "paid" | "overdue";
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  totalAmount: number;
+  currency: "USD" | "EUR" | "RSD";
+  notes?: string;
+  items: InvoiceItem[];
+}

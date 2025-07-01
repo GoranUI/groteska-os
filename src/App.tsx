@@ -14,6 +14,7 @@ import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import ClientsPage from "./pages/ClientsPage";
 import SavingsPage from "./pages/SavingsPage";
+import InvoicesPage from "./pages/InvoicesPage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/expenses" element={<ProtectedLayout><ExpensesPage /></ProtectedLayout>} />
             <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
             <Route path="/savings" element={<ProtectedLayout><SavingsPage /></ProtectedLayout>} />
+            <Route path="/invoices" element={<ProtectedLayout><InvoicesPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
           </Routes>
