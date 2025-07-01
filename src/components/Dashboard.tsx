@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, TrendingDown, Users, Calendar, Receipt, DollarSign } from "lucide-react";
@@ -51,13 +52,7 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
     .slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Overview of your financial performance</p>
-      </div>
-
+    <div className="space-y-6">
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-0 shadow-sm ring-1 ring-gray-200">
