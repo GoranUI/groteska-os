@@ -94,12 +94,86 @@ const parseCSVLine = (line: string): string[] => {
 const isPositiveIncome = (description: string): boolean => {
   const incomeKeywords = [
     'UPLATA', 'PRENOS', 'TRANSFER', 'SALARY', 'PAYMENT',
-    'Upwork', 'FREELANCE', 'CLIENT', 'Invoice'
+    'Upwork', 'FREELANCE', 'CLIENT', 'Invoice', 'OIP'
   ];
   
   return incomeKeywords.some(keyword => 
     description.toUpperCase().includes(keyword.toUpperCase())
   );
+};
+
+const extractClientFromDescription = (description: string): { client: string; category: "full-time" | "one-time" } => {
+  const desc = description.toUpperCase();
+  
+  // Check for full-time job indicators
+  const fullTimeIndicators = ['OIP', 'UPWORK', 'SALARY', 'PLATA'];
+  const isFullTime = fullTimeIndicators.some(indicator => desc.includes(indicator));
+  
+  // Extract client names - look for patterns
+  let client = "Unknown Client";
+  let category: "full-time" | "one-time" = isFullTime ? "full-time" : "one-time";
+  
+  // Pattern 1: OIP indicates full-time job
+  if (desc.includes('OIP')) {
+    client = "OIP - Full-time Job";
+    category = "full-time";
+  }
+  // Pattern 2: Upwork
+  else if (desc.includes('UPWORK')) {
+    client = "Upwork";
+    category = "full-time";
+  }
+  // Pattern 3: Look for person names (common Serbian names)
+  else if (desc.includes('KRISTINA SAVIC') || desc.includes('KRISTINA')) {
+    client = "Kristina Savic";
+    category = "one-time";
+  }
+  else if (desc.includes('GORAN')) {
+    client = "Goran";
+    category = "one-time";
+  }
+  else if (desc.includes('MOHAMAD') || desc.includes('MOHAMMAD')) {
+    client = "Mohamad";
+    category = "one-time";
+  }
+  // Pattern 4: Look for other common patterns
+  else if (desc.includes('BEZGOTOVINSKI PRENOS')) {
+    // Try to extract name after "BEZGOTOVINSKI PRENOS"
+    const match = description.match(/BEZGOTOVINSKI PRENOS\s+(.+?)(?:\s+\d|$)/i);
+    if (match && match[1]) {
+      const extractedName = match[1].trim();
+      // Clean up common banking terms
+      const cleanName = extractedName
+        .replace(/REF\s*\d+/gi, '')
+        .replace(/\d+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (cleanName && cleanName.length > 2) {
+        client = cleanName;
+        category = "one-time";
+      }
+    }
+  }
+  else if (desc.includes('UPLATA')) {
+    // Try to extract name after "UPLATA"
+    const match = description.match(/UPLATA\s+(.+?)(?:\s+REF|\s+\d|$)/i);
+    if (match && match[1]) {
+      const extractedName = match[1].trim();
+      const cleanName = extractedName
+        .replace(/REF\s*\d+/gi, '')
+        .replace(/\d+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (cleanName && cleanName.length > 2) {
+        client = cleanName;
+        category = "one-time";
+      }
+    }
+  }
+  
+  return { client, category };
 };
 
 const parseIncomeRow = (dateStr: string, description: string, amountStr: string): ParsedIncome | null => {
@@ -133,19 +207,8 @@ const parseIncomeRow = (dateStr: string, description: string, amountStr: string)
   
   if (isNaN(amount) || amount <= 0) return null;
   
-  // Determine client and category
-  let client = "Unknown Client";
-  let category: "full-time" | "one-time" = "one-time";
-  
-  if (description.includes('Upwork')) {
-    client = "Upwork";
-    category = "full-time";
-  } else if (description.includes('UPLATA') || description.includes('PRENOS')) {
-    const match = description.match(/([A-ZŠĐČĆŽ\s]+)(?:\s+\d+)?$/);
-    if (match) {
-      client = match[1].trim();
-    }
-  }
+  // Extract client and category using improved logic
+  const { client, category } = extractClientFromDescription(description);
   
   return {
     amount,
