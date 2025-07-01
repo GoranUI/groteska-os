@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Invoice, InvoiceItem, Client } from "@/types";
-import { Plus, Trash2, FileText } from "lucide-react";
+import { Plus, Trash2, FileText, Download } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface InvoiceFormProps {
   clients: Client[];
@@ -24,6 +25,9 @@ export const InvoiceForm = ({
   initialInvoice,
   generateInvoiceNumber 
 }: InvoiceFormProps) => {
+  const { user, profile } = useAuth();
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
   const [formData, setFormData] = useState({
     invoiceNumber: initialInvoice?.invoiceNumber || generateInvoiceNumber(),
     clientId: initialInvoice?.clientId || '',
@@ -33,6 +37,7 @@ export const InvoiceForm = ({
     invoiceDate: initialInvoice?.invoiceDate || new Date().toISOString().split('T')[0],
     dueDate: initialInvoice?.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: initialInvoice?.status || 'draft' as const,
+    billingType: initialInvoice?.billingType || 'project' as const,
     taxRate: initialInvoice?.taxRate || 0,
     currency: initialInvoice?.currency || 'USD' as const,
     notes: initialInvoice?.notes || '',
@@ -42,6 +47,23 @@ export const InvoiceForm = ({
     initialInvoice?.items || [{ description: '', quantity: 1, unitPrice: 0, totalPrice: 0 }]
   );
 
+  // Handle unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  const handleFormChange = () => {
+    setHasUnsavedChanges(true);
+  };
+
   const handleClientChange = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
     setFormData(prev => ({
@@ -49,7 +71,9 @@ export const InvoiceForm = ({
       clientId,
       clientName: client?.name || '',
       clientEmail: client?.email || '',
+      clientAddress: client?.address || '',
     }));
+    handleFormChange();
   };
 
   const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
@@ -61,15 +85,18 @@ export const InvoiceForm = ({
     }
     
     setItems(newItems);
+    handleFormChange();
   };
 
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0, totalPrice: 0 }]);
+    handleFormChange();
   };
 
   const removeItem = (index: number) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
+      handleFormChange();
     }
   };
 
@@ -92,6 +119,14 @@ export const InvoiceForm = ({
       totalAmount: total,
       items: items.filter(item => item.description.trim() !== ''),
     });
+    
+    setHasUnsavedChanges(false);
+  };
+
+  const handleDownloadPDF = () => {
+    // Placeholder for PDF download functionality
+    console.log('PDF download functionality to be implemented');
+    alert('PDF download feature will be implemented next');
   };
 
   const { subtotal, taxAmount, total } = calculateTotals();
@@ -99,30 +134,71 @@ export const InvoiceForm = ({
   return (
     <Card className="border-0 shadow-sm ring-1 ring-gray-200">
       <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <FileText className="h-5 w-5 text-blue-600" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <FileText className="h-5 w-5 text-blue-600" />
+            </div>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              {initialInvoice ? 'Edit Invoice' : 'Create New Invoice'}
+            </CardTitle>
           </div>
-          <CardTitle className="text-lg font-semibold text-gray-900">
-            {initialInvoice ? 'Edit Invoice' : 'Create New Invoice'}
-          </CardTitle>
+          {initialInvoice && (
+            <Button
+              type="button"
+              onClick={handleDownloadPDF}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* User Profile Section */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Your Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Name:</span> {profile?.full_name || 'Not set'}
+              </div>
+              <div>
+                <span className="font-medium">Email:</span> {user?.email || 'Not set'}
+              </div>
+              <div>
+                <span className="font-medium">Phone:</span> {profile?.phone || 'Not set'}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="invoiceNumber">Invoice Number</Label>
+              <Label htmlFor="invoiceNumber">
+                Invoice Number <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="invoiceNumber"
                 value={formData.invoiceNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }));
+                  handleFormChange();
+                }}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
+              <Label htmlFor="status">
+                Status <span className="text-red-500">*</span>
+              </Label>
+              <Select 
+                value={formData.status} 
+                onValueChange={(value: any) => {
+                  setFormData(prev => ({ ...prev, status: value }));
+                  handleFormChange();
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -155,11 +231,16 @@ export const InvoiceForm = ({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="clientName">Client Name</Label>
+                <Label htmlFor="clientName">
+                  Client Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="clientName"
                   value={formData.clientName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, clientName: e.target.value }));
+                    handleFormChange();
+                  }}
                   required
                 />
               </div>
@@ -171,7 +252,10 @@ export const InvoiceForm = ({
                   id="clientEmail"
                   type="email"
                   value={formData.clientEmail}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientEmail: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, clientEmail: e.target.value }));
+                    handleFormChange();
+                  }}
                 />
               </div>
               <div>
@@ -179,36 +263,77 @@ export const InvoiceForm = ({
                 <Input
                   id="clientAddress"
                   value={formData.clientAddress}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientAddress: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, clientAddress: e.target.value }));
+                    handleFormChange();
+                  }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="invoiceDate">Invoice Date</Label>
+              <Label htmlFor="invoiceDate">
+                Invoice Date <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="invoiceDate"
                 type="date"
                 value={formData.invoiceDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, invoiceDate: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, invoiceDate: e.target.value }));
+                  handleFormChange();
+                }}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label htmlFor="dueDate">
+                Due Date <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="dueDate"
                 type="date"
                 value={formData.dueDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, dueDate: e.target.value }));
+                  handleFormChange();
+                }}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="currency">Currency</Label>
-              <Select value={formData.currency} onValueChange={(value: any) => setFormData(prev => ({ ...prev, currency: value }))}>
+              <Label htmlFor="billingType">
+                Billing Type <span className="text-red-500">*</span>
+              </Label>
+              <Select 
+                value={formData.billingType} 
+                onValueChange={(value: any) => {
+                  setFormData(prev => ({ ...prev, billingType: value }));
+                  handleFormChange();
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="project">Project</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="currency">
+                Currency <span className="text-red-500">*</span>
+              </Label>
+              <Select 
+                value={formData.currency} 
+                onValueChange={(value: any) => {
+                  setFormData(prev => ({ ...prev, currency: value }));
+                  handleFormChange();
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -233,7 +358,9 @@ export const InvoiceForm = ({
             {items.map((item, index) => (
               <div key={index} className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-5">
-                  <Label>Description</Label>
+                  <Label>
+                    Description <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     value={item.description}
                     onChange={(e) => handleItemChange(index, 'description', e.target.value)}
@@ -242,7 +369,9 @@ export const InvoiceForm = ({
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label>Quantity</Label>
+                  <Label>
+                    Quantity <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     type="number"
                     min="1"
@@ -253,7 +382,9 @@ export const InvoiceForm = ({
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label>Unit Price</Label>
+                  <Label>
+                    Unit Price <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     type="number"
                     min="0"
@@ -294,7 +425,10 @@ export const InvoiceForm = ({
               <Textarea
                 id="notes"
                 value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, notes: e.target.value }));
+                  handleFormChange();
+                }}
                 placeholder="Additional notes..."
                 rows={4}
               />
@@ -309,7 +443,10 @@ export const InvoiceForm = ({
                   max="100"
                   step="0.01"
                   value={formData.taxRate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }));
+                    handleFormChange();
+                  }}
                 />
               </div>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">

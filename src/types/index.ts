@@ -4,6 +4,7 @@ export interface Client {
   name: string;
   email?: string;
   company?: string;
+  address?: string;
   status: "active" | "inactive";
   createdAt: string;
 }
@@ -57,11 +58,21 @@ export interface Invoice {
   invoiceDate: string;
   dueDate: string;
   status: "draft" | "sent" | "paid" | "overdue";
+  billingType: "hourly" | "project";
   subtotal: number;
-  taxRate: number;
+  taxRate?: number;
   taxAmount: number;
   totalAmount: number;
   currency: "USD" | "EUR" | "RSD";
   notes?: string;
   items: InvoiceItem[];
+}
+
+export interface UserProfile {
+  id: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  created_at: string;
+  updated_at: string;
 }

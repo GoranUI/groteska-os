@@ -18,6 +18,7 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
+  const [address, setAddress] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
 
   useEffect(() => {
@@ -25,11 +26,13 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
       setName(initialData.name);
       setEmail(initialData.email || "");
       setCompany(initialData.company || "");
+      setAddress(initialData.address || "");
       setStatus(initialData.status);
     } else {
       setName("");
       setEmail("");
       setCompany("");
+      setAddress("");
       setStatus("active");
     }
   }, [initialData]);
@@ -42,6 +45,7 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
       name,
       email: email || undefined,
       company: company || undefined,
+      address: address || undefined,
       status,
     });
 
@@ -49,6 +53,7 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
       setName("");
       setEmail("");
       setCompany("");
+      setAddress("");
       setStatus("active");
     }
   };
@@ -73,7 +78,9 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
       <CardContent className="space-y-6">
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">Name</Label>
+            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+              Name <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="name"
               value={name}
@@ -108,7 +115,20 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+            <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address</Label>
+            <Input
+              id="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Client address"
+              className="h-10"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-sm font-medium text-gray-700">
+              Status <span className="text-red-500">*</span>
+            </Label>
             <Select value={status} onValueChange={(value: "active" | "inactive") => setStatus(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
