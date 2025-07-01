@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +14,7 @@ const transformIncome = (dbIncome: any): Income => ({
   date: dbIncome.date,
   category: dbIncome.category as "full-time" | "one-time",
   description: dbIncome.description,
+  status: dbIncome.status as "paid" | "pending" || "pending",
 });
 
 export const useIncomeData = () => {
