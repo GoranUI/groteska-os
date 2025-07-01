@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Client } from '@/types';
@@ -18,18 +18,47 @@ export const useClientData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchClients = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-    const { data: clientsData, error: clientsError } = await supabase
-      .from('clients')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      setLoading(true);
+      console.log('Fetching clients for user:', user.id);
+      
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    if (clientsError) throw clientsError;
-    setClients((clientsData || []).map(transformClient));
-  }, [user]);
+      if (clientsError) {
+        console.error('Error fetching clients:', clientsError);
+        throw clientsError;
+      }
+
+      console.log('Clients data received:', clientsData);
+      setClients((clientsData || []).map(transformClient));
+    } catch (error: any) {
+      console.error('Error in fetchClients:', error);
+      toast({
+        title: "Error fetching clients",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  // Auto-fetch clients when user changes
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const addClient = useCallback(async (client: Omit<Client, 'id' | 'createdAt'>) => {
     if (!user) return;
@@ -108,6 +137,7 @@ export const useClientData = () => {
 
   return {
     clients,
+    loading,
     fetchClients,
     addClient,
     updateClient,

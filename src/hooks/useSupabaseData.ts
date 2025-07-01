@@ -21,33 +21,17 @@ export const useSupabaseData = () => {
   const savingsHook = useSavingsData();
   const calculations = useFinancialCalculations();
 
-  // Fetch all data
-  const fetchData = useCallback(async () => {
-    if (!user) return;
+  // Check if all individual hooks are done loading
+  useEffect(() => {
+    const allHooksLoaded = !clientHook.loading && 
+                          !incomeHook.loading && 
+                          !expenseHook.loading && 
+                          !savingsHook.loading;
     
-    setLoading(true);
-    try {
-      await Promise.all([
-        clientHook.fetchClients(),
-        incomeHook.fetchIncomes(),
-        expenseHook.fetchExpenses(),
-        savingsHook.fetchSavings(),
-      ]);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching data",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
+    if (allHooksLoaded) {
       setLoading(false);
     }
-  }, [user, toast, clientHook, incomeHook, expenseHook, savingsHook]);
-
-  // Fetch data when user changes
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  }, [clientHook.loading, incomeHook.loading, expenseHook.loading, savingsHook.loading]);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -57,22 +41,22 @@ export const useSupabaseData = () => {
       supabase
         .channel('clients_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'clients' }, () => {
-          fetchData();
+          clientHook.fetchClients();
         }),
       supabase
         .channel('incomes_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'incomes' }, () => {
-          fetchData();
+          incomeHook.fetchIncomes();
         }),
       supabase
         .channel('expenses_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-          fetchData();
+          expenseHook.fetchExpenses();
         }),
       supabase
         .channel('savings_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'savings' }, () => {
-          fetchData();
+          savingsHook.fetchSavings();
         }),
     ];
 
@@ -81,7 +65,7 @@ export const useSupabaseData = () => {
     return () => {
       channels.forEach(channel => supabase.removeChannel(channel));
     };
-  }, [user, fetchData]);
+  }, [user, clientHook, incomeHook, expenseHook, savingsHook]);
 
   return {
     // Data
