@@ -14,7 +14,7 @@ const Index = () => {
     );
   }
 
-  const rsdTotals = getTotalInRSD();
+  const rsdTotals = getTotalInRSD(incomes, expenses);
   const activeClientsCount = getActiveClients();
 
   return (
