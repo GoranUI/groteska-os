@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, TrendingDown, Users, Calendar } from "lucide-react";
@@ -18,7 +17,7 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
     return acc;
   }, {} as Record<string, number>);
 
-  const totalExpenseByurrency = expenses.reduce((acc, expense) => {
+  const totalExpenseByCurrency = expenses.reduce((acc, expense) => {
     acc[expense.currency] = (acc[expense.currency] || 0) + expense.amount;
     return acc;
   }, {} as Record<string, number>);
@@ -26,8 +25,8 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
   // Prepare chart data
   const currencyData = ['USD', 'EUR', 'RSD'].map(currency => ({
     currency,
-    income: totalIncomeByurrency[currency] || 0,
-    expenses: totalExpenseByurrency[currency] || 0,
+    income: totalIncomeByCurrency[currency] || 0,
+    expenses: totalExpenseByCurrency[currency] || 0,
   }));
 
   // Expense breakdown
@@ -62,7 +61,7 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {Object.values(totalIncomeByurrency).reduce((a, b) => a + b, 0).toFixed(0)}
+              {Object.values(totalIncomeByCurrency).reduce((a, b) => a + b, 0).toFixed(0)}
             </div>
             <p className="text-xs text-gray-500">Across all currencies</p>
           </CardContent>
@@ -77,7 +76,7 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {Object.values(totalExpenseByurrency).reduce((a, b) => a + b, 0).toFixed(0)}
+              {Object.values(totalExpenseByCurrency).reduce((a, b) => a + b, 0).toFixed(0)}
             </div>
             <p className="text-xs text-gray-500">Across all currencies</p>
           </CardContent>

@@ -17,10 +17,10 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
-    currency: "USD" as const,
+    currency: "USD" as "USD" | "EUR" | "RSD",
     client: "",
     date: new Date().toISOString().split('T')[0],
-    category: "one-time" as const,
+    category: "one-time" as "full-time" | "one-time",
     description: ""
   });
 
@@ -116,7 +116,10 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
 
                 <div>
                   <Label htmlFor="currency">Currency</Label>
-                  <Select value={formData.currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setFormData({ ...formData, currency: value })}>
+                  <Select 
+                    value={formData.currency} 
+                    onValueChange={(value: "USD" | "EUR" | "RSD") => setFormData({ ...formData, currency: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -152,7 +155,10 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
 
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value: "full-time" | "one-time") => setFormData({ ...formData, category: value })}>
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(value: "full-time" | "one-time") => setFormData({ ...formData, category: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
