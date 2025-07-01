@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Income } from "@/types";
-import { Plus, DollarSign } from "lucide-react";
+import { PlusIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
 
 interface IncomeTrackerProps {
   incomes: Income[];
@@ -21,6 +21,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
   const [client, setClient] = useState("");
   const [date, setDate] = useState("");
   const [category, setCategory] = useState<"full-time" | "one-time">("one-time");
+  const [status, setStatus] = useState<"paid" | "pending">("paid");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +31,11 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
       amount: parseFloat(amount),
       currency,
       client,
+      clientId: null,
       date,
       category,
+      description: `${category} work for ${client}`,
+      status
     });
 
     // Reset form
@@ -53,7 +57,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
         <CardHeader className="pb-4">
           <div className="flex items-center space-x-2">
             <div className="p-2 bg-orange-50 rounded-lg">
-              <Plus className="h-5 w-5 text-orange-600" />
+              <PlusIcon className="h-5 w-5 text-orange-600" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold text-gray-900">Add New Income</CardTitle>
@@ -62,7 +66,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount" className="text-sm font-medium text-gray-700">Amount</Label>
               <Input
@@ -128,12 +132,25 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
               </Select>
             </div>
 
-            <div className="md:col-span-2 lg:col-span-5">
+            <div className="space-y-2">
+              <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+              <Select value={status} onValueChange={(value: "paid" | "pending") => setStatus(value)}>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="md:col-span-2 lg:col-span-6">
               <Button 
                 type="submit" 
                 className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <PlusIcon className="h-4 w-4 mr-2" />
                 Add Income
               </Button>
             </div>
@@ -146,7 +163,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
         <CardHeader className="pb-4">
           <div className="flex items-center space-x-2">
             <div className="p-2 bg-green-50 rounded-lg">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <CurrencyDollarIcon className="h-5 w-5 text-green-600" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold text-gray-900">Income History</CardTitle>
@@ -157,7 +174,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
         <CardContent>
           {incomes.length === 0 ? (
             <div className="text-center py-12">
-              <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <CurrencyDollarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No income recorded yet</h3>
               <p className="text-gray-600">Add your first income entry to get started</p>
             </div>
@@ -170,6 +187,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
                     <TableHead className="font-semibold text-gray-900">Client</TableHead>
                     <TableHead className="font-semibold text-gray-900">Amount</TableHead>
                     <TableHead className="font-semibold text-gray-900">Currency</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Status</TableHead>
                     <TableHead className="font-semibold text-gray-900">Category</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -186,6 +204,17 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
                       <TableCell>
                         <Badge variant="outline" className="border-gray-300 text-gray-700">
                           {income.currency}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={income.status === 'paid' ? 'default' : 'secondary'}
+                          className={income.status === 'paid' 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                            : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                          }
+                        >
+                          {income.status === 'paid' ? 'Paid' : 'Pending'}
                         </Badge>
                       </TableCell>
                       <TableCell>

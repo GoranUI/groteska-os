@@ -1,15 +1,16 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit3 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { Savings } from "@/types";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface SavingsFormProps {
-  onSubmit: (data: Omit<Savings, 'id'>) => void;
+  onSubmit: (saving: Omit<Savings, 'id'>) => void;
   initialData?: Savings | null;
   onCancel?: () => void;
 }
@@ -17,7 +18,7 @@ interface SavingsFormProps {
 export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProps) => {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<"deposit" | "withdrawal">("deposit");
   const [description, setDescription] = useState("");
 
@@ -27,56 +28,76 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
       setCurrency(initialData.currency);
       setDate(initialData.date);
       setType(initialData.type);
-      setDescription(initialData.description);
-    } else {
-      setAmount("");
-      setDate("");
-      setDescription("");
+      setDescription(initialData.description || "");
     }
   }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !date) return; // Removed description requirement
+    if (!amount || !date) return;
 
     onSubmit({
       amount: parseFloat(amount),
       currency,
       date,
       type,
-      description: description.trim() || `${type} transaction`, // Provide default if empty
+      description: description.trim() || `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} - ${new Date().toLocaleDateString()}`,
     });
 
     if (!initialData) {
+      // Reset form only if not editing
       setAmount("");
-      setDate("");
       setDescription("");
+      setDate(new Date().toISOString().split('T')[0]);
     }
   };
 
   return (
     <Card className="border-0 shadow-sm ring-1 ring-gray-200">
       <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-orange-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-orange-600" /> : <Plus className="h-5 w-5 text-orange-600" />}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="p-2 bg-orange-50 rounded-lg">
+              <PlusIcon className="h-5 w-5 text-orange-600" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                {initialData ? 'Edit Savings Entry' : 'Add Savings Entry'}
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                {initialData ? 'Update your savings record' : 'Record a new deposit or withdrawal'}
+              </p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Savings Entry" : "Add New Savings Entry"}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              {initialData ? "Update savings entry" : "Record a new savings transaction"}
-            </p>
-          </div>
+          {initialData && onCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
-              Amount <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="type" className="text-sm font-medium text-gray-700">Type</Label>
+            <Select value={type} onValueChange={(value: "deposit" | "withdrawal") => setType(value)}>
+              <SelectTrigger className="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="deposit">Deposit</SelectItem>
+                <SelectItem value="withdrawal">Withdrawal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">Amount</Label>
             <Input
               id="amount"
               type="number"
@@ -90,9 +111,7 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
-              Currency <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">Currency</Label>
             <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
@@ -106,24 +125,7 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-sm font-medium text-gray-700">
-              Type <span className="text-red-500">*</span>
-            </Label>
-            <Select value={type} onValueChange={(value: "deposit" | "withdrawal") => setType(value)}>
-              <SelectTrigger className="h-10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="deposit">Deposit</SelectItem>
-                <SelectItem value="withdrawal">Withdrawal</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium text-gray-700">
-              Date <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="date" className="text-sm font-medium text-gray-700">Date</Label>
             <Input
               id="date"
               type="date"
@@ -134,37 +136,27 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
             />
           </div>
 
-          <div className="md:col-span-2 lg:col-span-4 space-y-2">
+          <div className="space-y-2 md:col-span-2 lg:col-span-1">
             <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-              Description <span className="text-xs text-gray-500">(optional)</span>
+              Description <span className="text-gray-400">(optional)</span>
             </Label>
             <Input
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe this savings transaction (optional)"
+              placeholder="Optional description"
               className="h-10"
             />
           </div>
 
-          <div className="md:col-span-2 lg:col-span-4 flex gap-3">
+          <div className="md:col-span-2 lg:col-span-5">
             <Button 
               type="submit" 
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white"
             >
-              {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-              {initialData ? "Update Entry" : "Add Entry"}
+              <PlusIcon className="h-4 w-4 mr-2" />
+              {initialData ? 'Update Savings' : 'Add Savings'}
             </Button>
-            {initialData && (
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </Button>
-            )}
           </div>
         </form>
       </CardContent>

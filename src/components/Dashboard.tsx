@@ -45,6 +45,25 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
     };
   }, [incomes, expenses, timeRange]);
 
+  // Calculate filtered totals for responsive metrics
+  const filteredTotals = useMemo(() => {
+    const totalIncomeRSD = filteredData.incomes.reduce((sum, income) => {
+      const rate = income.currency === "RSD" ? 1 : income.currency === "USD" ? 117 : 110;
+      return sum + (Number(income.amount) * rate);
+    }, 0);
+    
+    const totalExpenseRSD = filteredData.expenses.reduce((sum, expense) => {
+      const rate = expense.currency === "RSD" ? 1 : expense.currency === "USD" ? 117 : 110;
+      return sum + (Number(expense.amount) * rate);
+    }, 0);
+    
+    return { 
+      income: totalIncomeRSD, 
+      expense: totalExpenseRSD,
+      balance: totalIncomeRSD - totalExpenseRSD
+    };
+  }, [filteredData]);
+
   // Calculate totals by currency for filtered data
   const totalIncomeByCurrency = filteredData.incomes.reduce((acc, income) => {
     acc[income.currency] = (acc[income.currency] || 0) + income.amount;
@@ -115,9 +134,14 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">Total Income (RSD)</p>
+                <p className="text-sm font-medium text-gray-600 truncate">
+                  Total Income (RSD)
+                  {(timeRange.from || timeRange.to) && (
+                    <span className="block text-xs text-orange-600">Filtered</span>
+                  )}
+                </p>
                 <p className="text-xl lg:text-2xl font-bold text-green-600 truncate">
-                  {rsdTotals.income.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  {filteredTotals.income.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                 </p>
               </div>
               <div className="p-2 lg:p-3 bg-green-50 rounded-full flex-shrink-0">
@@ -131,9 +155,14 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">Total Expenses (RSD)</p>
+                <p className="text-sm font-medium text-gray-600 truncate">
+                  Total Expenses (RSD)
+                  {(timeRange.from || timeRange.to) && (
+                    <span className="block text-xs text-orange-600">Filtered</span>
+                  )}
+                </p>
                 <p className="text-xl lg:text-2xl font-bold text-red-600 truncate">
-                  {rsdTotals.expense.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  {filteredTotals.expense.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                 </p>
               </div>
               <div className="p-2 lg:p-3 bg-red-50 rounded-full flex-shrink-0">
@@ -147,9 +176,12 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">Net Balance (RSD)</p>
+                <p className="text-sm font-medium text-gray-600 truncate">
+                  Net Balance (RSD)
+                  <span className="block text-xs text-blue-600">All Time</span>
+                </p>
                 <p className={`text-xl lg:text-2xl font-bold truncate ${rsdTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {rsdTotals.balance >= 0 ? '+' : ''}{rsdTotals.balance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  {rsdTotals.balance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                 </p>
               </div>
               <div className={`p-2 lg:p-3 rounded-full flex-shrink-0 ${rsdTotals.balance >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
@@ -270,7 +302,7 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}{transaction.amount.toLocaleString()} {transaction.currency}
+                    {transaction.amount.toLocaleString()} {transaction.currency}
                   </p>
                   <p className="text-sm text-gray-500 hidden sm:block">
                     {'category' in transaction && transaction.category}

@@ -1,4 +1,3 @@
-
 export interface Client {
   id: string;
   name: string;
@@ -14,10 +13,11 @@ export interface Income {
   amount: number;
   currency: "USD" | "EUR" | "RSD";
   client: string;
-  clientId?: string;
+  clientId?: string | null;
   date: string;
   category: "full-time" | "one-time";
   description?: string;
+  status?: "paid" | "pending";
 }
 
 export interface Expense {
