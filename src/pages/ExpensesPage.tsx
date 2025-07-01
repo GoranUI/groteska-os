@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { ExpenseForm } from "@/components/ExpenseForm";
-import { ExpenseList } from "@/components/ExpenseList";
+import { ExpenseTable } from "@/components/ExpenseTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { ImportExpenses } from "@/components/import/ImportExpenses";
@@ -45,7 +45,7 @@ const ExpensesPage = () => {
             onCancel={() => setEditingExpense(null)}
           />
 
-          <ExpenseList
+          <ExpenseTable
             expenses={expenses}
             onEdit={setEditingExpense}
             onDelete={deleteExpense}

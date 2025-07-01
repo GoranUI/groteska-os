@@ -14,7 +14,7 @@ export const ImportExpenses = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [importResults, setImportResults] = useState<{ success: number; failed: number } | null>(null);
   const { toast } = useToast();
-  const { addExpense } = useSupabaseData();
+  const { addExpenseBulk } = useSupabaseData();
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -59,34 +59,35 @@ export const ImportExpenses = () => {
     if (parsedExpenses.length === 0) return;
     
     setIsProcessing(true);
-    let success = 0;
-    let failed = 0;
     
-    for (const expense of parsedExpenses) {
-      try {
-        await addExpense({
-          amount: expense.amount,
-          currency: expense.currency as "USD" | "EUR" | "RSD",
-          date: expense.date,
-          category: expense.category as any,
-          description: expense.description,
-          isRecurring: false,
-        });
-        success++;
-      } catch (error) {
-        console.error('Failed to import expense:', error);
-        failed++;
-      }
+    try {
+      const expensesToAdd = parsedExpenses.map(expense => ({
+        amount: expense.amount,
+        currency: expense.currency as "USD" | "EUR" | "RSD",
+        date: expense.date,
+        category: expense.category as any,
+        description: expense.description,
+        isRecurring: false,
+      }));
+
+      const result = await addExpenseBulk(expensesToAdd);
+      setImportResults(result);
+      
+      toast({
+        title: "Import completed",
+        description: `Successfully imported ${result.success} expenses. ${result.failed} failed.`,
+        variant: result.success > 0 ? "default" : "destructive",
+      });
+    } catch (error) {
+      console.error('Failed to import expenses:', error);
+      toast({
+        title: "Import failed",
+        description: "An error occurred during import.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
     }
-    
-    setImportResults({ success, failed });
-    setIsProcessing(false);
-    
-    toast({
-      title: "Import completed",
-      description: `Successfully imported ${success} expenses. ${failed} failed.`,
-      variant: success > 0 ? "default" : "destructive",
-    });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
