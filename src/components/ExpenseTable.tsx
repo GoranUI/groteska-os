@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -38,65 +37,55 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) 
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
-  const getFilteredExpenses = useMemo(() => {
+  const filteredExpenses = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    let filteredExpenses = expenses;
-
     switch (filterPeriod) {
       case "week": {
         const weekAgo = new Date(startOfToday);
         weekAgo.setDate(weekAgo.getDate() - 7);
-        filteredExpenses = expenses.filter(expense => new Date(expense.date) >= weekAgo);
-        break;
+        return expenses.filter(expense => new Date(expense.date) >= weekAgo);
       }
       case "2weeks": {
         const twoWeeksAgo = new Date(startOfToday);
         twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-        filteredExpenses = expenses.filter(expense => new Date(expense.date) >= twoWeeksAgo);
-        break;
+        return expenses.filter(expense => new Date(expense.date) >= twoWeeksAgo);
       }
       case "month": {
         const monthAgo = new Date(startOfToday);
         monthAgo.setMonth(monthAgo.getMonth() - 1);
-        filteredExpenses = expenses.filter(expense => new Date(expense.date) >= monthAgo);
-        break;
+        return expenses.filter(expense => new Date(expense.date) >= monthAgo);
       }
       case "quarter": {
         const quarterAgo = new Date(startOfToday);
         quarterAgo.setMonth(quarterAgo.getMonth() - 3);
-        filteredExpenses = expenses.filter(expense => new Date(expense.date) >= quarterAgo);
-        break;
+        return expenses.filter(expense => new Date(expense.date) >= quarterAgo);
       }
       case "year": {
         const yearStart = new Date(now.getFullYear(), 0, 1);
-        filteredExpenses = expenses.filter(expense => new Date(expense.date) >= yearStart);
-        break;
+        return expenses.filter(expense => new Date(expense.date) >= yearStart);
       }
       case "lastyear": {
         const lastYearStart = new Date(now.getFullYear() - 1, 0, 1);
         const lastYearEnd = new Date(now.getFullYear() - 1, 11, 31);
-        filteredExpenses = expenses.filter(expense => {
+        return expenses.filter(expense => {
           const expenseDate = new Date(expense.date);
           return expenseDate >= lastYearStart && expenseDate <= lastYearEnd;
         });
-        break;
       }
       default:
-        filteredExpenses = expenses;
+        return expenses;
     }
-
-    return filteredExpenses;
   }, [expenses, filterPeriod]);
 
   const paginatedExpenses = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return getFilteredExpenses.slice(startIndex, endIndex);
-  }, [getFilteredExpenses, currentPage, itemsPerPage]);
+    return filteredExpenses.slice(startIndex, endIndex);
+  }, [filteredExpenses, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(getFilteredExpenses.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -153,7 +142,7 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) 
             </div>
             <div>
               <CardTitle className="text-lg font-semibold text-gray-900">Expense History</CardTitle>
-              <p className="text-sm text-gray-600">{getFilteredExpenses.length} entries</p>
+              <p className="text-sm text-gray-600">{filteredExpenses.length} entries</p>
             </div>
           </div>
           
@@ -176,7 +165,7 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) 
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {getFilteredExpenses.length === 0 ? (
+        {filteredExpenses.length === 0 ? (
           <div className="text-center py-12">
             <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses found</h3>
@@ -263,7 +252,7 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) 
               </div>
               
               <div className="text-sm text-gray-700">
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, getFilteredExpenses.length)} of {getFilteredExpenses.length} entries
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredExpenses.length)} of {filteredExpenses.length} entries
               </div>
               
               <Pagination>
