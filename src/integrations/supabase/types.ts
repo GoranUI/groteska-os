@@ -174,6 +174,7 @@ export type Database = {
       }
       invoices: {
         Row: {
+          billing_type: string | null
           client_address: string | null
           client_email: string | null
           client_id: string | null
@@ -194,6 +195,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          billing_type?: string | null
           client_address?: string | null
           client_email?: string | null
           client_id?: string | null
@@ -214,6 +216,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          billing_type?: string | null
           client_address?: string | null
           client_email?: string | null
           client_id?: string | null

@@ -16,6 +16,7 @@ export const ProfileSettings = () => {
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name || '');
+      setPhone(profile.phone || '');
     }
   }, [profile]);
 
