@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { ImportExpenses } from "@/components/import/ImportExpenses";
 
 const ExpensesPage = () => {
   const { expenses, addExpense, updateExpense, deleteExpense, loading } = useSupabaseData();
@@ -24,23 +26,36 @@ const ExpensesPage = () => {
         <p className="text-gray-600">Track and categorize your expenses</p>
       </div>
 
-      <ExpenseForm
-        onSubmit={editingExpense ? 
-          (data) => {
-            updateExpense(editingExpense.id, data);
-            setEditingExpense(null);
-          } :
-          addExpense
-        }
-        initialData={editingExpense}
-        onCancel={() => setEditingExpense(null)}
-      />
+      <Tabs defaultValue="manual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+          <TabsTrigger value="import">Import Expenses</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="manual" className="space-y-8">
+          <ExpenseForm
+            onSubmit={editingExpense ? 
+              (data) => {
+                updateExpense(editingExpense.id, data);
+                setEditingExpense(null);
+              } :
+              addExpense
+            }
+            initialData={editingExpense}
+            onCancel={() => setEditingExpense(null)}
+          />
 
-      <ExpenseList
-        expenses={expenses}
-        onEdit={setEditingExpense}
-        onDelete={deleteExpense}
-      />
+          <ExpenseList
+            expenses={expenses}
+            onEdit={setEditingExpense}
+            onDelete={deleteExpense}
+          />
+        </TabsContent>
+        
+        <TabsContent value="import">
+          <ImportExpenses />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

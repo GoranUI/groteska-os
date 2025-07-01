@@ -1,6 +1,6 @@
 
 import { NavLink, useLocation } from "react-router-dom";
-import { BarChart3, TrendingUp, Receipt, Users, PiggyBank, Settings, Upload } from "lucide-react";
+import { BarChart3, TrendingUp, Receipt, Users, PiggyBank, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +18,6 @@ const navigation = [
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Savings", href: "/savings", icon: PiggyBank },
-  { name: "Import", href: "/import", icon: Upload },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
