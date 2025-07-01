@@ -32,11 +32,23 @@ export const ProjectList = ({ clients, projects, subTasks }: ProjectListProps) =
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'completed': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'on_hold': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'cancelled': return 'bg-red-100 text-red-800 hover:bg-red-200';
+      case 'negotiation': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'in_progress': return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'waiting_on_client': return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+      case 'done': return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200';
+      case 'canceled': return 'bg-red-100 text-red-800 hover:bg-red-200';
       default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-100 text-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -79,9 +91,14 @@ export const ProjectList = ({ clients, projects, subTasks }: ProjectListProps) =
                             {getClientName(project.clientId)}
                           </p>
                         </div>
-                        <Badge className={getStatusColor(project.status)}>
-                          {project.status.replace('_', ' ')}
-                        </Badge>
+                        <div className="flex flex-col gap-2">
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status.replace('_', ' ')}
+                          </Badge>
+                          <Badge className={getPriorityColor(project.priority)}>
+                            {project.priority} priority
+                          </Badge>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">

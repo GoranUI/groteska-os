@@ -22,7 +22,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [clientId, setClientId] = useState("");
-  const [status, setStatus] = useState<"active" | "completed" | "on_hold" | "cancelled">("active");
+  const [status, setStatus] = useState<"negotiation" | "pending" | "in_progress" | "waiting_on_client" | "done" | "canceled">("pending");
+  const [priority, setPriority] = useState<"low" | "medium" | "high" | "urgent">("medium");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [budget, setBudget] = useState("");
@@ -34,6 +35,7 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       setDescription(initialData.description || "");
       setClientId(initialData.clientId);
       setStatus(initialData.status);
+      setPriority(initialData.priority);
       setStartDate(initialData.startDate || "");
       setEndDate(initialData.endDate || "");
       setBudget(initialData.budget?.toString() || "");
@@ -42,7 +44,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       setName("");
       setDescription("");
       setClientId("");
-      setStatus("active");
+      setStatus("pending");
+      setPriority("medium");
       setStartDate("");
       setEndDate("");
       setBudget("");
@@ -76,6 +79,7 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       description: description.trim() || undefined,
       clientId,
       status,
+      priority,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
       budget: budget ? Number(budget) : undefined,
@@ -86,7 +90,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       setName("");
       setDescription("");
       setClientId("");
-      setStatus("active");
+      setStatus("pending");
+      setPriority("medium");
       setStartDate("");
       setEndDate("");
       setBudget("");
@@ -158,15 +163,32 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
-            <Select value={status} onValueChange={(value: "active" | "completed" | "on_hold" | "cancelled") => setStatus(value)}>
+            <Select value={status} onValueChange={(value: "negotiation" | "pending" | "in_progress" | "waiting_on_client" | "done" | "canceled") => setStatus(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="on_hold">On Hold</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="negotiation">Negotiation</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="waiting_on_client">Waiting on Client</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="canceled">Canceled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority" className="text-sm font-medium text-gray-700">Priority</Label>
+            <Select value={priority} onValueChange={(value: "low" | "medium" | "high" | "urgent") => setPriority(value)}>
+              <SelectTrigger className="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -303,6 +303,7 @@ export type Database = {
           end_date: string | null
           id: string
           name: string
+          priority: string | null
           start_date: string | null
           status: string
           updated_at: string
@@ -317,6 +318,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name: string
+          priority?: string | null
           start_date?: string | null
           status?: string
           updated_at?: string
@@ -331,6 +333,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name?: string
+          priority?: string | null
           start_date?: string | null
           status?: string
           updated_at?: string

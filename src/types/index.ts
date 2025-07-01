@@ -14,7 +14,8 @@ export interface Project {
   clientId: string;
   name: string;
   description?: string;
-  status: "active" | "completed" | "on_hold" | "cancelled";
+  status: "negotiation" | "pending" | "in_progress" | "waiting_on_client" | "done" | "canceled";
+  priority: "low" | "medium" | "high" | "urgent";
   startDate?: string;
   endDate?: string;
   budget?: number;
