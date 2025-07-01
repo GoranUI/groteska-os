@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,10 +10,12 @@ const transformIncome = (dbIncome: any): Income => ({
   currency: dbIncome.currency as "USD" | "EUR" | "RSD",
   client: dbIncome.client,
   clientId: dbIncome.client_id,
+  projectId: dbIncome.project_id,
+  subTaskId: dbIncome.sub_task_id,
   date: dbIncome.date,
   category: dbIncome.category as "full-time" | "one-time",
   description: dbIncome.description,
-  status: dbIncome.status as "paid" | "pending" || "pending",
+  status: "paid", // All income entries are now paid by default
 });
 
 export const useIncomeData = () => {
@@ -62,7 +63,13 @@ export const useIncomeData = () => {
     try {
       const { data, error } = await supabase
         .from('incomes')
-        .insert([{ ...income, user_id: user.id }])
+        .insert([{ 
+          ...income, 
+          client_id: income.clientId,
+          project_id: income.projectId,
+          sub_task_id: income.subTaskId,
+          user_id: user.id 
+        }])
         .select()
         .single();
 
@@ -89,6 +96,9 @@ export const useIncomeData = () => {
     try {
       const dbIncomes = incomes.map(income => ({
         ...income,
+        client_id: income.clientId,
+        project_id: income.projectId,
+        sub_task_id: income.subTaskId,
         user_id: user.id
       }));
 
@@ -111,9 +121,16 @@ export const useIncomeData = () => {
 
   const updateIncome = useCallback(async (id: string, updates: Partial<Income>) => {
     try {
+      const dbUpdates = {
+        ...updates,
+        client_id: updates.clientId,
+        project_id: updates.projectId,
+        sub_task_id: updates.subTaskId,
+      };
+
       const { data, error } = await supabase
         .from('incomes')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();

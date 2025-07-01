@@ -1,3 +1,4 @@
+
 export interface Client {
   id: string;
   name: string;
@@ -8,12 +9,46 @@ export interface Client {
   createdAt: string;
 }
 
+export interface Project {
+  id: string;
+  clientId: string;
+  name: string;
+  description?: string;
+  status: "active" | "completed" | "on_hold" | "cancelled";
+  startDate?: string;
+  endDate?: string;
+  budget?: number;
+  currency: "USD" | "EUR" | "RSD";
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubTask {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  amount: number;
+  currency: "USD" | "EUR" | "RSD";
+  status: "pending" | "paid";
+  dueDate?: string;
+  completedAt?: string;
+  invoiceId?: string;
+  incomeId?: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Income {
   id: string;
   amount: number;
   currency: "USD" | "EUR" | "RSD";
   client: string;
   clientId?: string | null;
+  projectId?: string | null;
+  subTaskId?: string | null;
   date: string;
   category: "full-time" | "one-time";
   description?: string;

@@ -22,7 +22,7 @@ export const IncomeList = ({ incomes, onEdit, onDelete }: IncomeListProps) => {
           </div>
           <div>
             <CardTitle className="text-lg font-semibold text-gray-900">Income History</CardTitle>
-            <p className="text-sm text-gray-600">{incomes.length} total entries</p>
+            <p className="text-sm text-gray-600">{incomes.length} total entries (all paid)</p>
           </div>
         </div>
       </CardHeader>
@@ -42,7 +42,6 @@ export const IncomeList = ({ incomes, onEdit, onDelete }: IncomeListProps) => {
                   <TableHead className="font-semibold text-gray-900">Client</TableHead>
                   <TableHead className="font-semibold text-gray-900">Amount</TableHead>
                   <TableHead className="font-semibold text-gray-900">Currency</TableHead>
-                  <TableHead className="font-semibold text-gray-900">Status</TableHead>
                   <TableHead className="font-semibold text-gray-900">Category</TableHead>
                   <TableHead className="font-semibold text-gray-900">Description</TableHead>
                   <TableHead className="font-semibold text-gray-900">Actions</TableHead>
@@ -61,17 +60,6 @@ export const IncomeList = ({ incomes, onEdit, onDelete }: IncomeListProps) => {
                     <TableCell>
                       <Badge variant="outline" className="border-gray-300 text-gray-700">
                         {income.currency}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={income.status === 'paid' ? 'default' : 'secondary'}
-                        className={income.status === 'paid' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                          : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                        }
-                      >
-                        {income.status === 'paid' ? 'Paid' : 'Pending'}
                       </Badge>
                     </TableCell>
                     <TableCell>

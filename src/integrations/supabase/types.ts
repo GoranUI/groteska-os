@@ -95,7 +95,9 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          project_id: string | null
           status: string | null
+          sub_task_id: string | null
           updated_at: string
           user_id: string
         }
@@ -109,7 +111,9 @@ export type Database = {
           date: string
           description?: string | null
           id?: string
+          project_id?: string | null
           status?: string | null
+          sub_task_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -123,7 +127,9 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          project_id?: string | null
           status?: string | null
+          sub_task_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -133,6 +139,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incomes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incomes_sub_task_id_fkey"
+            columns: ["sub_task_id"]
+            isOneToOne: false
+            referencedRelation: "sub_tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -273,6 +293,59 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          budget: number | null
+          client_id: string
+          created_at: string
+          currency: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget?: number | null
+          client_id: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget?: number | null
+          client_id?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       savings: {
         Row: {
           amount: number
@@ -308,6 +381,79 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      sub_tasks: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          due_date: string | null
+          id: string
+          income_id: string | null
+          invoice_id: string | null
+          name: string
+          project_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          income_id?: string | null
+          invoice_id?: string | null
+          name: string
+          project_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          income_id?: string | null
+          invoice_id?: string | null
+          name?: string
+          project_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_tasks_income_id_fkey"
+            columns: ["income_id"]
+            isOneToOne: false
+            referencedRelation: "incomes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sub_tasks_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sub_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

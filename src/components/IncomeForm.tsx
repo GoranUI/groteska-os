@@ -24,7 +24,6 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
   const [clientId, setClientId] = useState("");
   const [date, setDate] = useState("");
   const [category, setCategory] = useState<"full-time" | "one-time">("one-time");
-  const [status, setStatus] = useState<"paid" | "pending">("pending");
   const [description, setDescription] = useState("");
 
   useEffect(() => {
@@ -34,13 +33,11 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
       setClientId(initialData.clientId || "");
       setDate(initialData.date);
       setCategory(initialData.category);
-      setStatus(initialData.status || "pending");
       setDescription(initialData.description || "");
     } else {
       setAmount("");
       setClientId("");
       setDate("");
-      setStatus("pending");
       setDescription("");
     }
   }, [initialData]);
@@ -130,7 +127,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
         clientId,
         date,
         category,
-        status,
+        status: "paid", // All manual income entries are paid
         description: sanitizedDescription,
       });
 
@@ -138,7 +135,6 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
         setAmount("");
         setClientId("");
         setDate("");
-        setStatus("pending");
         setDescription("");
       }
     } catch (error: any) {
@@ -167,7 +163,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
               {initialData ? "Edit Income" : "Add New Income"}
             </CardTitle>
             <p className="text-sm text-gray-600">
-              {initialData ? "Update income entry" : "Record a new income entry"}
+              {initialData ? "Update income entry" : "Record a new income entry (already paid)"}
             </p>
           </div>
         </div>
@@ -251,21 +247,6 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
               <SelectContent>
                 <SelectItem value="full-time">Full-time</SelectItem>
                 <SelectItem value="one-time">One-time</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm font-medium text-gray-700">
-              Status <span className="text-red-500">*</span>
-            </Label>
-            <Select value={status} onValueChange={(value: "paid" | "pending") => setStatus(value)}>
-              <SelectTrigger className="h-10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
               </SelectContent>
             </Select>
           </div>
