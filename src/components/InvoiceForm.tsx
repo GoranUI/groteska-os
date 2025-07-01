@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Invoice, InvoiceItem, Client } from "@/types";
+import { Invoice, InvoiceItem, Client, Project, SubTask } from "@/types";
 import { Plus, Trash2, FileText, Download } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface InvoiceFormProps {
   clients: Client[];
+  projects: Project[];
+  subTasks: SubTask[];
   onSubmit: (invoice: Omit<Invoice, 'id'>) => void;
   onCancel: () => void;
   initialInvoice?: Invoice;
@@ -20,6 +22,8 @@ interface InvoiceFormProps {
 
 export const InvoiceForm = ({ 
   clients, 
+  projects,
+  subTasks,
   onSubmit, 
   onCancel, 
   initialInvoice,
@@ -41,6 +45,8 @@ export const InvoiceForm = ({
     taxRate: initialInvoice?.taxRate || 0,
     currency: initialInvoice?.currency || 'USD' as const,
     notes: initialInvoice?.notes || '',
+    projectId: '',
+    subTaskId: '',
   });
 
   const [items, setItems] = useState<InvoiceItem[]>(
@@ -74,6 +80,52 @@ export const InvoiceForm = ({
       clientAddress: client?.address || '',
     }));
     handleFormChange();
+  };
+
+  const handleProjectChange = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      const client = clients.find(c => c.id === project.clientId);
+      setFormData(prev => ({
+        ...prev,
+        projectId,
+        clientId: project.clientId,
+        clientName: client?.name || '',
+        clientEmail: client?.email || '',
+        clientAddress: client?.address || '',
+        currency: project.currency,
+      }));
+      // Clear items when switching to project-based billing
+      setItems([{ description: project.name, quantity: 1, unitPrice: project.budget || 0, totalPrice: project.budget || 0 }]);
+      handleFormChange();
+    }
+  };
+
+  const handleSubTaskChange = (subTaskId: string) => {
+    const subTask = subTasks.find(st => st.id === subTaskId);
+    if (subTask) {
+      const project = projects.find(p => p.id === subTask.projectId);
+      const client = project ? clients.find(c => c.id === project.clientId) : null;
+      
+      setFormData(prev => ({
+        ...prev,
+        subTaskId,
+        projectId: subTask.projectId,
+        clientId: project?.clientId || '',
+        clientName: client?.name || '',
+        clientEmail: client?.email || '',
+        clientAddress: client?.address || '',
+        currency: subTask.currency,
+      }));
+      // Set item based on subtask
+      setItems([{ 
+        description: `${project?.name || 'Project'}: ${subTask.name}`, 
+        quantity: 1, 
+        unitPrice: subTask.amount, 
+        totalPrice: subTask.amount 
+      }]);
+      handleFormChange();
+    }
   };
 
   const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
@@ -268,6 +320,53 @@ export const InvoiceForm = ({
                     handleFormChange();
                   }}
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Optional Project/SubTask Selection */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-gray-900">Quick Fill Options</h3>
+            <p className="text-sm text-gray-600">Optionally select a project or sub-task to auto-populate invoice details</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="project">Select Project (Optional)</Label>
+                <Select value={formData.projectId} onValueChange={handleProjectChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((project) => {
+                      const client = clients.find(c => c.id === project.clientId);
+                      return (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name} ({client?.name || 'Unknown Client'})
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="subTask">Select Sub-task (Optional)</Label>
+                <Select value={formData.subTaskId} onValueChange={handleSubTaskChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a sub-task" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subTasks.filter(st => st.status === 'pending').map((subTask) => {
+                      const project = projects.find(p => p.id === subTask.projectId);
+                      const client = project ? clients.find(c => c.id === project.clientId) : null;
+                      return (
+                        <SelectItem key={subTask.id} value={subTask.id}>
+                          {subTask.name} - {subTask.amount} {subTask.currency} ({client?.name || 'Unknown Client'})
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

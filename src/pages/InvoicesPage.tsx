@@ -10,7 +10,7 @@ import { useInvoiceData } from "@/hooks/data/useInvoiceData";
 import { Invoice } from "@/types";
 
 const InvoicesPage = () => {
-  const { clients } = useSupabaseData();
+  const { clients, projects, subTasks } = useSupabaseData();
   const { invoices, loading, addInvoice, updateInvoice, deleteInvoice, generateInvoiceNumber } = useInvoiceData();
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -68,6 +68,8 @@ const InvoicesPage = () => {
       {showForm ? (
         <InvoiceForm
           clients={clients}
+          projects={projects}
+          subTasks={subTasks}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           initialInvoice={editingInvoice || undefined}
