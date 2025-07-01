@@ -1,12 +1,21 @@
 
 import { useState } from "react";
-import { useFinancialData } from "@/hooks/useFinancialData";
+import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { SavingsForm } from "@/components/SavingsForm";
 import { SavingsList } from "@/components/SavingsList";
+import { Loader2 } from "lucide-react";
 
 const SavingsPage = () => {
-  const { savings, addSavings, updateSavings, deleteSavings } = useFinancialData();
+  const { savings, addSavings, updateSavings, deleteSavings, loading } = useSupabaseData();
   const [editingSaving, setEditingSaving] = useState(null);
+
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-8">

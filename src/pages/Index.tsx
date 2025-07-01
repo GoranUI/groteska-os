@@ -1,9 +1,19 @@
 
-import { useFinancialData } from "@/hooks/useFinancialData";
+import { useSupabaseData } from "@/hooks/useSupabaseData";
 import Dashboard from "@/components/Dashboard";
+import { Loader2 } from "lucide-react";
 
 const Index = () => {
-  const { incomes, expenses, clients, getTotalInRSD, getActiveClients } = useFinancialData();
+  const { incomes, expenses, clients, getTotalInRSD, getActiveClients, loading } = useSupabaseData();
+  
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+      </div>
+    );
+  }
+
   const rsdTotals = getTotalInRSD();
   const activeClientsCount = getActiveClients();
 
