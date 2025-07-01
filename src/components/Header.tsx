@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
+
+  const displayName = profile?.full_name || user?.email || 'User';
 
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            Welcome back, {user?.email}
+            Welcome back, {displayName}
           </h2>
           <p className="text-sm text-gray-600">Manage your financial data</p>
         </div>

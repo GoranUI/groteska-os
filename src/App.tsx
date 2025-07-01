@@ -14,6 +14,7 @@ import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import ClientsPage from "./pages/ClientsPage";
 import SavingsPage from "./pages/SavingsPage";
+import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ const App = () => (
                         <Route path="/expenses" element={<ExpensesPage />} />
                         <Route path="/clients" element={<ClientsPage />} />
                         <Route path="/savings" element={<SavingsPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </SidebarInset>
