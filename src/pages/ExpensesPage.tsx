@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useSupabaseData } from "@/hooks/useSupabaseData";
+import { useExpenseData } from "@/hooks/data/useExpenseData";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +9,7 @@ import { ImportExpenses } from "@/components/import/ImportExpenses";
 import { ExportButton } from "@/components/ExportButton";
 
 const ExpensesPage = () => {
-  const { expenses, addExpense, updateExpense, deleteExpense, loading } = useSupabaseData();
+  const { expenses, addExpense, updateExpense, deleteExpense, loading } = useExpenseData();
   const [editingExpense, setEditingExpense] = useState(null);
 
   if (loading) {

@@ -5,7 +5,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, X } from "lucide-react";
-import { Expense } from "@/types";
 
 interface ExpenseFiltersProps {
   onSearch: (query: string) => void;
@@ -46,6 +45,22 @@ export const ExpenseFilters = ({
     onAmountRangeFilter(min, max);
   };
 
+  const handleCategoryChange = (value: string) => {
+    if (value === "all") {
+      onCategoryFilter(null);
+    } else {
+      onCategoryFilter(value);
+    }
+  };
+
+  const handleCurrencyChange = (value: string) => {
+    if (value === "all") {
+      onCurrencyFilter(null);
+    } else {
+      onCurrencyFilter(value);
+    }
+  };
+
   const hasActiveFilters = searchQuery || selectedCategory || selectedCurrency || amountRange.min || amountRange.max;
 
   return (
@@ -79,12 +94,12 @@ export const ExpenseFilters = ({
         </div>
 
         {/* Category Filter */}
-        <Select value={selectedCategory || ""} onValueChange={(value) => onCategoryFilter(value || null)}>
+        <Select value={selectedCategory || "all"} onValueChange={handleCategoryChange}>
           <SelectTrigger className="h-9">
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All categories</SelectItem>
+            <SelectItem value="all">All categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
@@ -94,12 +109,12 @@ export const ExpenseFilters = ({
         </Select>
 
         {/* Currency Filter */}
-        <Select value={selectedCurrency || ""} onValueChange={(value) => onCurrencyFilter(value || null)}>
+        <Select value={selectedCurrency || "all"} onValueChange={handleCurrencyChange}>
           <SelectTrigger className="h-9">
             <SelectValue placeholder="All currencies" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All currencies</SelectItem>
+            <SelectItem value="all">All currencies</SelectItem>
             {currencies.map((currency) => (
               <SelectItem key={currency} value={currency}>
                 {currency}
