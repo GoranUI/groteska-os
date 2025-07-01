@@ -15,10 +15,25 @@ import ExpensesPage from "./pages/ExpensesPage";
 import ClientsPage from "./pages/ClientsPage";
 import SavingsPage from "./pages/SavingsPage";
 import SettingsPage from "./pages/SettingsPage";
+import ImportPage from "./pages/ImportPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const ProtectedLayout = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedRoute>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <SidebarInset className="flex-1">
+          <Header />
+          {children}
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  </ProtectedRoute>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,27 +44,14 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/*" element={
-              <ProtectedRoute>
-                <SidebarProvider>
-                  <div className="min-h-screen flex w-full">
-                    <AppSidebar />
-                    <SidebarInset className="flex-1">
-                      <Header />
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/income" element={<IncomePage />} />
-                        <Route path="/expenses" element={<ExpensesPage />} />
-                        <Route path="/clients" element={<ClientsPage />} />
-                        <Route path="/savings" element={<SavingsPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </SidebarInset>
-                  </div>
-                </SidebarProvider>
-              </ProtectedRoute>
-            } />
+            <Route path="/" element={<ProtectedLayout><Index /></ProtectedLayout>} />
+            <Route path="/income" element={<ProtectedLayout><IncomePage /></ProtectedLayout>} />
+            <Route path="/expenses" element={<ProtectedLayout><ExpensesPage /></ProtectedLayout>} />
+            <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
+            <Route path="/savings" element={<ProtectedLayout><SavingsPage /></ProtectedLayout>} />
+            <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
+            <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
+            <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
