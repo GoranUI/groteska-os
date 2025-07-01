@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,14 +29,14 @@ const ImportPage = () => {
   const categorizeExpense = (description: string): string => {
     const desc = description.toLowerCase();
     
+    if (desc.includes('upwork')) {
+      return 'Office';
+    }
     if (desc.includes('wolt') || desc.includes('glovo') || desc.includes('donesi')) {
       return 'External Food';
     }
     if (desc.includes('pekara') || desc.includes('hleb') || desc.includes('kifle')) {
       return 'Food';
-    }
-    if (desc.includes('upwork') || desc.includes('freelance')) {
-      return 'Software';
     }
     if (desc.includes('zdravlja') || desc.includes('medigroup') || desc.includes('apoteka')) {
       return 'Utilities';
@@ -317,11 +316,16 @@ const ImportPage = () => {
               <div>DATUM,TIP TRANSAKCIJE,OPIS,IZNOS</div>
               <div>01.07.2025,PLAĆANJE KARTICOM,Kupovina LOVABLE,"- 2.495,51 RSD"</div>
               <div>30.06.2025,PLAĆANJE KARTICOM,Kupovina Wolt doo,"- 1.619,32 RSD"</div>
+              <div>01.07.2025,PLAĆANJE KARTICOM,Kupovina Upwork -822939118REF,"- 5.102,96 RSD"</div>
             </div>
             <p className="text-xs text-gray-500">
               • Dates in DD.MM.YYYY format<br/>
               • Amounts in Serbian format with comma as decimal separator<br/>
-              • Expenses are automatically categorized based on merchant names
+              • Expenses are automatically categorized:<br/>
+              • Upwork → Office (outsourcing)<br/>
+              • Wolt/Glovo → External Food<br/>
+              • Pekara → Food<br/>
+              • Health services → Utilities
             </p>
           </div>
         </CardContent>
