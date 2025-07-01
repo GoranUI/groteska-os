@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import ClientsPage from "./pages/ClientsPage";
+import ProjectsPage from "./pages/ProjectsPage";
 import SavingsPage from "./pages/SavingsPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import SettingsPage from "./pages/SettingsPage";
