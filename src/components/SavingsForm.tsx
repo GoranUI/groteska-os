@@ -37,14 +37,14 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !date || !description) return;
+    if (!amount || !date) return; // Removed description requirement
 
     onSubmit({
       amount: parseFloat(amount),
       currency,
       date,
       type,
-      description,
+      description: description.trim() || `${type} transaction`, // Provide default if empty
     });
 
     if (!initialData) {
@@ -74,7 +74,9 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
       <CardContent className="space-y-6">
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">Amount</Label>
+            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
+              Amount <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="amount"
               type="number"
@@ -88,7 +90,9 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">Currency</Label>
+            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
+              Currency <span className="text-red-500">*</span>
+            </Label>
             <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
@@ -102,7 +106,9 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-sm font-medium text-gray-700">Type</Label>
+            <Label htmlFor="type" className="text-sm font-medium text-gray-700">
+              Type <span className="text-red-500">*</span>
+            </Label>
             <Select value={type} onValueChange={(value: "deposit" | "withdrawal") => setType(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
@@ -115,7 +121,9 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium text-gray-700">Date</Label>
+            <Label htmlFor="date" className="text-sm font-medium text-gray-700">
+              Date <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="date"
               type="date"
@@ -127,14 +135,15 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           </div>
 
           <div className="md:col-span-2 lg:col-span-4 space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">Description</Label>
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              Description <span className="text-xs text-gray-500">(optional)</span>
+            </Label>
             <Input
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe this savings transaction"
+              placeholder="Describe this savings transaction (optional)"
               className="h-10"
-              required
             />
           </div>
 

@@ -1,3 +1,4 @@
+import { sanitizeInput, sanitizeDescription, sanitizeClientName, validateCSVContent, validateAmount, validateDate } from './securityUtils';
 
 export interface ParsedIncome {
   amount: number;
@@ -9,7 +10,15 @@ export interface ParsedIncome {
 }
 
 export const parseIncomeCSV = (csvText: string): ParsedIncome[] => {
-  console.log('Starting income CSV parsing...');
+  console.log('Starting income CSV parsing with security validation...');
+  
+  // Validate CSV content for security
+  try {
+    validateCSVContent(csvText);
+  } catch (error) {
+    console.error('CSV security validation failed:', error);
+    throw error;
+  }
   
   const lines = csvText.split('\n');
   console.log(`Total lines in CSV: ${lines.length}`);
@@ -48,7 +57,9 @@ export const parseIncomeCSV = (csvText: string): ParsedIncome[] => {
         continue;
       }
       
-      const [dateStr, , description, amountStr] = parts;
+      const dateStr = sanitizeInput(parts[0] || '');
+      const description = sanitizeDescription(parts[2] || '');
+      const amountStr = sanitizeInput(parts[3] || '');
       
       // Only process positive amounts (incomes)
       if (!amountStr.includes('+') && !isPositiveIncome(description)) {
@@ -103,7 +114,7 @@ const isPositiveIncome = (description: string): boolean => {
 };
 
 const extractClientFromDescription = (description: string): { client: string; category: "full-time" | "one-time" } => {
-  const desc = description.toUpperCase();
+  const desc = sanitizeInput(description.toUpperCase());
   
   // Check for full-time job indicators
   const fullTimeIndicators = ['OIP', 'UPWORK', 'SALARY', 'PLATA'];
@@ -125,15 +136,15 @@ const extractClientFromDescription = (description: string): { client: string; ca
   }
   // Pattern 3: Look for person names (common Serbian names)
   else if (desc.includes('KRISTINA SAVIC') || desc.includes('KRISTINA')) {
-    client = "Kristina Savic";
+    client = sanitizeClientName("Kristina Savic");
     category = "one-time";
   }
   else if (desc.includes('GORAN')) {
-    client = "Goran";
+    client = sanitizeClientName("Goran");
     category = "one-time";
   }
   else if (desc.includes('MOHAMAD') || desc.includes('MOHAMMAD')) {
-    client = "Mohamad";
+    client = sanitizeClientName("Mohamad");
     category = "one-time";
   }
   // Pattern 4: Look for other common patterns
@@ -150,7 +161,7 @@ const extractClientFromDescription = (description: string): { client: string; ca
         .trim();
       
       if (cleanName && cleanName.length > 2) {
-        client = cleanName;
+        client = sanitizeClientName(cleanName);
         category = "one-time";
       }
     }
@@ -167,7 +178,7 @@ const extractClientFromDescription = (description: string): { client: string; ca
         .trim();
       
       if (cleanName && cleanName.length > 2) {
-        client = cleanName;
+        client = sanitizeClientName(cleanName);
         category = "one-time";
       }
     }
@@ -177,14 +188,13 @@ const extractClientFromDescription = (description: string): { client: string; ca
 };
 
 const parseIncomeRow = (dateStr: string, description: string, amountStr: string): ParsedIncome | null => {
-  // Parse date from DD.MM.YYYY format
-  const dateParts = dateStr.split('.');
-  if (dateParts.length !== 3) return null;
+  // Validate date format
+  if (!validateDate(dateStr)) {
+    return null;
+  }
   
-  const day = parseInt(dateParts[0]);
-  const month = parseInt(dateParts[1]) - 1;
-  const year = parseInt(dateParts[2]);
-  const date = new Date(year, month, day);
+  const [day, month, year] = dateStr.split('.').map(Number);
+  const date = new Date(year, month - 1, day);
   
   if (isNaN(date.getTime())) return null;
   
@@ -203,19 +213,25 @@ const parseIncomeRow = (dateStr: string, description: string, amountStr: string)
   
   // Extract numeric value
   const numericPart = cleanAmount.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
-  const amount = Math.abs(parseFloat(numericPart));
   
-  if (isNaN(amount) || amount <= 0) return null;
-  
-  // Extract client and category using improved logic
-  const { client, category } = extractClientFromDescription(description);
-  
-  return {
-    amount,
-    currency,
-    client,
-    date: date.toISOString().split('T')[0],
-    category,
-    description: description.trim()
-  };
+  try {
+    const amount = Math.abs(validateAmount(numericPart));
+    
+    if (amount <= 0) return null;
+    
+    // Extract client and category using improved logic
+    const { client, category } = extractClientFromDescription(description);
+    
+    return {
+      amount,
+      currency,
+      client,
+      date: date.toISOString().split('T')[0],
+      category,
+      description: sanitizeDescription(description.trim())
+    };
+  } catch (error) {
+    console.warn('Failed to validate amount:', error);
+    return null;
+  }
 };

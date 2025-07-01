@@ -52,7 +52,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
       clientId,
       date,
       category,
-      description,
+      description: description.trim() || undefined, // Make optional
     });
 
     if (!initialData) {
@@ -83,7 +83,9 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
       <CardContent className="space-y-6">
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">Amount</Label>
+            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
+              Amount <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="amount"
               type="number"
@@ -97,7 +99,9 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">Currency</Label>
+            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
+              Currency <span className="text-red-500">*</span>
+            </Label>
             <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
@@ -111,7 +115,9 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client" className="text-sm font-medium text-gray-700">Client</Label>
+            <Label htmlFor="client" className="text-sm font-medium text-gray-700">
+              Client <span className="text-red-500">*</span>
+            </Label>
             <Select value={clientId} onValueChange={setClientId}>
               <SelectTrigger className="h-10">
                 <SelectValue placeholder="Select client" />
@@ -127,7 +133,9 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium text-gray-700">Date</Label>
+            <Label htmlFor="date" className="text-sm font-medium text-gray-700">
+              Date <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="date"
               type="date"
@@ -139,7 +147,9 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm font-medium text-gray-700">Category</Label>
+            <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+              Category <span className="text-red-500">*</span>
+            </Label>
             <Select value={category} onValueChange={(value: "full-time" | "one-time") => setCategory(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
@@ -152,7 +162,9 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
           </div>
 
           <div className="md:col-span-2 lg:col-span-5 space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">Description</Label>
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              Description <span className="text-xs text-gray-500">(optional)</span>
+            </Label>
             <Input
               id="description"
               value={description}

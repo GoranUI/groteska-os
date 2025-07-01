@@ -7,7 +7,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 const Header = () => {
   const { user, profile, signOut } = useAuth();
 
-  const displayName = profile?.full_name || user?.email || 'User';
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4">

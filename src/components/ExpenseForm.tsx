@@ -38,12 +38,12 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !description || !date) return;
+    if (!amount || !date) return; // Removed description requirement
 
     onSubmit({
       amount: parseFloat(amount),
       currency,
-      description,
+      description: description.trim() || `${category} expense`, // Provide default if empty
       category,
       date,
     });
@@ -76,7 +76,9 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount" className="text-sm font-medium text-gray-700">Amount</Label>
+              <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
+                Amount <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="amount"
                 type="number"
@@ -90,7 +92,9 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currency" className="text-sm font-medium text-gray-700">Currency</Label>
+              <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
+                Currency <span className="text-red-500">*</span>
+              </Label>
               <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
                 <SelectTrigger className="h-10">
                   <SelectValue />
@@ -104,7 +108,9 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-medium text-gray-700">Category</Label>
+              <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+                Category <span className="text-red-500">*</span>
+              </Label>
               <Select value={category} onValueChange={(value: any) => setCategory(value)}>
                 <SelectTrigger className="h-10">
                   <SelectValue />
@@ -125,7 +131,9 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date" className="text-sm font-medium text-gray-700">Date</Label>
+              <Label htmlFor="date" className="text-sm font-medium text-gray-700">
+                Date <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="date"
                 type="date"
@@ -138,14 +146,15 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">Description</Label>
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              Description <span className="text-xs text-gray-500">(optional)</span>
+            </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your expense..."
+              placeholder="Describe your expense (optional)..."
               className="min-h-[80px]"
-              required
             />
           </div>
 
