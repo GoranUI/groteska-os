@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Expense } from '@/types';
@@ -20,18 +19,39 @@ export const useExpenseData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchExpenses = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-    const { data: expensesData, error: expensesError } = await supabase
-      .from('expenses')
-      .select('*')
-      .order('date', { ascending: false });
+    try {
+      setLoading(true);
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
 
-    if (expensesError) throw expensesError;
-    setExpenses((expensesData || []).map(transformExpense));
-  }, [user]);
+      if (expensesError) throw expensesError;
+      setExpenses((expensesData || []).map(transformExpense));
+    } catch (error: any) {
+      toast({
+        title: "Error fetching expenses",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  // Auto-fetch expenses when user changes
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
   const addExpense = useCallback(async (expense: Omit<Expense, 'id'>) => {
     if (!user) return;
@@ -156,6 +176,7 @@ export const useExpenseData = () => {
 
   return {
     expenses,
+    loading,
     fetchExpenses,
     addExpense,
     addExpenseBulk,

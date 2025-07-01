@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Income } from '@/types';
@@ -20,18 +19,39 @@ export const useIncomeData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [incomes, setIncomes] = useState<Income[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchIncomes = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-    const { data: incomesData, error: incomesError } = await supabase
-      .from('incomes')
-      .select('*')
-      .order('date', { ascending: false });
+    try {
+      setLoading(true);
+      const { data: incomesData, error: incomesError } = await supabase
+        .from('incomes')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
 
-    if (incomesError) throw incomesError;
-    setIncomes((incomesData || []).map(transformIncome));
-  }, [user]);
+      if (incomesError) throw incomesError;
+      setIncomes((incomesData || []).map(transformIncome));
+    } catch (error: any) {
+      toast({
+        title: "Error fetching incomes",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  // Auto-fetch incomes when user changes
+  useEffect(() => {
+    fetchIncomes();
+  }, [fetchIncomes]);
 
   const addIncome = useCallback(async (income: Omit<Income, 'id'>) => {
     if (!user) return;
@@ -130,6 +150,7 @@ export const useIncomeData = () => {
 
   return {
     incomes,
+    loading,
     fetchIncomes,
     addIncome,
     addIncomeBulk,

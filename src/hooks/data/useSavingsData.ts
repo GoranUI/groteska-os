@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Savings } from '@/types';
@@ -18,18 +17,39 @@ export const useSavingsData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [savings, setSavings] = useState<Savings[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchSavings = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-    const { data: savingsData, error: savingsError } = await supabase
-      .from('savings')
-      .select('*')
-      .order('date', { ascending: false });
+    try {
+      setLoading(true);
+      const { data: savingsData, error: savingsError } = await supabase
+        .from('savings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
 
-    if (savingsError) throw savingsError;
-    setSavings((savingsData || []).map(transformSaving));
-  }, [user]);
+      if (savingsError) throw savingsError;
+      setSavings((savingsData || []).map(transformSaving));
+    } catch (error: any) {
+      toast({
+        title: "Error fetching savings",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  // Auto-fetch savings when user changes
+  useEffect(() => {
+    fetchSavings();
+  }, [fetchSavings]);
 
   const addSavings = useCallback(async (saving: Omit<Savings, 'id'>) => {
     if (!user) return;
@@ -104,6 +124,7 @@ export const useSavingsData = () => {
 
   return {
     savings,
+    loading,
     fetchSavings,
     addSavings,
     updateSavings,
