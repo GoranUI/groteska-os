@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit3 } from "lucide-react";
 import { Client } from "@/types";
+import { sanitizeInput, sanitizeClientName } from "@/utils/securityUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ClientFormProps {
   onSubmit: (data: Omit<Client, 'id' | 'createdAt'>) => void;
@@ -15,6 +17,7 @@ interface ClientFormProps {
 }
 
 export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps) => {
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -37,25 +40,91 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
     }
   }, [initialData]);
 
+  const validateEmail = (email: string): boolean => {
+    if (!email) return true; // Email is optional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateInputs = () => {
+    // Validate required name
+    if (!name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Client name is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validate email format if provided
+    if (email && !validateEmail(email)) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
-
-    onSubmit({
-      name,
-      email: email || undefined,
-      company: company || undefined,
-      address: address || undefined,
-      status,
-    });
-
-    if (!initialData) {
-      setName("");
-      setEmail("");
-      setCompany("");
-      setAddress("");
-      setStatus("active");
+    
+    if (!validateInputs()) {
+      return;
     }
+
+    try {
+      const sanitizedName = sanitizeClientName(name);
+      const sanitizedEmail = email ? sanitizeInput(email) : undefined;
+      const sanitizedCompany = company ? sanitizeInput(company) : undefined;
+      const sanitizedAddress = address ? sanitizeInput(address) : undefined;
+
+      onSubmit({
+        name: sanitizedName,
+        email: sanitizedEmail,
+        company: sanitizedCompany,
+        address: sanitizedAddress,
+        status,
+      });
+
+      if (!initialData) {
+        setName("");
+        setEmail("");
+        setCompany("");
+        setAddress("");
+        setStatus("active");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to process client data. Please check your inputs.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    setName(sanitizedValue);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    setEmail(sanitizedValue);
+  };
+
+  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    setCompany(sanitizedValue);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    setAddress(sanitizedValue);
   };
 
   return (
@@ -84,9 +153,10 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
               placeholder="Client name"
               className="h-10"
+              maxLength={100}
               required
             />
           </div>
@@ -97,9 +167,10 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="client@email.com"
               className="h-10"
+              maxLength={254}
             />
           </div>
 
@@ -108,9 +179,10 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
             <Input
               id="company"
               value={company}
-              onChange={(e) => setCompany(e.target.value)}
+              onChange={handleCompanyChange}
               placeholder="Company name"
               className="h-10"
+              maxLength={200}
             />
           </div>
 
@@ -119,9 +191,10 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
             <Input
               id="address"
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={handleAddressChange}
               placeholder="Client address"
               className="h-10"
+              maxLength={500}
             />
           </div>
 

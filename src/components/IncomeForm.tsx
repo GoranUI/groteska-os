@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit3 } from "lucide-react";
 import { Client, Income } from "@/types";
+import { sanitizeInput, sanitizeDescription, validateAmount } from "@/utils/securityUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface IncomeFormProps {
   clients: Client[];
@@ -16,6 +18,7 @@ interface IncomeFormProps {
 }
 
 export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeFormProps) => {
+  const { toast } = useToast();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [clientId, setClientId] = useState("");
@@ -42,30 +45,114 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
     }
   }, [initialData]);
 
+  const validateInputs = () => {
+    // Validate amount
+    if (!amount) {
+      toast({
+        title: "Validation Error",
+        description: "Amount is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const validatedAmount = validateAmount(amount);
+      if (validatedAmount <= 0) {
+        toast({
+          title: "Validation Error",
+          description: "Amount must be greater than zero",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Validation Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validate client selection
+    if (!clientId) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a client",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validate date
+    if (!date) {
+      toast({
+        title: "Validation Error",
+        description: "Date is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const selectedDate = new Date(date);
+    const futureLimit = new Date();
+    futureLimit.setFullYear(futureLimit.getFullYear() + 1);
+    
+    if (selectedDate > futureLimit) {
+      toast({
+        title: "Validation Error",
+        description: "Date cannot be more than 1 year in the future",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !clientId || !date) return;
-
-    const selectedClient = clients.find(c => c.id === clientId);
     
-    onSubmit({
-      amount: parseFloat(amount),
-      currency,
-      client: selectedClient?.name || "",
-      clientId,
-      date,
-      category,
-      status,
-      description: description.trim() || undefined,
-    });
-
-    if (!initialData) {
-      setAmount("");
-      setClientId("");
-      setDate("");
-      setStatus("pending");
-      setDescription("");
+    if (!validateInputs()) {
+      return;
     }
+
+    try {
+      const selectedClient = clients.find(c => c.id === clientId);
+      const validatedAmount = validateAmount(amount);
+      const sanitizedDescription = description.trim() ? sanitizeDescription(description) : undefined;
+      
+      onSubmit({
+        amount: validatedAmount,
+        currency,
+        client: selectedClient?.name || "",
+        clientId,
+        date,
+        category,
+        status,
+        description: sanitizedDescription,
+      });
+
+      if (!initialData) {
+        setAmount("");
+        setClientId("");
+        setDate("");
+        setStatus("pending");
+        setDescription("");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to process income data. Please check your inputs.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    setDescription(sanitizedValue);
   };
 
   return (
@@ -95,6 +182,8 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
               id="amount"
               type="number"
               step="0.01"
+              min="0"
+              max="1000000000"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
@@ -188,9 +277,10 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
             <Input
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               placeholder="Optional description"
               className="h-10"
+              maxLength={1000}
             />
           </div>
 

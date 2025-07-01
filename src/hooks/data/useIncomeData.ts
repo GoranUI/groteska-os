@@ -40,9 +40,10 @@ export const useIncomeData = () => {
       if (incomesError) throw incomesError;
       setIncomes((incomesData || []).map(transformIncome));
     } catch (error: any) {
+      console.error('Error fetching incomes:', error);
       toast({
-        title: "Error fetching incomes",
-        description: error.message,
+        title: "Error",
+        description: "Failed to load income data. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -58,96 +59,104 @@ export const useIncomeData = () => {
   const addIncome = useCallback(async (income: Omit<Income, 'id'>) => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('incomes')
-      .insert([{ ...income, user_id: user.id }])
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('incomes')
+        .insert([{ ...income, user_id: user.id }])
+        .select()
+        .single();
 
-    if (error) {
+      if (error) throw error;
+
+      setIncomes(prev => [transformIncome(data), ...prev]);
       toast({
-        title: "Error adding income",
-        description: error.message,
+        title: "Success",
+        description: "Income has been added successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error adding income:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add income. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-
-    setIncomes(prev => [transformIncome(data), ...prev]);
-    toast({
-      title: "Income added",
-      description: "Income has been added successfully.",
-    });
   }, [user, toast]);
 
   const addIncomeBulk = useCallback(async (incomes: Omit<Income, 'id'>[]) => {
     if (!user) return { success: 0, failed: 0 };
 
-    const dbIncomes = incomes.map(income => ({
-      ...income,
-      user_id: user.id
-    }));
+    try {
+      const dbIncomes = incomes.map(income => ({
+        ...income,
+        user_id: user.id
+      }));
 
-    const { data, error } = await supabase
-      .from('incomes')
-      .insert(dbIncomes)
-      .select();
+      const { data, error } = await supabase
+        .from('incomes')
+        .insert(dbIncomes)
+        .select();
 
-    if (error) {
+      if (error) throw error;
+
+      const newIncomes = (data || []).map(transformIncome);
+      setIncomes(prev => [...newIncomes, ...prev]);
+
+      return { success: data?.length || 0, failed: incomes.length - (data?.length || 0) };
+    } catch (error: any) {
       console.error('Bulk insert error:', error);
       return { success: 0, failed: incomes.length };
     }
-
-    const newIncomes = (data || []).map(transformIncome);
-    setIncomes(prev => [...newIncomes, ...prev]);
-
-    return { success: data?.length || 0, failed: incomes.length - (data?.length || 0) };
   }, [user]);
 
   const updateIncome = useCallback(async (id: string, updates: Partial<Income>) => {
-    const { data, error } = await supabase
-      .from('incomes')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('incomes')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (error) {
+      if (error) throw error;
+
+      setIncomes(prev => prev.map(income => income.id === id ? transformIncome(data) : income));
       toast({
-        title: "Error updating income",
-        description: error.message,
+        title: "Success",
+        description: "Income has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error updating income:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update income. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-
-    setIncomes(prev => prev.map(income => income.id === id ? transformIncome(data) : income));
-    toast({
-      title: "Income updated",
-      description: "Income has been updated successfully.",
-    });
   }, [toast]);
 
   const deleteIncome = useCallback(async (id: string) => {
-    const { error } = await supabase
-      .from('incomes')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('incomes')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
+      if (error) throw error;
+
+      setIncomes(prev => prev.filter(income => income.id !== id));
       toast({
-        title: "Error deleting income",
-        description: error.message,
+        title: "Success",
+        description: "Income has been deleted successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error deleting income:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete income. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-
-    setIncomes(prev => prev.filter(income => income.id !== id));
-    toast({
-      title: "Income deleted",
-      description: "Income has been deleted successfully.",
-    });
   }, [toast]);
 
   return {

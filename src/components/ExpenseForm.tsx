@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit3 } from "lucide-react";
 import { Expense } from "@/types";
+import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExpenseFormProps {
   onSubmit: (data: Omit<Expense, 'id'>) => void;
@@ -16,6 +18,7 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProps) => {
+  const { toast } = useToast();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
@@ -36,23 +39,100 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
     }
   }, [initialData]);
 
+  const validateInputs = () => {
+    // Validate amount
+    if (!amount) {
+      toast({
+        title: "Validation Error",
+        description: "Amount is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const validatedAmount = validateAmount(amount);
+      if (validatedAmount <= 0) {
+        toast({
+          title: "Validation Error",
+          description: "Amount must be greater than zero",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Validation Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validate date
+    if (!date) {
+      toast({
+        title: "Validation Error",
+        description: "Date is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      toast({
+        title: "Validation Error",
+        description: "Expense date cannot be in the future",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !date) return; // Removed description requirement
-
-    onSubmit({
-      amount: parseFloat(amount),
-      currency,
-      description: description.trim() || `${category} expense`, // Provide default if empty
-      category,
-      date,
-    });
-
-    if (!initialData) {
-      setAmount("");
-      setDescription("");
-      setDate("");
+    
+    if (!validateInputs()) {
+      return;
     }
+
+    try {
+      const validatedAmount = validateAmount(amount);
+      const sanitizedDescription = description.trim() ? 
+        sanitizeDescription(description) : 
+        `${category} expense`;
+
+      onSubmit({
+        amount: validatedAmount,
+        currency,
+        description: sanitizedDescription,
+        category,
+        date,
+      });
+
+      if (!initialData) {
+        setAmount("");
+        setDescription("");
+        setDate("");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to process expense data. Please check your inputs.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const sanitizedValue = sanitizeDescription(e.target.value);
+    setDescription(sanitizedValue);
   };
 
   return (
@@ -83,6 +163,8 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
                 id="amount"
                 type="number"
                 step="0.01"
+                min="0"
+                max="1000000000"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
@@ -152,9 +234,10 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               placeholder="Describe your expense (optional)..."
               className="min-h-[80px]"
+              maxLength={1000}
             />
           </div>
 
