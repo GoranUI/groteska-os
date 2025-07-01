@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Income } from "@/hooks/useFinancialData";
+import { Income } from "@/types";
 import { Plus, DollarSign } from "lucide-react";
 
 interface IncomeTrackerProps {

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Expense } from "@/hooks/useFinancialData";
+import { Expense } from "@/types";
 import { Plus, Upload, Receipt } from "lucide-react";
 
 interface ExpenseTrackerProps {

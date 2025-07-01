@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, TrendingDown, Users, Calendar, Receipt, DollarSign } from "lucide-react";
-import { Income, Expense } from "@/hooks/useFinancialData";
+import { Income, Expense } from "@/types";
 
 interface DashboardProps {
   incomes: Income[];
