@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, TrendingDown, Users, Calendar } from "lucide-react";
@@ -49,96 +50,128 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Dashboard</h1>
+        <p className="text-gray-600">Overview of your financial performance</p>
+      </div>
+
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-orange-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Income
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {Object.values(totalIncomeByCurrency).reduce((a, b) => a + b, 0).toFixed(0)}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600">Total Income</p>
+                <p className="text-3xl font-semibold text-gray-900">
+                  {Object.values(totalIncomeByCurrency).reduce((a, b) => a + b, 0).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Across all currencies</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-xl">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+              </div>
             </div>
-            <p className="text-xs text-gray-500">Across all currencies</p>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Expenses
-            </CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {Object.values(totalExpenseByCurrency).reduce((a, b) => a + b, 0).toFixed(0)}
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600">Total Expenses</p>
+                <p className="text-3xl font-semibold text-gray-900">
+                  {Object.values(totalExpenseByCurrency).reduce((a, b) => a + b, 0).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Across all currencies</p>
+              </div>
+              <div className="p-3 bg-red-50 rounded-xl">
+                <TrendingDown className="h-6 w-6 text-red-600" />
+              </div>
             </div>
-            <p className="text-xs text-gray-500">Across all currencies</p>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Active Clients
-            </CardTitle>
-            <Users className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {new Set(incomes.map(i => i.client)).size}
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600">Active Clients</p>
+                <p className="text-3xl font-semibold text-gray-900">
+                  {new Set(incomes.map(i => i.client)).size}
+                </p>
+                <p className="text-sm text-gray-500">Unique clients</p>
+              </div>
+              <div className="p-3 bg-orange-50 rounded-xl">
+                <Users className="h-6 w-6 text-orange-600" />
+              </div>
             </div>
-            <p className="text-xs text-gray-500">Unique clients</p>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              This Month
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {incomes.filter(i => new Date(i.date).getMonth() === new Date().getMonth()).length}
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600">This Month</p>
+                <p className="text-3xl font-semibold text-gray-900">
+                  {incomes.filter(i => new Date(i.date).getMonth() === new Date().getMonth()).length}
+                </p>
+                <p className="text-sm text-gray-500">Income records</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-xl">
+                <Calendar className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
-            <p className="text-xs text-gray-500">Income records</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-orange-200">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Income vs Expenses by Currency</CardTitle>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Income vs Expenses</CardTitle>
+            <p className="text-sm text-gray-600">Comparison by currency</p>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={currencyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="currency" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="income" fill="#22c55e" name="Income" />
-                <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+          <CardContent className="pb-6">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={currencyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="currency" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 12 }}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 12 }}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                />
+                <Bar dataKey="income" fill="#10b981" name="Income" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Expense Breakdown</CardTitle>
+        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Expense Breakdown</CardTitle>
+            <p className="text-sm text-gray-600">Distribution by category</p>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="pb-6">
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={expensePieData}
@@ -146,7 +179,7 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -154,7 +187,14 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -162,28 +202,32 @@ const Dashboard = ({ incomes, expenses }: DashboardProps) => {
       </div>
 
       {/* Recent Transactions */}
-      <Card className="border-orange-200">
-        <CardHeader>
-          <CardTitle className="text-gray-900">Recent Transactions</CardTitle>
+      <Card className="border-0 shadow-sm ring-1 ring-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold text-gray-900">Recent Transactions</CardTitle>
+          <p className="text-sm text-gray-600">Latest income and expense entries</p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-6">
           <div className="space-y-4">
             {recentTransactions.map((transaction) => (
-              <div key={`${transaction.type}-${transaction.id}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
+              <div 
+                key={`${transaction.type}-${transaction.id}`} 
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={`w-3 h-3 rounded-full ${transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
                   <div>
                     <p className="font-medium text-gray-900">
                       {'client' in transaction ? transaction.client : transaction.description}
                     </p>
-                    <p className="text-sm text-gray-500">{transaction.date}</p>
+                    <p className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}{transaction.amount} {transaction.currency}
+                  <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                    {transaction.type === 'income' ? '+' : '-'}{transaction.amount.toLocaleString()} {transaction.currency}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     {'category' in transaction && transaction.category}
                   </p>
                 </div>
