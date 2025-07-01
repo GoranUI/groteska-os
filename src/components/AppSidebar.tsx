@@ -26,23 +26,23 @@ export function AppSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar className="border-r border-gray-200">
-      <SidebarHeader className="p-6">
+    <Sidebar className="bg-gray-900 border-r border-gray-800">
+      <SidebarHeader className="p-6 border-b border-gray-800">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-orange-100 rounded-xl">
-            <BarChart3 className="h-6 w-6 text-orange-600" />
+          <div className="p-2 bg-orange-500 rounded-xl">
+            <BarChart3 className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Financial Tracker</h2>
-            <p className="text-xs text-gray-600">Multi-currency management</p>
+            <h2 className="text-lg font-semibold text-white">Financial Tracker</h2>
+            <p className="text-xs text-gray-400">Multi-currency management</p>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="bg-gray-900">
         <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
+          <SidebarGroupContent className="p-4">
+            <SidebarMenu className="space-y-2">
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton asChild>
@@ -50,14 +50,14 @@ export function AppSidebar() {
                       to={item.href}
                       end={item.href === "/"}
                       className={({ isActive }) =>
-                        `flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        `flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 ${
                           isActive
-                            ? "bg-orange-50 text-orange-600 border-r-2 border-orange-600"
-                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                            : "text-gray-300 hover:bg-gray-800 hover:text-white"
                         }`
                       }
                     >
-                      <item.icon className="mr-3 h-5 w-5" />
+                      <item.icon className="mr-4 h-5 w-5" />
                       {item.name}
                     </NavLink>
                   </SidebarMenuButton>
