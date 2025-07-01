@@ -5,6 +5,7 @@ import { SavingsForm } from "@/components/SavingsForm";
 import { SavingsList } from "@/components/SavingsList";
 import SavingsTracker from "@/components/SavingsTracker";
 import { Loader2 } from "lucide-react";
+import { ExportButton } from "@/components/ExportButton";
 
 const SavingsPage = () => {
   const { savings, addSavings, updateSavings, deleteSavings, convertToRSD, loading } = useSupabaseData();
@@ -19,10 +20,13 @@ const SavingsPage = () => {
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Savings Tracker</h1>
-        <p className="text-gray-600">Track your savings deposits and withdrawals</p>
+    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900">Savings Tracker</h1>
+          <p className="text-gray-600">Track your savings deposits and withdrawals</p>
+        </div>
+        <ExportButton savings={savings} type="savings" />
       </div>
 
       <SavingsTracker savings={savings} convertToRSD={convertToRSD} />

@@ -6,6 +6,7 @@ import { ExpenseTable } from "@/components/ExpenseTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { ImportExpenses } from "@/components/import/ImportExpenses";
+import { ExportButton } from "@/components/ExportButton";
 
 const ExpensesPage = () => {
   const { expenses, addExpense, updateExpense, deleteExpense, loading } = useSupabaseData();
@@ -20,10 +21,13 @@ const ExpensesPage = () => {
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Expense Tracker</h1>
-        <p className="text-gray-600">Track and categorize your expenses</p>
+    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900">Expense Tracker</h1>
+          <p className="text-gray-600">Track and categorize your expenses</p>
+        </div>
+        <ExportButton expenses={expenses} type="expenses" />
       </div>
 
       <Tabs defaultValue="manual" className="w-full">
@@ -32,7 +36,7 @@ const ExpensesPage = () => {
           <TabsTrigger value="import">Import Expenses</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="manual" className="space-y-8">
+        <TabsContent value="manual" className="space-y-6 lg:space-y-8">
           <ExpenseForm
             onSubmit={editingExpense ? 
               (data) => {

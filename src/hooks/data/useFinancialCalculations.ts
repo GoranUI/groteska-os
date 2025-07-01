@@ -1,14 +1,15 @@
 
 import { useCallback } from 'react';
 import { Income, Expense } from '@/types';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
 
 export const useFinancialCalculations = () => {
-  const exchangeRates = { USD: 1, EUR: 1.1, RSD: 0.009 };
+  const { rates } = useExchangeRates();
 
   const convertToRSD = useCallback((amount: number, currency: "USD" | "EUR" | "RSD") => {
     if (currency === "RSD") return amount;
-    return amount / exchangeRates[currency];
-  }, []);
+    return amount / rates[currency];
+  }, [rates]);
 
   const getTotalBalance = useCallback((incomes: Income[], expenses: Expense[]) => {
     const balances = { USD: 0, EUR: 0, RSD: 0 };
@@ -37,5 +38,6 @@ export const useFinancialCalculations = () => {
     convertToRSD,
     getTotalBalance,
     getTotalInRSD,
+    exchangeRates: rates,
   };
 };
