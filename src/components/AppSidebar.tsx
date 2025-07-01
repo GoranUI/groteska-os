@@ -34,7 +34,7 @@ export function AppSidebar() {
     <Sidebar className="bg-gray-50/50 border-none shadow-sm">
       <SidebarHeader className="p-6 border-none">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="p-2 bg-blue-600 rounded-lg">
+          <div className="p-2 bg-black-600 rounded-lg">
             <BarChart3 className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -66,7 +66,7 @@ export function AppSidebar() {
                       className={({ isActive }) =>
                         `flex items-center px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                           isActive
-                            ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+                            ? "bg-black-50 text-black-700 border-r-2 border-black-600"
                             : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         }`
                       }
@@ -92,7 +92,7 @@ export function AppSidebar() {
                   className={({ isActive }) =>
                     `flex items-center px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                       isActive
-                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+                        ? "bg-black-50 text-black-700 border-r-2 border-black-600"
                         : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     }`
                   }
