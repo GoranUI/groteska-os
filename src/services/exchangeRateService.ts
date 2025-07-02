@@ -16,7 +16,7 @@ interface ExchangeRateResponse {
 }
 
 const SUPABASE_FUNCTION_URL = 'https://sgzgtnbwzmnozdtofyez.supabase.co/functions/v1/get-exchange-rates';
-const FALLBACK_RATES: ExchangeRates = { USD: 110, EUR: 120, RSD: 1 };
+const FALLBACK_RATES: ExchangeRates = { USD: 99.32, EUR: 117.16, RSD: 1 };
 const CACHE_KEY = 'exchange_rates_cache';
 const LAST_FETCH_KEY = 'exchange_rates_last_fetch';
 
