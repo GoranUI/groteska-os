@@ -31,8 +31,12 @@ export class ExchangeRateService {
     // Try to load from localStorage first
     this.loadFromLocalStorage();
     
-    // Return cached rates if they're still fresh
-    if (this.cachedRates && (now - this.lastFetchTime) < this.CACHE_DURATION) {
+    // For debugging: force fresh fetch by reducing cache duration temporarily
+    const debugMode = true;
+    const cacheExpired = debugMode || (now - this.lastFetchTime) > this.CACHE_DURATION;
+    
+    // Return cached rates if they're still fresh (unless in debug mode)
+    if (this.cachedRates && !cacheExpired) {
       console.log('Using cached exchange rates:', this.cachedRates);
       return this.cachedRates;
     }
