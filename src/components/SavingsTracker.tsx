@@ -2,19 +2,46 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Savings } from "@/types";
-import { PiggyBank, TrendingUp, TrendingDown, DollarSign, RefreshCw, Info } from "lucide-react";
+import { PiggyBank, TrendingUp, TrendingDown, DollarSign, RefreshCw, Info, Edit3 } from "lucide-react";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { format } from "date-fns";
 
 interface SavingsTrackerProps {
   savings: Savings[];
   convertToRSD: (amount: number, currency: "USD" | "EUR" | "RSD") => number;
+  addSavings?: (saving: Omit<Savings, 'id'>) => void;
 }
 
-const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
+const SavingsTracker = ({ savings, convertToRSD, addSavings }: SavingsTrackerProps) => {
   const { rates, loading: ratesLoading, error: ratesError, lastUpdated, forceRefresh } = useExchangeRates();
+  const [rsdDialogOpen, setRsdDialogOpen] = useState(false);
+  const [rsdCurrentAmount, setRsdCurrentAmount] = useState('');
+
+  const handleRsdUpdate = () => {
+    if (!addSavings || !rsdCurrentAmount) return;
+    
+    const currentRsdBalance = totals.RSD;
+    const newAmount = parseFloat(rsdCurrentAmount);
+    const difference = newAmount - currentRsdBalance;
+    
+    if (difference !== 0) {
+      addSavings({
+        amount: Math.abs(difference),
+        currency: 'RSD',
+        date: new Date().toISOString().split('T')[0],
+        type: difference > 0 ? 'deposit' : 'withdrawal',
+        description: `Balance adjustment to ${newAmount.toLocaleString()} RSD`
+      });
+    }
+    
+    setRsdDialogOpen(false);
+    setRsdCurrentAmount('');
+  };
   
   // Calculate totals by currency
   const totals = savings.reduce(
@@ -164,8 +191,57 @@ const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
                       {amount.toLocaleString()} {currency}
                     </p>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {convertToRSD(amount, currency as "USD" | "EUR" | "RSD").toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-gray-500">
+                      {convertToRSD(amount, currency as "USD" | "EUR" | "RSD").toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD
+                    </div>
+                    {currency === 'RSD' && addSavings && (
+                      <Dialog open={rsdDialogOpen} onOpenChange={setRsdDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost-edit"
+                            size="action-icon"
+                            title="Quick update RSD balance"
+                            onClick={() => setRsdCurrentAmount(amount.toString())}
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Update RSD Balance</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="rsd-amount">Current RSD Amount</Label>
+                              <Input
+                                id="rsd-amount"
+                                type="number"
+                                placeholder="Enter current RSD balance"
+                                value={rsdCurrentAmount}
+                                onChange={(e) => setRsdCurrentAmount(e.target.value)}
+                                className="mt-1"
+                              />
+                              <p className="text-sm text-gray-500 mt-1">
+                                Current balance: {amount.toLocaleString()} RSD
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button onClick={handleRsdUpdate} className="flex-1">
+                                Update Balance
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setRsdDialogOpen(false)}
+                                className="flex-1"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </div>
                 </div>
               </div>

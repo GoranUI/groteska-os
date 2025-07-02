@@ -324,18 +324,16 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) 
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <Button
-                              variant="ghost"
-                              size="sm"
+                              variant="ghost-edit"
+                              size="action-icon"
                               onClick={() => onEdit(expense)}
-                              className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="sm"
+                              variant="ghost-delete"
+                              size="action-icon"
                               onClick={() => onDelete(expense.id)}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

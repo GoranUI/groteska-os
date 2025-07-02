@@ -29,7 +29,7 @@ const SavingsPage = () => {
         <ExportButton savings={savings} type="savings" />
       </div>
 
-      <SavingsTracker savings={savings} convertToRSD={convertToRSD} />
+      <SavingsTracker savings={savings} convertToRSD={convertToRSD} addSavings={addSavings} />
 
       <SavingsForm
         onSubmit={editingSaving ? 
