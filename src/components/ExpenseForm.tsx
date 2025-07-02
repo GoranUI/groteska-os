@@ -131,8 +131,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const sanitizedValue = sanitizeDescription(e.target.value);
-    setDescription(sanitizedValue);
+    setDescription(e.target.value);
   };
 
   return (

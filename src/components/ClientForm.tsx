@@ -102,18 +102,15 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = sanitizeInput(e.target.value);
-    setName(sanitizedValue);
+    setName(e.target.value);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = sanitizeInput(e.target.value);
-    setEmail(sanitizedValue);
+    setEmail(e.target.value);
   };
 
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = sanitizeInput(e.target.value);
-    setCompany(sanitizedValue);
+    setCompany(e.target.value);
   };
 
 
