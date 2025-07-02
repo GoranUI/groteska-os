@@ -20,7 +20,7 @@ const ExpenseTracker = ({ expenses, onAddExpense }: ExpenseTrackerProps) => {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<"Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday">("Food");
+  const [category, setCategory] = useState<"Recurring" | "Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Cash Withdrawal" | "Medical/Health" | "Fees" | "Other">("Food");
   const [date, setDate] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -114,10 +114,17 @@ const ExpenseTracker = ({ expenses, onAddExpense }: ExpenseTrackerProps) => {
                   <SelectContent>
                     <SelectItem value="Recurring">Recurring</SelectItem>
                     <SelectItem value="Food">Food</SelectItem>
-                    <SelectItem value="Work Food">Work Food</SelectItem>
                     <SelectItem value="External Food">External Food</SelectItem>
                     <SelectItem value="Transport">Transport</SelectItem>
                     <SelectItem value="Holiday">Holiday</SelectItem>
+                    <SelectItem value="Utilities">Utilities</SelectItem>
+                    <SelectItem value="Software">Software</SelectItem>
+                    <SelectItem value="Marketing">Marketing</SelectItem>
+                    <SelectItem value="Office">Office</SelectItem>
+                    <SelectItem value="Cash Withdrawal">Cash Withdrawal</SelectItem>
+                    <SelectItem value="Medical/Health">Medical/Health</SelectItem>
+                    <SelectItem value="Fees">Fees</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

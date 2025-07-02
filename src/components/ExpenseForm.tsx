@@ -23,7 +23,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<"Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Other">("Food");
+  const [category, setCategory] = useState<"Recurring" | "Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Cash Withdrawal" | "Medical/Health" | "Fees" | "Other">("Food");
   const [date, setDate] = useState("");
   const [suggestedCategory, setSuggestedCategory] = useState<{category: string, confidence: 'high' | 'medium' | 'low'} | null>(null);
   const [hasUserOverridden, setHasUserOverridden] = useState(false);
@@ -250,7 +250,6 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
                 <SelectContent>
                   <SelectItem value="Recurring">Recurring</SelectItem>
                   <SelectItem value="Food">Food</SelectItem>
-                  <SelectItem value="Work Food">Work Food</SelectItem>
                   <SelectItem value="External Food">External Food</SelectItem>
                   <SelectItem value="Transport">Transport</SelectItem>
                   <SelectItem value="Holiday">Holiday</SelectItem>
@@ -258,6 +257,9 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
                   <SelectItem value="Software">Software</SelectItem>
                   <SelectItem value="Marketing">Marketing</SelectItem>
                   <SelectItem value="Office">Office</SelectItem>
+                  <SelectItem value="Cash Withdrawal">Cash Withdrawal</SelectItem>
+                  <SelectItem value="Medical/Health">Medical/Health</SelectItem>
+                  <SelectItem value="Fees">Fees</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>

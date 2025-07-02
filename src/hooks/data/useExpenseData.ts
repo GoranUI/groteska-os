@@ -9,7 +9,7 @@ const transformExpense = (dbExpense: any): Expense => ({
   amount: Number(dbExpense.amount),
   currency: dbExpense.currency as "USD" | "EUR" | "RSD",
   date: dbExpense.date,
-  category: dbExpense.category as "Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Other",
+  category: dbExpense.category as "Recurring" | "Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Cash Withdrawal" | "Medical/Health" | "Fees" | "Other",
   description: dbExpense.description,
   isRecurring: dbExpense.is_recurring,
   recurringFrequency: dbExpense.recurring_frequency as "weekly" | "monthly" | "yearly" | undefined,
