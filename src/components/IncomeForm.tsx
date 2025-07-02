@@ -5,10 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit3 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Plus, Edit3, Check, ChevronsUpDown, UserPlus } from "lucide-react";
 import { Client, Income } from "@/types";
-import { sanitizeInput, sanitizeDescription, validateAmount } from "@/utils/securityUtils";
+import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
 import { useToast } from "@/hooks/use-toast";
+import { useClientData } from "@/hooks/data/useClientData";
 
 interface IncomeFormProps {
   clients: Client[];
@@ -19,12 +23,18 @@ interface IncomeFormProps {
 
 export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeFormProps) => {
   const { toast } = useToast();
+  const { addClient } = useClientData();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [clientId, setClientId] = useState("");
   const [date, setDate] = useState("");
   const [category, setCategory] = useState<"full-time" | "one-time">("one-time");
   const [description, setDescription] = useState("");
+  const [clientSearch, setClientSearch] = useState("");
+  const [showClientPopover, setShowClientPopover] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientCompany, setNewClientCompany] = useState("");
 
   useEffect(() => {
     if (initialData) {
@@ -72,15 +82,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
       return false;
     }
 
-    // Validate client selection
-    if (!clientId) {
-      toast({
-        title: "Validation Error",
-        description: "Please select a client",
-        variant: "destructive",
-      });
-      return false;
-    }
+    // Client is optional now, so we skip this validation
 
     // Validate date
     if (!date) {
@@ -146,9 +148,50 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
     }
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = sanitizeInput(e.target.value);
-    setDescription(sanitizedValue);
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+  };
+
+  const filteredClients = clients.filter(client => 
+    client.status === "active" && 
+    client.name.toLowerCase().includes(clientSearch.toLowerCase())
+  );
+
+  const handleCreateClient = async () => {
+    if (!newClientName.trim()) {
+      toast({
+        title: "Error",
+        description: "Client name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await addClient({
+        name: newClientName.trim(),
+        email: newClientEmail.trim() || undefined,
+        company: newClientCompany.trim() || undefined,
+        status: "active",
+      });
+      
+      setNewClientName("");
+      setNewClientEmail("");
+      setNewClientCompany("");
+      setShowClientPopover(false);
+      setClientSearch("");
+      
+      toast({
+        title: "Success",
+        description: "Client created successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create client",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -206,20 +249,120 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
 
           <div className="space-y-2">
             <Label htmlFor="client" className="text-sm font-medium text-gray-700">
-              Client <span className="text-red-500">*</span>
+              Client <span className="text-xs text-gray-500">(optional)</span>
             </Label>
-            <Select value={clientId} onValueChange={setClientId}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Select client" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.filter(client => client.status === "active").map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={showClientPopover} onOpenChange={setShowClientPopover}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={showClientPopover}
+                  className="h-10 w-full justify-between"
+                >
+                  {clientId
+                    ? clients.find((client) => client.id === clientId)?.name
+                    : "Select client..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Search clients..." 
+                    value={clientSearch}
+                    onValueChange={setClientSearch}
+                  />
+                  <CommandList>
+                    <CommandEmpty>
+                      <div className="py-6 text-center text-sm">
+                        <p>No client found.</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => {
+                            setNewClientName(clientSearch);
+                            setClientSearch("");
+                          }}
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Add "{clientSearch}" as new client
+                        </Button>
+                      </div>
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {filteredClients.map((client) => (
+                        <CommandItem
+                          key={client.id}
+                          value={client.name}
+                          onSelect={() => {
+                            setClientId(client.id);
+                            setShowClientPopover(false);
+                            setClientSearch("");
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              clientId === client.id ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          <div className="flex flex-col">
+                            <span>{client.name}</span>
+                            {client.company && (
+                              <span className="text-xs text-gray-500">{client.company}</span>
+                            )}
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+                
+                {newClientName && (
+                  <div className="border-t p-4 space-y-3">
+                    <div className="font-medium text-sm">Add New Client</div>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Client name"
+                        value={newClientName}
+                        onChange={(e) => setNewClientName(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Email (optional)"
+                        value={newClientEmail}
+                        onChange={(e) => setNewClientEmail(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Company (optional)"
+                        value={newClientCompany}
+                        onChange={(e) => setNewClientCompany(e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleCreateClient}
+                          className="flex-1"
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Create Client
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setNewClientName("");
+                            setNewClientEmail("");
+                            setNewClientCompany("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
@@ -255,12 +398,12 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
             <Label htmlFor="description" className="text-sm font-medium text-gray-700">
               Description <span className="text-xs text-gray-500">(optional)</span>
             </Label>
-            <Input
+            <Textarea
               id="description"
               value={description}
               onChange={handleDescriptionChange}
               placeholder="Optional description"
-              className="h-10"
+              className="min-h-[80px]"
               maxLength={1000}
             />
           </div>
