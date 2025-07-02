@@ -68,7 +68,12 @@ export const useSubTaskData = () => {
       const { data, error } = await supabase
         .from('sub_tasks')
         .insert([{ 
-          ...subTask,
+          name: subTask.name,
+          description: subTask.description,
+          amount: subTask.amount,
+          hours: subTask.hours,
+          currency: subTask.currency,
+          status: subTask.status,
           project_id: subTask.projectId,
           due_date: subTask.dueDate,
           completed_at: subTask.completedAt,
@@ -98,14 +103,18 @@ export const useSubTaskData = () => {
 
   const updateSubTask = useCallback(async (id: string, updates: Partial<SubTask>) => {
     try {
-      const dbUpdates = {
-        ...updates,
-        project_id: updates.projectId,
-        due_date: updates.dueDate,
-        completed_at: updates.completedAt,
-        invoice_id: updates.invoiceId,
-        income_id: updates.incomeId,
-      };
+      const dbUpdates: any = {};
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
+      if (updates.hours !== undefined) dbUpdates.hours = updates.hours;
+      if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.projectId !== undefined) dbUpdates.project_id = updates.projectId;
+      if (updates.dueDate !== undefined) dbUpdates.due_date = updates.dueDate;
+      if (updates.completedAt !== undefined) dbUpdates.completed_at = updates.completedAt;
+      if (updates.invoiceId !== undefined) dbUpdates.invoice_id = updates.invoiceId;
+      if (updates.incomeId !== undefined) dbUpdates.income_id = updates.incomeId;
 
       const { data, error } = await supabase
         .from('sub_tasks')

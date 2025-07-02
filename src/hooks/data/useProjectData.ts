@@ -68,7 +68,12 @@ export const useProjectData = () => {
       const { data, error } = await supabase
         .from('projects')
         .insert([{ 
-          ...project,
+          name: project.name,
+          description: project.description,
+          status: project.status,
+          priority: project.priority,
+          budget: project.budget,
+          currency: project.currency,
           client_id: project.clientId,
           start_date: project.startDate,
           end_date: project.endDate,
@@ -98,14 +103,18 @@ export const useProjectData = () => {
 
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
     try {
-      const dbUpdates = {
-        ...updates,
-        client_id: updates.clientId,
-        start_date: updates.startDate,
-        end_date: updates.endDate,
-        billing_type: updates.billingType,
-        hourly_rate: updates.hourlyRate,
-      };
+      const dbUpdates: any = {};
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
+      if (updates.budget !== undefined) dbUpdates.budget = updates.budget;
+      if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+      if (updates.clientId !== undefined) dbUpdates.client_id = updates.clientId;
+      if (updates.startDate !== undefined) dbUpdates.start_date = updates.startDate;
+      if (updates.endDate !== undefined) dbUpdates.end_date = updates.endDate;
+      if (updates.billingType !== undefined) dbUpdates.billing_type = updates.billingType;
+      if (updates.hourlyRate !== undefined) dbUpdates.hourly_rate = updates.hourlyRate;
 
       const { data, error } = await supabase
         .from('projects')
