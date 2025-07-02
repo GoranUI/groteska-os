@@ -1,4 +1,3 @@
-
 interface ExchangeRates {
   USD: number;
   EUR: number;
@@ -37,6 +36,8 @@ export class ExchangeRateService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemd0bmJ3em1ub3pkdG9meWV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzODIxNzQsImV4cCI6MjA2Njk1ODE3NH0.uMQdwjZQCJTBKE3No5PYaA4-vNDLG08PppLRnGon4dU',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnemd0bmJ3em1ub3pkdG9meWV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzODIxNzQsImV4cCI6MjA2Njk1ODE3NH0.uMQdwjZQCJTBKE3No5PYaA4-vNDLG08PppLRnGon4dU'
         }
       });
       
