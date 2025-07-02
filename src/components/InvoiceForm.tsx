@@ -77,7 +77,7 @@ export const InvoiceForm = ({
       clientId,
       clientName: client?.name || '',
       clientEmail: client?.email || '',
-      clientAddress: client?.address || '',
+      clientAddress: '',
     }));
     handleFormChange();
   };
@@ -92,7 +92,7 @@ export const InvoiceForm = ({
         clientId: project.clientId,
         clientName: client?.name || '',
         clientEmail: client?.email || '',
-        clientAddress: client?.address || '',
+        clientAddress: '',
         currency: project.currency,
       }));
       // Clear items when switching to project-based billing
@@ -114,7 +114,7 @@ export const InvoiceForm = ({
         clientId: project?.clientId || '',
         clientName: client?.name || '',
         clientEmail: client?.email || '',
-        clientAddress: client?.address || '',
+        clientAddress: '',
         currency: subTask.currency,
       }));
       // Set item based on subtask

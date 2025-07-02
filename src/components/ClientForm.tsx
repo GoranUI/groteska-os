@@ -21,7 +21,6 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
-  const [address, setAddress] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
 
   useEffect(() => {
@@ -29,13 +28,11 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
       setName(initialData.name);
       setEmail(initialData.email || "");
       setCompany(initialData.company || "");
-      setAddress(initialData.address || "");
       setStatus(initialData.status);
     } else {
       setName("");
       setEmail("");
       setCompany("");
-      setAddress("");
       setStatus("active");
     }
   }, [initialData]);
@@ -81,13 +78,11 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
       const sanitizedName = sanitizeClientName(name);
       const sanitizedEmail = email ? sanitizeInput(email) : undefined;
       const sanitizedCompany = company ? sanitizeInput(company) : undefined;
-      const sanitizedAddress = address ? sanitizeInput(address) : undefined;
 
       onSubmit({
         name: sanitizedName,
         email: sanitizedEmail,
         company: sanitizedCompany,
-        address: sanitizedAddress,
         status,
       });
 
@@ -95,7 +90,6 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
         setName("");
         setEmail("");
         setCompany("");
-        setAddress("");
         setStatus("active");
       }
     } catch (error: any) {
@@ -122,10 +116,6 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
     setCompany(sanitizedValue);
   };
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = sanitizeInput(e.target.value);
-    setAddress(sanitizedValue);
-  };
 
   return (
     <Card className="border-0 shadow-sm ring-1 ring-gray-200">
@@ -186,17 +176,6 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address</Label>
-            <Input
-              id="address"
-              value={address}
-              onChange={handleAddressChange}
-              placeholder="Client address"
-              className="h-10"
-              maxLength={500}
-            />
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium text-gray-700">

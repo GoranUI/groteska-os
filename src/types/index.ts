@@ -4,7 +4,6 @@ export interface Client {
   name: string;
   email?: string;
   company?: string;
-  address?: string;
   status: "active" | "inactive";
   createdAt: string;
 }
