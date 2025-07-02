@@ -74,11 +74,16 @@ const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
         <Card className="border-0 shadow-sm ring-1 ring-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Current Balance (RSD)</p>
-                <p className={`text-2xl font-bold ${totalRSD >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalRSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </p>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-gray-600">Current Balance by Currency (RSD)</p>
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-500">
+                    {convertToRSD(totals.USD, 'USD').toLocaleString('en-US', { maximumFractionDigits: 0 })} + {convertToRSD(totals.EUR, 'EUR').toLocaleString('en-US', { maximumFractionDigits: 0 })} + {convertToRSD(totals.RSD, 'RSD').toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  </div>
+                  <p className={`text-2xl font-bold ${totalRSD >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    = {totalRSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD
+                  </p>
+                </div>
               </div>
               <div className="p-3 bg-blue-50 rounded-full">
                 <PiggyBank className="h-6 w-6 text-blue-600" />
