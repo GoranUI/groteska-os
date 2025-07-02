@@ -1,5 +1,6 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { useExchangeRates } from './useExchangeRates';
 import { Client, Income, Expense, Savings } from "@/types";
 
 export const useFinancialData = () => {
@@ -154,14 +155,14 @@ export const useFinancialData = () => {
     setSavings(prev => prev.filter(saving => saving.id !== id));
   }, []);
 
-  // Exchange rates (Serbian Dinar as base currency)
-  const exchangeRates = { USD: 110, EUR: 120, RSD: 1 };
+  // Use live exchange rates from service
+  const { rates } = useExchangeRates();
 
   const convertToRSD = useCallback((amount: number, currency: "USD" | "EUR" | "RSD") => {
     if (currency === "RSD") return amount;
     // Multiply by rate since rates represent how many RSD = 1 foreign currency
-    return amount * exchangeRates[currency];
-  }, []);
+    return amount * (rates[currency] || 1);
+  }, [rates]);
 
   const getTotalBalance = useCallback(() => {
     const balances = { USD: 0, EUR: 0, RSD: 0 };

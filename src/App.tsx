@@ -18,6 +18,7 @@ import ProjectsPage from "./pages/ProjectsPage";
 import SavingsPage from "./pages/SavingsPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import SettingsPage from "./pages/SettingsPage";
+import ImportPage from "./pages/ImportPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/projects" element={<ProtectedLayout><ProjectsPage /></ProtectedLayout>} />
             <Route path="/savings" element={<ProtectedLayout><SavingsPage /></ProtectedLayout>} />
             <Route path="/invoices" element={<ProtectedLayout><InvoicesPage /></ProtectedLayout>} />
+            <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
             </Routes>

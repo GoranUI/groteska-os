@@ -11,7 +11,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Plus, Edit3, Check, ChevronsUpDown, UserPlus } from "lucide-react";
 import { Client, Income } from "@/types";
 import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
-import { useToast } from "@/hooks/use-toast";
+import { useToastNotifications } from "@/hooks/useToastNotifications";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useClientData } from "@/hooks/data/useClientData";
 
 interface IncomeFormProps {
@@ -22,7 +23,8 @@ interface IncomeFormProps {
 }
 
 export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeFormProps) => {
-  const { toast } = useToast();
+  const { showError, showSuccess } = useToastNotifications();
+  const { handleAsyncError } = useErrorHandler();
   const { addClient } = useClientData();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
@@ -55,30 +57,18 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
   const validateInputs = () => {
     // Validate amount
     if (!amount) {
-      toast({
-        title: "Validation Error",
-        description: "Amount is required",
-        variant: "destructive",
-      });
+      showError("Validation Error", "Amount is required");
       return false;
     }
 
     try {
       const validatedAmount = validateAmount(amount);
       if (validatedAmount <= 0) {
-        toast({
-          title: "Validation Error",
-          description: "Amount must be greater than zero",
-          variant: "destructive",
-        });
+        showError("Validation Error", "Amount must be greater than zero");
         return false;
       }
     } catch (error: any) {
-      toast({
-        title: "Validation Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError("Validation Error", error.message);
       return false;
     }
 
@@ -86,11 +76,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
 
     // Validate date
     if (!date) {
-      toast({
-        title: "Validation Error",
-        description: "Date is required",
-        variant: "destructive",
-      });
+      showError("Validation Error", "Date is required");
       return false;
     }
 
@@ -99,11 +85,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
     futureLimit.setFullYear(futureLimit.getFullYear() + 1);
     
     if (selectedDate > futureLimit) {
-      toast({
-        title: "Validation Error",
-        description: "Date cannot be more than 1 year in the future",
-        variant: "destructive",
-      });
+      showError("Validation Error", "Date cannot be more than 1 year in the future");
       return false;
     }
 
@@ -140,11 +122,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
         setDescription("");
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to process income data. Please check your inputs.",
-        variant: "destructive",
-      });
+      showError("Error", "Failed to process income data. Please check your inputs.");
     }
   };
 
@@ -159,38 +137,27 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
 
   const handleCreateClient = async () => {
     if (!newClientName.trim()) {
-      toast({
-        title: "Error",
-        description: "Client name is required",
-        variant: "destructive",
-      });
+      showError("Error", "Client name is required");
       return;
     }
 
-    try {
-      await addClient({
+    const result = await handleAsyncError(
+      () => addClient({
         name: newClientName.trim(),
         email: newClientEmail.trim() || undefined,
         company: newClientCompany.trim() || undefined,
         status: "active",
-      });
-      
+      }),
+      { operation: "create client", component: "IncomeForm" }
+    );
+
+    if (result !== null) {
       setNewClientName("");
       setNewClientEmail("");
       setNewClientCompany("");
       setShowClientPopover(false);
       setClientSearch("");
-      
-      toast({
-        title: "Success",
-        description: "Client created successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create client",
-        variant: "destructive",
-      });
+      showSuccess("Success", "Client created successfully");
     }
   };
 

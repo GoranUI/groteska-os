@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit3, Sparkles } from "lucide-react";
 import { Expense } from "@/types";
 import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
-import { useToast } from "@/hooks/use-toast";
+import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { getSuggestedCategory, learnFromCorrection } from "@/utils/expenseCategorizationService";
 
 interface ExpenseFormProps {
@@ -19,7 +19,7 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProps) => {
-  const { toast } = useToast();
+  const { showError } = useToastNotifications();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
@@ -62,40 +62,24 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   const validateInputs = () => {
     // Validate amount
     if (!amount) {
-      toast({
-        title: "Validation Error",
-        description: "Amount is required",
-        variant: "destructive",
-      });
+      showError("Validation Error", "Amount is required");
       return false;
     }
 
     try {
       const validatedAmount = validateAmount(amount);
       if (validatedAmount <= 0) {
-        toast({
-          title: "Validation Error",
-          description: "Amount must be greater than zero",
-          variant: "destructive",
-        });
+        showError("Validation Error", "Amount must be greater than zero");
         return false;
       }
     } catch (error: any) {
-      toast({
-        title: "Validation Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError("Validation Error", error.message);
       return false;
     }
 
     // Validate date
     if (!date) {
-      toast({
-        title: "Validation Error",
-        description: "Date is required",
-        variant: "destructive",
-      });
+      showError("Validation Error", "Date is required");
       return false;
     }
 
@@ -104,11 +88,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
     today.setHours(0, 0, 0, 0);
     
     if (selectedDate > today) {
-      toast({
-        title: "Validation Error",
-        description: "Expense date cannot be in the future",
-        variant: "destructive",
-      });
+      showError("Validation Error", "Expense date cannot be in the future");
       return false;
     }
 
@@ -149,11 +129,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
         setHasUserOverridden(false);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to process expense data. Please check your inputs.",
-        variant: "destructive",
-      });
+      showError("Error", "Failed to process expense data. Please check your inputs.");
     }
   };
 

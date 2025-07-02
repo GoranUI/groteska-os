@@ -15,7 +15,7 @@ const IncomePage = () => {
   if (loading) {
     return (
       <div className="p-8 flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -24,8 +24,8 @@ const IncomePage = () => {
     <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900">Income Tracker</h1>
-          <p className="text-gray-600">Track your income from clients and projects</p>
+          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">Income Tracker</h1>
+          <p className="text-muted-foreground">Track your income from clients and projects</p>
         </div>
         <ExportButton incomes={incomes} type="incomes" />
       </div>

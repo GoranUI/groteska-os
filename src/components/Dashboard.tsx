@@ -63,14 +63,16 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
   }, [incomes, expenses, timeRange]);
 
   // Calculate filtered totals for responsive metrics
+  const { rates } = useExchangeRates();
+  
   const filteredTotals = useMemo(() => {
     const totalIncomeRSD = filteredData.incomes.reduce((sum, income) => {
-      const rate = income.currency === "RSD" ? 1 : income.currency === "USD" ? 117 : 110;
+      const rate = income.currency === "RSD" ? 1 : rates[income.currency as keyof typeof rates] || 1;
       return sum + (Number(income.amount) * rate);
     }, 0);
     
     const totalExpenseRSD = filteredData.expenses.reduce((sum, expense) => {
-      const rate = expense.currency === "RSD" ? 1 : expense.currency === "USD" ? 117 : 110;
+      const rate = expense.currency === "RSD" ? 1 : rates[expense.currency as keyof typeof rates] || 1;
       return sum + (Number(expense.amount) * rate);
     }, 0);
     
@@ -79,7 +81,7 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
       expense: totalExpenseRSD,
       balance: totalIncomeRSD - totalExpenseRSD
     };
-  }, [filteredData]);
+  }, [filteredData, rates]);
 
   // Calculate totals by currency for filtered data
   const totalIncomeByCurrency = filteredData.incomes.reduce((acc, income) => {

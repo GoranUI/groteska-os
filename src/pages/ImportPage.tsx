@@ -1,6 +1,8 @@
 
 import { useState, useCallback } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { useToastNotifications } from "@/hooks/useToastNotifications";
+import { useLoadingStates } from "@/hooks/useLoadingStates";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { parseCSV, ParsedExpense } from "@/utils/csvParser";
 import { FileUploadCard } from "@/components/import/FileUploadCard";
@@ -11,21 +13,19 @@ const ImportPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<string>('');
   const [parsedExpenses, setParsedExpenses] = useState<ParsedExpense[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [importResults, setImportResults] = useState<{ success: number; failed: number } | null>(null);
-  const { toast } = useToast();
+  const { showSuccess, showError } = useToastNotifications();
+  const { isLoading, setLoading } = useLoadingStates();
+  const { handleAsyncError } = useErrorHandler();
   const { addExpense } = useSupabaseData();
+  const isProcessing = isLoading('import');
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
     
     if (!selectedFile.name.toLowerCase().endsWith('.csv')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select a CSV file.",
-        variant: "destructive",
-      });
+      showError("Invalid file type", "Please select a CSV file.");
       return;
     }
     
@@ -39,54 +39,50 @@ const ImportPage = () => {
       try {
         const parsed = parseCSV(text);
         setParsedExpenses(parsed);
-        toast({
-          title: "File parsed successfully",
-          description: `Found ${parsed.length} expense records to import.`,
-        });
+        showSuccess("File parsed successfully", `Found ${parsed.length} expense records to import.`);
       } catch (error) {
-        toast({
-          title: "Parse error",
-          description: error instanceof Error ? error.message : "Failed to parse CSV file.",
-          variant: "destructive",
-        });
+        showError("Parse error", error instanceof Error ? error.message : "Failed to parse CSV file.");
       }
     };
     
     reader.readAsText(selectedFile, 'utf-8');
-  }, [toast]);
+  }, [showSuccess, showError]);
 
   const handleImport = async () => {
     if (parsedExpenses.length === 0) return;
     
-    setIsProcessing(true);
+    setLoading('import', true);
     let success = 0;
     let failed = 0;
     
     for (const expense of parsedExpenses) {
-      try {
-        await addExpense({
+      const result = await handleAsyncError(
+        () => addExpense({
           amount: expense.amount,
           currency: expense.currency as "USD" | "EUR" | "RSD",
           date: expense.date,
           category: expense.category as any,
           description: expense.description,
           isRecurring: false,
-        });
+        }),
+        { operation: "import expense", component: "ImportPage" }
+      );
+      
+      if (result !== null) {
         success++;
-      } catch (error) {
-        console.error('Failed to import expense:', error);
+      } else {
         failed++;
       }
     }
     
     setImportResults({ success, failed });
-    setIsProcessing(false);
+    setLoading('import', false);
     
-    toast({
-      title: "Import completed",
-      description: `Successfully imported ${success} expenses. ${failed} failed.`,
-      variant: success > 0 ? "default" : "destructive",
-    });
+    if (success > 0) {
+      showSuccess("Import completed", `Successfully imported ${success} expenses. ${failed} failed.`);
+    } else {
+      showError("Import failed", `Failed to import all ${failed} expenses.`);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -103,13 +99,13 @@ const ImportPage = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-900">Import Expenses</h1>
-        <p className="text-gray-600">Upload CSV files from your Serbian bank statement</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">Import Expenses</h1>
+        <p className="text-muted-foreground">Upload CSV files from your Serbian bank statement</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <FileUploadCard
           file={file}
           onFileUpload={handleFileUpload}

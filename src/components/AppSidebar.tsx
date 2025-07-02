@@ -1,6 +1,6 @@
 
 import { NavLink, useLocation } from "react-router-dom";
-import { BarChart3, TrendingUp, Receipt, Users, PiggyBank, FileText, Settings, Search, FolderOpen } from "lucide-react";
+import { BarChart3, TrendingUp, Receipt, Users, PiggyBank, FileText, Settings, Search, FolderOpen, Upload } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ const mainNavigation = [
   { name: "Projects", href: "/projects", icon: FolderOpen },
   { name: "Savings", href: "/savings", icon: PiggyBank },
   { name: "Invoices", href: "/invoices", icon: FileText },
+  { name: "Import", href: "/import", icon: Upload },
 ];
 
 const bottomNavigation = [
@@ -32,15 +33,15 @@ export function AppSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar className="bg-gray-50/50 border-none shadow-sm">
+    <Sidebar className="bg-sidebar border-none shadow-sm">
       <SidebarHeader className="p-6 border-none">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="p-2 bg-black-600 rounded-lg">
-            <BarChart3 className="h-5 w-5 text-white" />
+          <div className="p-2 bg-primary rounded-lg">
+            <BarChart3 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Stacks Flow</h2>
-            <p className="text-xs text-gray-500">Finance management</p>
+            <h2 className="text-base font-semibold text-foreground">Stacks Flow</h2>
+            <p className="text-xs text-muted-foreground">Finance management</p>
           </div>
         </div>
         
@@ -60,8 +61,8 @@ export function AppSidebar() {
                       className={({ isActive }) =>
                         `flex items-center px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                           isActive
-                            ? "bg-black-50 text-black-700 border-r-2 border-black-600"
-                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground border-r-2 border-sidebar-primary"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         }`
                       }
                     >
@@ -86,8 +87,8 @@ export function AppSidebar() {
                   className={({ isActive }) =>
                     `flex items-center px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                       isActive
-                        ? "bg-black-50 text-black-700 border-r-2 border-black-600"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground border-r-2 border-sidebar-primary"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`
                   }
                 >
