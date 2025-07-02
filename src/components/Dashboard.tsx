@@ -111,7 +111,7 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
           <Button
             variant="outline"
             size="sm"
-            onClick={refetch}
+            onClick={() => refetch()}
             disabled={ratesLoading}
             className="gap-2"
           >

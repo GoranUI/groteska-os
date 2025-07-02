@@ -1,8 +1,12 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { Savings } from "@/types";
-import { PiggyBank, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { PiggyBank, TrendingUp, TrendingDown, DollarSign, RefreshCw, Info } from "lucide-react";
+import { useExchangeRates } from "@/hooks/useExchangeRates";
+import { format } from "date-fns";
 
 interface SavingsTrackerProps {
   savings: Savings[];
@@ -10,6 +14,8 @@ interface SavingsTrackerProps {
 }
 
 const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
+  const { rates, loading: ratesLoading, error: ratesError, lastUpdated, forceRefresh } = useExchangeRates();
+  
   // Calculate totals by currency
   const totals = savings.reduce(
     (acc, saving) => {
@@ -75,7 +81,37 @@ const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-600">Current Balance by Currency (RSD)</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-gray-600">Current Balance by Currency (RSD)</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <div className="space-y-2">
+                          <p className="font-medium">Exchange Rates (to RSD):</p>
+                          <div className="space-y-1 text-sm">
+                            <p>1 USD = {rates.USD.toLocaleString()} RSD</p>
+                            <p>1 EUR = {rates.EUR.toLocaleString()} RSD</p>
+                          </div>
+                          {lastUpdated && (
+                            <div className="pt-1 mt-2 border-t border-gray-200">
+                              <p className="text-xs text-gray-500">
+                                Last updated: {format(lastUpdated, 'MMM dd, yyyy HH:mm')}
+                              </p>
+                            </div>
+                          )}
+                          {ratesError && (
+                            <p className="text-xs text-red-500">
+                              Error: {ratesError}
+                            </p>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="space-y-1">
                   <div className="text-sm text-gray-500">
                     {convertToRSD(totals.USD, 'USD').toLocaleString('en-US', { maximumFractionDigits: 0 })} + {convertToRSD(totals.EUR, 'EUR').toLocaleString('en-US', { maximumFractionDigits: 0 })} + {convertToRSD(totals.RSD, 'RSD').toLocaleString('en-US', { maximumFractionDigits: 0 })}
@@ -85,8 +121,19 @@ const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
                   </p>
                 </div>
               </div>
-              <div className="p-3 bg-blue-50 rounded-full">
-                <PiggyBank className="h-6 w-6 text-blue-600" />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => forceRefresh()}
+                  disabled={ratesLoading}
+                  className="h-8 w-8 p-0"
+                >
+                  <RefreshCw className={`h-4 w-4 ${ratesLoading ? 'animate-spin' : ''}`} />
+                </Button>
+                <div className="p-3 bg-blue-50 rounded-full">
+                  <PiggyBank className="h-6 w-6 text-blue-600" />
+                </div>
               </div>
             </div>
           </CardContent>
