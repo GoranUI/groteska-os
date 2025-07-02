@@ -63,7 +63,7 @@ export interface Expense {
   amount: number;
   currency: "USD" | "EUR" | "RSD";
   date: string;
-  category: "Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office";
+  category: "Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Other";
   description: string;
   isRecurring?: boolean;
   recurringFrequency?: "weekly" | "monthly" | "yearly";
