@@ -19,6 +19,8 @@ export interface Project {
   startDate?: string;
   endDate?: string;
   budget?: number;
+  billingType: "fixed" | "hourly";
+  hourlyRate?: number;
   currency: "USD" | "EUR" | "RSD";
   userId: string;
   createdAt: string;
@@ -31,6 +33,7 @@ export interface SubTask {
   name: string;
   description?: string;
   amount: number;
+  hours?: number;
   currency: "USD" | "EUR" | "RSD";
   status: "pending" | "paid";
   dueDate?: string;

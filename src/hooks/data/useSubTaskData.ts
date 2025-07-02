@@ -11,6 +11,7 @@ const transformSubTask = (dbSubTask: any): SubTask => ({
   name: dbSubTask.name,
   description: dbSubTask.description,
   amount: Number(dbSubTask.amount),
+  hours: dbSubTask.hours ? Number(dbSubTask.hours) : undefined,
   currency: dbSubTask.currency as "USD" | "EUR" | "RSD",
   status: dbSubTask.status as "pending" | "paid",
   dueDate: dbSubTask.due_date,

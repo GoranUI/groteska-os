@@ -27,6 +27,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [budget, setBudget] = useState("");
+  const [billingType, setBillingType] = useState<"fixed" | "hourly">("fixed");
+  const [hourlyRate, setHourlyRate] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
 
   useEffect(() => {
@@ -39,6 +41,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       setStartDate(initialData.startDate || "");
       setEndDate(initialData.endDate || "");
       setBudget(initialData.budget?.toString() || "");
+      setBillingType(initialData.billingType);
+      setHourlyRate(initialData.hourlyRate?.toString() || "");
       setCurrency(initialData.currency);
     } else {
       setName("");
@@ -49,6 +53,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       setStartDate("");
       setEndDate("");
       setBudget("");
+      setBillingType("fixed");
+      setHourlyRate("");
       setCurrency("USD");
     }
   }, [initialData]);
@@ -83,6 +89,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       startDate: startDate || undefined,
       endDate: endDate || undefined,
       budget: budget ? Number(budget) : undefined,
+      billingType,
+      hourlyRate: hourlyRate ? Number(hourlyRate) : undefined,
       currency,
     });
 
@@ -95,6 +103,8 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
       setStartDate("");
       setEndDate("");
       setBudget("");
+      setBillingType("fixed");
+      setHourlyRate("");
       setCurrency("USD");
     }
   };
@@ -230,18 +240,49 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="budget" className="text-sm font-medium text-gray-700">Budget</Label>
-            <Input
-              id="budget"
-              type="number"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-              className="h-10"
-            />
+            <Label htmlFor="billingType" className="text-sm font-medium text-gray-700">Billing Type</Label>
+            <Select value={billingType} onValueChange={(value: "fixed" | "hourly") => setBillingType(value)}>
+              <SelectTrigger className="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fixed">Fixed Price</SelectItem>
+                <SelectItem value="hourly">Hourly Rate</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {billingType === "fixed" && (
+            <div className="space-y-2">
+              <Label htmlFor="budget" className="text-sm font-medium text-gray-700">Total Budget</Label>
+              <Input
+                id="budget"
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                className="h-10"
+              />
+            </div>
+          )}
+
+          {billingType === "hourly" && (
+            <div className="space-y-2">
+              <Label htmlFor="hourlyRate" className="text-sm font-medium text-gray-700">Hourly Rate</Label>
+              <Input
+                id="hourlyRate"
+                type="number"
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                className="h-10"
+              />
+            </div>
+          )}
 
           <div className="md:col-span-2 flex gap-3">
             <Button 

@@ -295,12 +295,14 @@ export type Database = {
       }
       projects: {
         Row: {
+          billing_type: string | null
           budget: number | null
           client_id: string
           created_at: string
           currency: string
           description: string | null
           end_date: string | null
+          hourly_rate: number | null
           id: string
           name: string
           priority: string | null
@@ -310,12 +312,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          billing_type?: string | null
           budget?: number | null
           client_id: string
           created_at?: string
           currency?: string
           description?: string | null
           end_date?: string | null
+          hourly_rate?: number | null
           id?: string
           name: string
           priority?: string | null
@@ -325,12 +329,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          billing_type?: string | null
           budget?: number | null
           client_id?: string
           created_at?: string
           currency?: string
           description?: string | null
           end_date?: string | null
+          hourly_rate?: number | null
           id?: string
           name?: string
           priority?: string | null
@@ -393,6 +399,7 @@ export type Database = {
           currency: string
           description: string | null
           due_date: string | null
+          hours: number | null
           id: string
           income_id: string | null
           invoice_id: string | null
@@ -409,6 +416,7 @@ export type Database = {
           currency?: string
           description?: string | null
           due_date?: string | null
+          hours?: number | null
           id?: string
           income_id?: string | null
           invoice_id?: string | null
@@ -425,6 +433,7 @@ export type Database = {
           currency?: string
           description?: string | null
           due_date?: string | null
+          hours?: number | null
           id?: string
           income_id?: string | null
           invoice_id?: string | null

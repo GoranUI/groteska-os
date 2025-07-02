@@ -23,6 +23,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
   const [description, setDescription] = useState("");
   const [projectId, setProjectId] = useState("");
   const [amount, setAmount] = useState("");
+  const [hours, setHours] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [status, setStatus] = useState<"pending" | "paid">("pending");
   const [dueDate, setDueDate] = useState("");
@@ -33,6 +34,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
       setDescription(initialData.description || "");
       setProjectId(initialData.projectId);
       setAmount(initialData.amount.toString());
+      setHours(initialData.hours?.toString() || "");
       setCurrency(initialData.currency);
       setStatus(initialData.status);
       setDueDate(initialData.dueDate || "");
@@ -41,6 +43,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
       setDescription("");
       setProjectId("");
       setAmount("");
+      setHours("");
       setCurrency("USD");
       setStatus("pending");
       setDueDate("");
@@ -82,6 +85,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
       description: description.trim() || undefined,
       projectId,
       amount: Number(amount),
+      hours: hours ? Number(hours) : undefined,
       currency,
       status,
       dueDate: dueDate || undefined,
@@ -92,6 +96,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
       setDescription("");
       setProjectId("");
       setAmount("");
+      setHours("");
       setCurrency("USD");
       setStatus("pending");
       setDueDate("");
@@ -174,6 +179,20 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
               step="0.01"
               className="h-10"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hours" className="text-sm font-medium text-gray-700">Hours Worked</Label>
+            <Input
+              id="hours"
+              type="number"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              placeholder="0.0"
+              min="0"
+              step="0.1"
+              className="h-10"
             />
           </div>
 

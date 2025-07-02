@@ -15,6 +15,8 @@ const transformProject = (dbProject: any): Project => ({
   startDate: dbProject.start_date,
   endDate: dbProject.end_date,
   budget: dbProject.budget ? Number(dbProject.budget) : undefined,
+  billingType: dbProject.billing_type as "fixed" | "hourly",
+  hourlyRate: dbProject.hourly_rate ? Number(dbProject.hourly_rate) : undefined,
   currency: dbProject.currency as "USD" | "EUR" | "RSD",
   userId: dbProject.user_id,
   createdAt: dbProject.created_at,
@@ -70,6 +72,8 @@ export const useProjectData = () => {
           client_id: project.clientId,
           start_date: project.startDate,
           end_date: project.endDate,
+          billing_type: project.billingType,
+          hourly_rate: project.hourlyRate,
           user_id: user.id
         }])
         .select()
@@ -99,6 +103,8 @@ export const useProjectData = () => {
         client_id: updates.clientId,
         start_date: updates.startDate,
         end_date: updates.endDate,
+        billing_type: updates.billingType,
+        hourly_rate: updates.hourlyRate,
       };
 
       const { data, error } = await supabase
