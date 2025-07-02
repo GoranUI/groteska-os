@@ -9,7 +9,7 @@ interface ExchangeRates {
 }
 
 export const useExchangeRates = () => {
-  const [rates, setRates] = useState<ExchangeRates>({ USD: 1, EUR: 1.1, RSD: 0.009 });
+  const [rates, setRates] = useState<ExchangeRates>({ USD: 110, EUR: 120, RSD: 1 });
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 

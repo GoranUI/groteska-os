@@ -154,12 +154,13 @@ export const useFinancialData = () => {
     setSavings(prev => prev.filter(saving => saving.id !== id));
   }, []);
 
-  // Exchange rates (mock - in real app would fetch from API)
-  const exchangeRates = { USD: 1, EUR: 1.1, RSD: 0.009 };
+  // Exchange rates (Serbian Dinar as base currency)
+  const exchangeRates = { USD: 110, EUR: 120, RSD: 1 };
 
   const convertToRSD = useCallback((amount: number, currency: "USD" | "EUR" | "RSD") => {
     if (currency === "RSD") return amount;
-    return amount / exchangeRates[currency];
+    // Multiply by rate since rates represent how many RSD = 1 foreign currency
+    return amount * exchangeRates[currency];
   }, []);
 
   const getTotalBalance = useCallback(() => {

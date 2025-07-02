@@ -8,7 +8,8 @@ export const useFinancialCalculations = () => {
 
   const convertToRSD = useCallback((amount: number, currency: "USD" | "EUR" | "RSD") => {
     if (currency === "RSD") return amount;
-    return amount / rates[currency];
+    // Since rates represent how many RSD = 1 foreign currency, multiply to convert
+    return amount * rates[currency];
   }, [rates]);
 
   const getTotalBalance = useCallback((incomes: Income[], expenses: Expense[]) => {
