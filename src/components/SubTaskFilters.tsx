@@ -57,12 +57,12 @@ export const SubTaskFilters = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <label className="text-xs font-medium text-gray-700">Client</label>
-            <Select value={selectedClientId || ""} onValueChange={(value) => onClientChange(value || undefined)}>
+            <Select value={selectedClientId || "all"} onValueChange={(value) => onClientChange(value === "all" ? undefined : value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="All clients" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All clients</SelectItem>
+                <SelectItem value="all">All clients</SelectItem>
                 {clients.filter(client => client.status === "active").map((client) => (
                   <SelectItem key={client.id} value={client.id}>
                     {client.name}
@@ -74,12 +74,12 @@ export const SubTaskFilters = ({
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-gray-700">Project</label>
-            <Select value={selectedProjectId || ""} onValueChange={(value) => onProjectChange(value || undefined)}>
+            <Select value={selectedProjectId || "all"} onValueChange={(value) => onProjectChange(value === "all" ? undefined : value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="All projects" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All projects</SelectItem>
+                <SelectItem value="all">All projects</SelectItem>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
@@ -91,12 +91,12 @@ export const SubTaskFilters = ({
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-gray-700">Status</label>
-            <Select value={selectedStatus || ""} onValueChange={(value) => onStatusChange(value || undefined)}>
+            <Select value={selectedStatus || "all"} onValueChange={(value) => onStatusChange(value === "all" ? undefined : value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="paid">Paid</SelectItem>
               </SelectContent>
@@ -105,12 +105,12 @@ export const SubTaskFilters = ({
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-gray-700">Priority</label>
-            <Select value={selectedPriority || ""} onValueChange={(value) => onPriorityChange(value || undefined)}>
+            <Select value={selectedPriority || "all"} onValueChange={(value) => onPriorityChange(value === "all" ? undefined : value)}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="All priorities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All priorities</SelectItem>
+                <SelectItem value="all">All priorities</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
