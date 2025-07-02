@@ -1,4 +1,34 @@
-import { sanitizeInput, sanitizeDescription, validateCSVContent, validateAmount, validateDate } from './securityUtils';
+import { sanitizeInput, sanitizeDescription, validateCSVContent, validateAmount, validateDate, logSecurityEvent } from './securityUtils';
+
+// Rate limiting for CSV imports
+const importAttempts = new Map<string, { count: number; timestamp: number }>();
+const MAX_IMPORTS_PER_HOUR = 10;
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
+
+const checkRateLimit = (userId: string): boolean => {
+  const now = Date.now();
+  const userKey = userId || 'anonymous';
+  const attempts = importAttempts.get(userKey);
+  
+  if (!attempts) {
+    importAttempts.set(userKey, { count: 1, timestamp: now });
+    return true;
+  }
+  
+  // Clean old entries
+  if (now - attempts.timestamp > RATE_LIMIT_WINDOW) {
+    importAttempts.set(userKey, { count: 1, timestamp: now });
+    return true;
+  }
+  
+  if (attempts.count >= MAX_IMPORTS_PER_HOUR) {
+    logSecurityEvent('rate_limit_exceeded', { userId: userKey, attempts: attempts.count });
+    return false;
+  }
+  
+  attempts.count++;
+  return true;
+};
 
 export interface ParsedExpense {
   date: string;
@@ -8,7 +38,13 @@ export interface ParsedExpense {
   currency: string;
 }
 
-export const parseCSV = (csvText: string): ParsedExpense[] => {
+export const parseCSV = (csvText: string, userId?: string): ParsedExpense[] => {
+  // Rate limiting check
+  if (!checkRateLimit(userId || 'anonymous')) {
+    throw new Error('Rate limit exceeded. Please wait before importing again.');
+  }
+  
+  logSecurityEvent('csv_import_started', { userId, contentLength: csvText.length });
   console.log('Starting CSV parsing with security validation...');
   
   // Validate CSV content for security

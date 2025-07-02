@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { SecurityWrapper } from "@/components/SecurityWrapper";
 import Header from "@/components/Header";
 import Index from "./pages/Index";
 import IncomePage from "./pages/IncomePage";
@@ -43,7 +44,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
+          <SecurityWrapper>
+            <Routes>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedLayout><Index /></ProtectedLayout>} />
             <Route path="/income" element={<ProtectedLayout><IncomePage /></ProtectedLayout>} />
@@ -54,7 +56,8 @@ const App = () => (
             <Route path="/invoices" element={<ProtectedLayout><InvoicesPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
-          </Routes>
+            </Routes>
+          </SecurityWrapper>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

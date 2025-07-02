@@ -46,13 +46,20 @@ export const validateCSVContent = (content: string): boolean => {
     throw new Error('File size too large. Maximum allowed size is 5MB.');
   }
   
-  // Check for suspicious patterns
+  // Enhanced suspicious patterns detection
   const suspiciousPatterns = [
     /<script/i,
     /javascript:/i,
     /on\w+\s*=/i,
     /vbscript:/i,
-    /data:text\/html/i
+    /data:text\/html/i,
+    /eval\s*\(/i,
+    /exec\s*\(/i,
+    /\$\{.*\}/,  // Template literals
+    /import\s+/i,
+    /require\s*\(/i,
+    /__proto__/i,
+    /constructor\s*\(/i
   ];
   
   for (const pattern of suspiciousPatterns) {
@@ -61,7 +68,38 @@ export const validateCSVContent = (content: string): boolean => {
     }
   }
   
+  // Check for excessive line count (DDoS protection)
+  const lines = content.split('\n');
+  if (lines.length > 10000) {
+    throw new Error('File contains too many rows. Maximum allowed is 10,000 rows.');
+  }
+  
   return true;
+};
+
+export const validateEmail = (email: string): boolean => {
+  if (!email || typeof email !== 'string') return false;
+  
+  // More robust email validation
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  if (!emailRegex.test(email)) return false;
+  
+  // Additional security checks
+  if (email.length > 254) return false; // RFC 5321 limit
+  
+  const [localPart, domain] = email.split('@');
+  if (localPart.length > 64) return false; // RFC 5321 limit
+  
+  return true;
+};
+
+export const logSecurityEvent = (event: string, details: any = {}) => {
+  const timestamp = new Date().toISOString();
+  console.warn(`[SECURITY] ${timestamp}: ${event}`, details);
+  
+  // In production, this should send to a proper logging service
+  // Example: send to your monitoring service
 };
 
 export const validateAmount = (amount: string | number): number => {
