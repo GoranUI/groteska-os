@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Edit3, Sparkles } from "lucide-react";
 import { Expense } from "@/types";
 import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
 import { useToast } from "@/hooks/use-toast";
+import { getSuggestedCategory, learnFromCorrection } from "@/utils/expenseCategorizationService";
 
 interface ExpenseFormProps {
   onSubmit: (data: Omit<Expense, 'id'>) => void;
@@ -22,22 +23,41 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<"Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office">("Food");
+  const [category, setCategory] = useState<"Recurring" | "Food" | "Work Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Other">("Food");
   const [date, setDate] = useState("");
+  const [suggestedCategory, setSuggestedCategory] = useState<{category: string, confidence: 'high' | 'medium' | 'low'} | null>(null);
+  const [hasUserOverridden, setHasUserOverridden] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setAmount(initialData.amount.toString());
       setCurrency(initialData.currency);
       setDescription(initialData.description);
-      setCategory(initialData.category);
+      setCategory(initialData.category as any);
       setDate(initialData.date);
+      setHasUserOverridden(true); // Don't auto-suggest for existing data
     } else {
       setAmount("");
       setDescription("");
       setDate("");
+      setHasUserOverridden(false);
     }
   }, [initialData]);
+
+  // Auto-categorize when description or amount changes
+  useEffect(() => {
+    if (!hasUserOverridden && description.trim() && !initialData) {
+      const amountNum = amount ? parseFloat(amount) : undefined;
+      const suggestion = getSuggestedCategory(description, amountNum);
+      
+      if (suggestion.category !== "Other") {
+        setSuggestedCategory(suggestion);
+        setCategory(suggestion.category as any);
+      } else {
+        setSuggestedCategory(null);
+      }
+    }
+  }, [description, amount, hasUserOverridden, initialData]);
 
   const validateInputs = () => {
     // Validate amount
@@ -108,6 +128,11 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
         sanitizeDescription(description) : 
         `${category} expense`;
 
+      // Learn from user correction if they changed the suggested category
+      if (suggestedCategory && suggestedCategory.category !== category) {
+        learnFromCorrection(description, category);
+      }
+
       onSubmit({
         amount: validatedAmount,
         currency,
@@ -120,6 +145,8 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
         setAmount("");
         setDescription("");
         setDate("");
+        setSuggestedCategory(null);
+        setHasUserOverridden(false);
       }
     } catch (error: any) {
       toast({
@@ -132,6 +159,24 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
+    if (hasUserOverridden) {
+      setHasUserOverridden(false); // Reset override when user types new description
+    }
+  };
+
+  const handleCategoryChange = (value: any) => {
+    setCategory(value);
+    setHasUserOverridden(true); // User manually selected category
+    setSuggestedCategory(null); // Hide suggestion badge
+  };
+
+  const getConfidenceColor = (confidence: string) => {
+    switch (confidence) {
+      case 'high': return 'bg-green-100 text-green-800 border-green-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-orange-100 text-orange-800 border-orange-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
   return (
@@ -191,8 +236,14 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
             <div className="space-y-2">
               <Label htmlFor="category" className="text-sm font-medium text-gray-700">
                 Category <span className="text-red-500">*</span>
+                {suggestedCategory && (
+                  <Badge className={`ml-2 ${getConfidenceColor(suggestedCategory.confidence)} border font-medium`}>
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Auto-suggested
+                  </Badge>
+                )}
               </Label>
-              <Select value={category} onValueChange={(value: any) => setCategory(value)}>
+              <Select value={category} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="h-10">
                   <SelectValue />
                 </SelectTrigger>
@@ -207,6 +258,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
                   <SelectItem value="Software">Software</SelectItem>
                   <SelectItem value="Marketing">Marketing</SelectItem>
                   <SelectItem value="Office">Office</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

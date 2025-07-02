@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -44,6 +43,7 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete }: ExpenseTableProps) 
       'Software': 'bg-orange-100 text-orange-800 border-orange-200',
       'Marketing': 'bg-red-100 text-red-800 border-red-200',
       'Office': 'bg-slate-100 text-slate-800 border-slate-200',
+      'Other': 'bg-gray-100 text-gray-800 border-gray-200',
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
