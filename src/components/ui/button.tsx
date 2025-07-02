@@ -17,6 +17,10 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
+        "ghost-action": "text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors",
+        "ghost-edit": "text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors",
+        "ghost-delete": "text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors",
+        "ghost-refresh": "text-gray-400 hover:bg-green-50 hover:text-green-600 transition-colors",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -24,6 +28,7 @@ const buttonVariants = cva(
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        "action-icon": "h-8 w-8 p-0",
       },
     },
     defaultVariants: {

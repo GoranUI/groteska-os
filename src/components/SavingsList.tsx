@@ -79,18 +79,16 @@ export const SavingsList = ({ savings, onEdit, onDelete }: SavingsListProps) => 
                   <TableCell>
                     <div className="flex items-center space-x-2">
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="ghost-edit"
+                        size="action-icon"
                         onClick={() => onEdit(saving)}
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="ghost-delete"
+                        size="action-icon"
                         onClick={() => onDelete(saving.id)}
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </Button>

@@ -79,18 +79,16 @@ export const IncomeList = ({ incomes, onEdit, onDelete }: IncomeListProps) => {
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="ghost-edit"
+                          size="action-icon"
                           onClick={() => onEdit(income)}
-                          className="h-8 w-8 p-0"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="ghost-delete"
+                          size="action-icon"
                           onClick={() => onDelete(income.id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

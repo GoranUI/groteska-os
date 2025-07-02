@@ -123,11 +123,10 @@ const SavingsTracker = ({ savings, convertToRSD }: SavingsTrackerProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="ghost-refresh"
+                  size="action-icon"
                   onClick={() => forceRefresh()}
                   disabled={ratesLoading}
-                  className="h-8 w-8 p-0"
                 >
                   <RefreshCw className={`h-4 w-4 ${ratesLoading ? 'animate-spin' : ''}`} />
                 </Button>
