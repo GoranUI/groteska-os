@@ -6,21 +6,18 @@ const corsHeaders = {
 }
 
 interface ExchangeRateResponse {
-  status: string;
-  code: number;
   result?: {
-    valute: Array<{
-      ean: string;
-      sifra: string;
-      oznaka: string;
-      naziv: string;
-      kurs: {
-        kup: string;
-        sre: string;
-        pro: string;
-      };
-    }>;
     date: string;
+    eur: {
+      kup: string;
+      sre: string;
+      pro: string;
+    };
+    usd: {
+      kup: string;
+      sre: string;
+      pro: string;
+    };
   };
   msg?: string;
 }
@@ -37,7 +34,7 @@ serve(async (req) => {
       throw new Error('KURSNA_LISTA_API_ID not configured')
     }
 
-    // Fetch current exchange rates
+    // Fetch current exchange rates using JSON endpoint
     const response = await fetch(`https://api.kursna-lista.info/${apiId}/kursna_lista/json`, {
       headers: {
         'User-Agent': 'StacksFlow-App/1.0'
@@ -50,26 +47,23 @@ serve(async (req) => {
 
     const data: ExchangeRateResponse = await response.json()
 
-    if (data.status !== 'ok') {
-      throw new Error(`API error: ${data.code} - ${data.msg}`)
+    if (!data.result) {
+      throw new Error('No result data from API')
     }
 
-    // Extract USD and EUR rates (RSD is base currency, so rate = 1)
-    const valute = data.result?.valute || []
-    const usdRate = valute.find(v => v.oznaka === 'USD')
-    const eurRate = valute.find(v => v.oznaka === 'EUR')
-
-    // Convert middle rates to numbers - these represent how many RSD = 1 foreign currency
+    // Extract USD and EUR "sre" (middle) rates - these represent how many RSD = 1 foreign currency
     const rates = {
-      USD: usdRate ? parseFloat(usdRate.kurs.sre) : 110, // fallback
-      EUR: eurRate ? parseFloat(eurRate.kurs.sre) : 120, // fallback  
+      USD: data.result.usd ? parseFloat(data.result.usd.sre) : 99.32, // current fallback
+      EUR: data.result.eur ? parseFloat(data.result.eur.sre) : 117.16, // current fallback  
       RSD: 1
     }
+
+    console.log('Fetched exchange rates:', rates)
 
     return new Response(
       JSON.stringify({
         rates,
-        lastUpdated: data.result?.date || new Date().toISOString(),
+        lastUpdated: data.result.date || new Date().toISOString(),
         source: 'kursna-lista.info'
       }),
       {
@@ -82,7 +76,7 @@ serve(async (req) => {
     // Return fallback rates
     return new Response(
       JSON.stringify({
-        rates: { USD: 110, EUR: 120, RSD: 1 },
+        rates: { USD: 99.32, EUR: 117.16, RSD: 1 },
         lastUpdated: new Date().toISOString(),
         source: 'fallback',
         error: error.message
