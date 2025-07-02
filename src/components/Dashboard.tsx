@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown, Users, Receipt, DollarSign, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
@@ -21,8 +21,25 @@ interface DashboardProps {
 const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardProps) => {
   const [recentTransactionsPage, setRecentTransactionsPage] = useState(1);
   const [timeRange, setTimeRange] = useState<TimeRange>({ from: undefined, to: undefined });
-  const { lastUpdated, refetch, loading: ratesLoading } = useExchangeRates();
+  const { lastUpdated, refetch, forceRefresh, loading: ratesLoading, error: ratesError } = useExchangeRates();
   const itemsPerPage = 10;
+
+  // Daily rate limiting functionality
+  const canUpdateRates = useCallback(() => {
+    if (!lastUpdated) return true;
+    const today = new Date();
+    const lastUpdateDate = new Date(lastUpdated);
+    return today.toDateString() !== lastUpdateDate.toDateString();
+  }, [lastUpdated]);
+
+  const handleUpdateRates = useCallback(() => {
+    if (canUpdateRates()) {
+      forceRefresh();
+    } else {
+      // Show notification that rates were already updated today
+      console.log('Exchange rates already updated today');
+    }
+  }, [canUpdateRates, forceRefresh]);
 
   // Filter data based on time range
   const filteredData = useMemo(() => {
@@ -111,12 +128,13 @@ const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardPro
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
-            disabled={ratesLoading}
+            onClick={handleUpdateRates}
+            disabled={ratesLoading || !canUpdateRates()}
             className="gap-2"
+            title={!canUpdateRates() ? "Exchange rates already updated today" : "Update exchange rates"}
           >
             <RefreshCw className={`h-4 w-4 ${ratesLoading ? 'animate-spin' : ''}`} />
-            Update Rates
+            {!canUpdateRates() ? 'Rates Updated Today' : 'Update Rates'}
           </Button>
         </div>
       </div>
