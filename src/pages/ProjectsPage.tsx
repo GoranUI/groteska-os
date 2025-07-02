@@ -7,6 +7,7 @@ import { ProjectForm } from "@/components/ProjectForm";
 import { SubTaskForm } from "@/components/SubTaskForm";
 import { ProjectList } from "@/components/ProjectList";
 import { SubTaskList } from "@/components/SubTaskList";
+import { SubTaskFilters } from "@/components/SubTaskFilters";
 import { PaymentTracker } from "@/components/PaymentTracker";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useProjectData } from "@/hooks/data/useProjectData";
@@ -22,6 +23,13 @@ export default function ProjectsPage() {
   const [editingSubTask, setEditingSubTask] = useState<SubTask | null>(null);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showSubTaskForm, setShowSubTaskForm] = useState(false);
+  
+  // Filter states
+  const [filteredProjectId, setFilteredProjectId] = useState<string | undefined>();
+  const [filteredClientId, setFilteredClientId] = useState<string | undefined>();
+  const [filteredStatus, setFilteredStatus] = useState<string | undefined>();
+  const [filteredPriority, setFilteredPriority] = useState<string | undefined>();
+  const [activeTab, setActiveTab] = useState("projects");
 
   const handleAddProject = async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     await addProject(projectData);
@@ -66,7 +74,18 @@ export default function ProjectsPage() {
     setEditingSubTask(null);
   };
 
-  const handleMarkAsPaid = async (subTaskId: string, clientName: string) => {
+  const handleProjectClick = (projectId: string) => {
+    setFilteredProjectId(projectId);
+    setActiveTab("tasks");
+  };
+
+  const handleClearFilters = () => {
+    setFilteredProjectId(undefined);
+    setFilteredClientId(undefined);
+    setFilteredStatus(undefined);
+    setFilteredPriority(undefined);
+  };
+    const handleMarkAsPaid = async (subTaskId: string, clientName: string) => {
     await markAsPaid(subTaskId, clientName);
   };
 
@@ -92,7 +111,7 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="projects" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="projects" className="flex items-center space-x-2">
             <FolderOpen className="h-4 w-4" />
@@ -121,6 +140,7 @@ export default function ProjectsPage() {
             clients={clients}
             projects={projects}
             subTasks={subTasks}
+            onProjectClick={handleProjectClick}
           />
         </TabsContent>
 
@@ -133,6 +153,19 @@ export default function ProjectsPage() {
               projects={projects}
             />
           )}
+          <SubTaskFilters
+            clients={clients}
+            projects={projects}
+            selectedProjectId={filteredProjectId}
+            selectedClientId={filteredClientId}
+            selectedStatus={filteredStatus}
+            selectedPriority={filteredPriority}
+            onProjectChange={setFilteredProjectId}
+            onClientChange={setFilteredClientId}
+            onStatusChange={setFilteredStatus}
+            onPriorityChange={setFilteredPriority}
+            onClearFilters={handleClearFilters}
+          />
           <SubTaskList
             subTasks={subTasks}
             projects={projects}
@@ -140,6 +173,10 @@ export default function ProjectsPage() {
             onEdit={handleEditSubTask}
             onDelete={deleteSubTask}
             onMarkAsPaid={handleMarkAsPaid}
+            filteredProjectId={filteredProjectId}
+            filteredClientId={filteredClientId}
+            filteredStatus={filteredStatus}
+            filteredPriority={filteredPriority}
           />
         </TabsContent>
 

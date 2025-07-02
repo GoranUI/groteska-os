@@ -13,9 +13,24 @@ interface SubTaskListProps {
   onEdit: (subTask: SubTask) => void;
   onDelete: (id: string) => void;
   onMarkAsPaid: (id: string, clientName: string) => void;
+  filteredProjectId?: string;
+  filteredClientId?: string;
+  filteredStatus?: string;
+  filteredPriority?: string;
 }
 
-export const SubTaskList = ({ subTasks, projects, clients, onEdit, onDelete, onMarkAsPaid }: SubTaskListProps) => {
+export const SubTaskList = ({ 
+  subTasks, 
+  projects, 
+  clients, 
+  onEdit, 
+  onDelete, 
+  onMarkAsPaid,
+  filteredProjectId,
+  filteredClientId,
+  filteredStatus,
+  filteredPriority
+}: SubTaskListProps) => {
   const getProjectName = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     return project?.name || 'Unknown Project';
@@ -28,11 +43,27 @@ export const SubTaskList = ({ subTasks, projects, clients, onEdit, onDelete, onM
     return client?.name || 'Unknown Client';
   };
 
+  const formatStatus = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   const getStatusColor = (status: string) => {
     return status === 'paid' 
-      ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-      : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      ? 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200' 
+      : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200';
   };
+
+  // Filter sub-tasks based on provided filters
+  const filteredSubTasks = subTasks.filter(subTask => {
+    const project = projects.find(p => p.id === subTask.projectId);
+    
+    if (filteredProjectId && subTask.projectId !== filteredProjectId) return false;
+    if (filteredClientId && project?.clientId !== filteredClientId) return false;
+    if (filteredStatus && subTask.status !== filteredStatus) return false;
+    // Note: Sub-tasks don't have priority in current schema, so we skip this filter
+    
+    return true;
+  });
 
   return (
     <Card className="border-0 shadow-sm ring-1 ring-gray-200">
@@ -42,17 +73,28 @@ export const SubTaskList = ({ subTasks, projects, clients, onEdit, onDelete, onM
             <ListTodo className="h-5 w-5 text-green-600" />
           </div>
           <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">All Sub-tasks</CardTitle>
-            <p className="text-sm text-gray-600">{subTasks.length} total sub-tasks</p>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              {filteredProjectId || filteredClientId || filteredStatus ? 'Filtered Sub-tasks' : 'All Sub-tasks'}
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              {filteredSubTasks.length} of {subTasks.length} sub-tasks
+            </p>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        {subTasks.length === 0 ? (
+        {filteredSubTasks.length === 0 ? (
           <div className="text-center py-12">
             <ListTodo className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No sub-tasks yet</h3>
-            <p className="text-gray-600">Create your first sub-task to get started</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {subTasks.length === 0 ? 'No sub-tasks yet' : 'No sub-tasks match your filters'}
+            </h3>
+            <p className="text-gray-600">
+              {subTasks.length === 0 
+                ? 'Create your first sub-task to get started' 
+                : 'Try adjusting your filters or create a new sub-task'
+              }
+            </p>
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 overflow-hidden">
@@ -69,7 +111,7 @@ export const SubTaskList = ({ subTasks, projects, clients, onEdit, onDelete, onM
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {subTasks.map((subTask) => (
+                {filteredSubTasks.map((subTask) => (
                   <TableRow key={subTask.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-gray-900">
                       <div>
@@ -89,8 +131,8 @@ export const SubTaskList = ({ subTasks, projects, clients, onEdit, onDelete, onM
                       {subTask.amount.toLocaleString()} {subTask.currency}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(subTask.status)}>
-                        {subTask.status}
+                      <Badge variant="outline" className={`text-xs font-medium border ${getStatusColor(subTask.status)} px-2 py-1`}>
+                        {formatStatus(subTask.status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-700">
