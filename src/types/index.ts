@@ -1,4 +1,3 @@
-
 export interface Client {
   id: string;
   name: string;
@@ -113,4 +112,18 @@ export interface UserProfile {
   phone?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface TimeEntry {
+  id: string;
+  projectId: string;
+  taskId?: string | null;
+  userId: string;
+  startTime: string; // ISO string
+  endTime?: string | null; // ISO string, null if running
+  duration: number; // in seconds
+  note?: string | null;
+  isBillable: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
