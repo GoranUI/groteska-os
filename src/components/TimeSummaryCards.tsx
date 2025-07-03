@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTimeEntryData } from "@/hooks/data/useTimeEntryData";
 import { useAuth } from "@/hooks/useAuth";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay, subWeeks } from "date-fns";
 
 interface TimeSummaryCardsProps {
   selectedDate: Date;
@@ -40,6 +40,21 @@ export const TimeSummaryCards = ({ selectedDate, activeView }: TimeSummaryCardsP
       userId: user.id,
       from,
       to,
+    });
+
+    // Fetch last week's data for comparison
+    const lastWeekStart = startOfWeek(subWeeks(selectedDate, 1), { weekStartsOn: 1 });
+    const lastWeekEnd = endOfWeek(subWeeks(selectedDate, 1), { weekStartsOn: 1 });
+    
+    fetchTimeEntries({
+      userId: user.id,
+      from: lastWeekStart.toISOString(),
+      to: lastWeekEnd.toISOString(),
+    }).then(result => {
+      if (result?.data) {
+        const lastWeekTotal = result.data.reduce((sum: number, entry: any) => sum + entry.duration, 0);
+        setLastWeekTime(lastWeekTotal);
+      }
     });
   }, [selectedDate, activeView, user, fetchTimeEntries]);
 

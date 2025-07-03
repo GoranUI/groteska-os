@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useProjectData } from "@/hooks/data/useProjectData";
 import { useSubTaskData } from "@/hooks/data/useSubTaskData";
-import { useTimeEntryData } from "@/hooks/data/useTimeEntryData";
 import { useAuth } from "@/hooks/useAuth";
 import { TimeTracker } from "@/components/TimeTracker";
 import { TimelineView } from "@/components/TimelineView";
 import { TimeEntryList } from "@/components/TimeEntryList";
 import { TimeSummaryCards } from "@/components/TimeSummaryCards";
+import { TimeEntryForm } from "@/components/TimeEntryForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Plus, Calendar, BarChart3 } from "lucide-react";
+import { Clock, BarChart3 } from "lucide-react";
 
 export default function TimeReportPage() {
   const { user } = useAuth();
@@ -41,14 +41,7 @@ export default function TimeReportPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Time Tracker</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add Manually
-            </Button>
+            <TimeEntryForm projects={projects} subTasks={subTasks} />
             <Button
               variant="outline"
               size="sm"
