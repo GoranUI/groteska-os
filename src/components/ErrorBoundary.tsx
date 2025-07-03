@@ -24,8 +24,8 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // Log to security system if available
-    if (window.logSecurityEvent) {
-      window.logSecurityEvent('javascript_error', {
+    if ((window as any).logSecurityEvent) {
+      (window as any).logSecurityEvent('javascript_error', {
         message: error.message,
         stack: error.stack,
         componentStack: errorInfo.componentStack,
