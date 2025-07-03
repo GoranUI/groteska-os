@@ -9,6 +9,8 @@ import { TimelineView } from "@/components/TimelineView";
 import { TimeEntryList } from "@/components/TimeEntryList";
 import { TimeSummaryCards } from "@/components/TimeSummaryCards";
 import { TimeEntryForm } from "@/components/TimeEntryForm";
+import { TimeEntryDebugger } from "@/components/TimeEntryDebugger";
+import { TimeEntryStateInspector } from "@/components/TimeEntryStateInspector";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, BarChart3 } from "lucide-react";
@@ -120,6 +122,10 @@ export default function TimeReportPage() {
           </div>
         </div>
       </div>
+      
+      {/* Debug Components */}
+      <TimeEntryDebugger />
+      <TimeEntryStateInspector selectedDate={selectedDate} view={activeView} />
     </div>
   );
 }

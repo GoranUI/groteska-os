@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -21,6 +21,13 @@ export const TimeEntryList = ({ projects, subTasks, selectedDate, view }: TimeEn
   const { timeEntries, fetchTimeEntries, deleteTimeEntry } = useTimeEntryData();
   const [groupedEntries, setGroupedEntries] = useState<Record<string, TimeEntry[]>>({});
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Debug render counter - only log every 10th render to reduce noise
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  if (renderCount.current % 10 === 0) {
+    console.log(`TimeEntryList: Render #${renderCount.current} - timeEntries: ${timeEntries.length}, groupedEntries: ${Object.keys(groupedEntries).length} groups`);
+  }
 
   // Listen for custom events to force refresh
   useEffect(() => {
@@ -33,34 +40,23 @@ export const TimeEntryList = ({ projects, subTasks, selectedDate, view }: TimeEn
     return () => window.removeEventListener('timeEntryAdded', handleTimeEntryAdded);
   }, []);
 
+  // TimeEntryList now uses the same data as TimelineView - no separate fetch needed
+  // The timeEntries state is shared globally and will be updated by TimelineView's fetch
   useEffect(() => {
-    if (!user) return;
+    console.log('TimeEntryList: Component mounted/updated, using shared timeEntries state');
+    console.log('TimeEntryList: Current timeEntries count:', timeEntries.length);
+  }, [timeEntries.length]);
 
-    let from: string, to: string;
+  // Memoize grouped entries to prevent unnecessary re-renders
+  const groupedEntriesMemo = useMemo(() => {
+    console.log('TimeEntryList: Processing', timeEntries.length, 'entries');
+    console.log('TimeEntryList: Entry details:', timeEntries.map(e => ({
+      id: e.id,
+      startTime: e.startTime,
+      projectId: e.projectId,
+      date: format(new Date(e.startTime), 'yyyy-MM-dd')
+    })));
     
-    switch (view) {
-      case "day":
-        from = startOfDay(selectedDate).toISOString();
-        to = endOfDay(selectedDate).toISOString();
-        break;
-      case "week":
-        from = startOfWeek(selectedDate, { weekStartsOn: 1 }).toISOString();
-        to = endOfWeek(selectedDate, { weekStartsOn: 1 }).toISOString();
-        break;
-      case "month":
-        from = startOfMonth(selectedDate).toISOString();
-        to = endOfMonth(selectedDate).toISOString();
-        break;
-    }
-
-    fetchTimeEntries({
-      userId: user.id,
-      from,
-      to,
-    });
-  }, [selectedDate, view, user, fetchTimeEntries, refreshTrigger]);
-
-  useEffect(() => {
     // Group entries by date
     const grouped = timeEntries.reduce((acc, entry) => {
       const date = format(new Date(entry.startTime), 'yyyy-MM-dd');
@@ -68,6 +64,14 @@ export const TimeEntryList = ({ projects, subTasks, selectedDate, view }: TimeEn
         acc[date] = [];
       }
       acc[date].push(entry);
+      
+      console.log('TimeEntryList: Grouping entry:', {
+        id: entry.id,
+        startTime: entry.startTime,
+        date: date,
+        projectId: entry.projectId
+      });
+      
       return acc;
     }, {} as Record<string, TimeEntry[]>);
 
@@ -76,59 +80,70 @@ export const TimeEntryList = ({ projects, subTasks, selectedDate, view }: TimeEn
       grouped[date].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     });
 
-    setGroupedEntries(grouped);
+    console.log('TimeEntryList: Grouped entries:', Object.keys(grouped).map(date => ({
+      date,
+      count: grouped[date].length,
+      entryIds: grouped[date].map(e => e.id)
+    })));
+    
+    return grouped;
   }, [timeEntries]);
 
-  const getProjectColor = (projectId: string) => {
+  // Update grouped entries when memoized value changes
+  useEffect(() => {
+    setGroupedEntries(groupedEntriesMemo);
+  }, [groupedEntriesMemo]);
+
+  const getProjectColor = useCallback((projectId: string) => {
     const colors = [
       '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
       '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
     ];
     const index = projects.findIndex(p => p.id === projectId);
     return colors[index % colors.length];
-  };
+  }, [projects]);
 
-  const getProjectName = (projectId: string) => {
+  const getProjectName = useCallback((projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     return project?.name || "Unknown Project";
-  };
+  }, [projects]);
 
-  const getTaskName = (taskId: string | null) => {
+  const getTaskName = useCallback((taskId: string | null) => {
     if (!taskId) return null;
     const task = subTasks.find(t => t.id === taskId);
     return task?.name || "Unknown Task";
-  };
+  }, [subTasks]);
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = useCallback((seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const getTotalForDate = (entries: TimeEntry[]) => {
+  const getTotalForDate = useCallback((entries: TimeEntry[]) => {
     return entries.reduce((sum, entry) => sum + entry.duration, 0);
-  };
+  }, []);
 
-  const handleDelete = async (entryId: string) => {
+  const handleDelete = useCallback(async (entryId: string) => {
     if (window.confirm("Are you sure you want to delete this time entry?")) {
       await deleteTimeEntry(entryId);
     }
-  };
+  }, [deleteTimeEntry]);
 
-  const handleEdit = (entry: TimeEntry) => {
+  const handleEdit = useCallback((entry: TimeEntry) => {
     // TODO: Implement edit functionality
     console.log("Edit entry:", entry);
-  };
+  }, []);
 
-  const handleDuplicate = (entry: TimeEntry) => {
+  const handleDuplicate = useCallback((entry: TimeEntry) => {
     // TODO: Implement duplicate functionality
     console.log("Duplicate entry:", entry);
-  };
+  }, []);
 
-  const handleSplit = (entry: TimeEntry) => {
+  const handleSplit = useCallback((entry: TimeEntry) => {
     // TODO: Implement split functionality
     console.log("Split entry:", entry);
-  };
+  }, []);
 
   return (
     <Card>

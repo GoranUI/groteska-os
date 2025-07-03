@@ -1,10 +1,10 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useTimeEntryData } from "@/hooks/data/useTimeEntryData";
 import { useAuth } from "@/hooks/useAuth";
 import { Project, SubTask, TimeEntry } from "@/types";
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, eachWeekOfInterval } from "date-fns";
 import { TimeEntryForm } from "./TimeEntryForm";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 interface TimelineViewProps {
   selectedDate: Date;
@@ -28,21 +28,29 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
   const [dragSelection, setDragSelection] = useState<DragSelection | null>(null);
   const [showQuickForm, setShowQuickForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Debug render counter - only log every 10th render to reduce noise
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  if (renderCount.current % 10 === 0) {
+    console.log(`TimelineView: Render #${renderCount.current} - timeEntries: ${timeEntries.length}, displayEntries: ${displayEntries.length}`);
+  }
 
   // Force refresh function
   const forceRefresh = () => {
+    console.log('TimelineView: Force refresh triggered');
     setRefreshKey(prev => prev + 1);
   };
 
   // Listen for custom events to force refresh
   useEffect(() => {
-    const handleTimeEntryAdded = () => {
-      console.log('Custom event received in TimelineView - refreshing');
+    const handleTimeEntryAdded = (event: CustomEvent) => {
+      console.log('TimelineView: Custom event received - refreshing', event.detail);
       forceRefresh();
     };
     
-    window.addEventListener('timeEntryAdded', handleTimeEntryAdded);
-    return () => window.removeEventListener('timeEntryAdded', handleTimeEntryAdded);
+    window.addEventListener('timeEntryAdded', handleTimeEntryAdded as EventListener);
+    return () => window.removeEventListener('timeEntryAdded', handleTimeEntryAdded as EventListener);
   }, []);
 
   useEffect(() => {
@@ -65,7 +73,10 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
         break;
     }
 
-    console.log('Fetching time entries for timeline:', { from, to, userId: user.id });
+    console.log('TimelineView: Fetching time entries for timeline:', { from, to, userId: user.id, view });
+    console.trace('TimelineView: Stack trace for fetch call');
+    
+    // Use the centralized fetch function
     fetchTimeEntries({
       userId: user.id,
       from,
@@ -73,45 +84,92 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     });
   }, [selectedDate, view, user, fetchTimeEntries, refreshKey]);
 
-  useEffect(() => {
-    console.log('Timeline entries updated:', timeEntries);
-    setDisplayEntries(timeEntries);
-  }, [timeEntries]);
+  // Memoize filtered entries to prevent unnecessary re-renders
+  const filteredEntries = useMemo(() => {
+    // Only log filtering details occasionally to reduce noise
+    const shouldLog = Math.random() < 0.1; // 10% chance to log
+    
+    if (shouldLog) {
+      console.log('TimelineView: Filtering entries - Total entries:', timeEntries.length);
+      console.log('TimelineView: Selected date:', selectedDate.toISOString());
+    }
+    
+    const currentDate = selectedDate;
+    const startOfDayDate = startOfDay(currentDate);
+    const endOfDayDate = endOfDay(currentDate);
+    
+    if (shouldLog) {
+      console.log('TimelineView: Date range:', {
+        startOfDay: startOfDayDate.toISOString(),
+        endOfDay: endOfDayDate.toISOString()
+      });
+    }
+    
+    const filtered = timeEntries.filter(entry => {
+      const entryDate = new Date(entry.startTime);
+      const isInRange = entryDate >= startOfDayDate && entryDate <= endOfDayDate;
+      
+      if (shouldLog) {
+        console.log('TimelineView: Entry filter check:', {
+          id: entry.id,
+          entryDate: entryDate.toISOString(),
+          isInRange,
+          startTime: entry.startTime,
+          projectId: entry.projectId
+        });
+      }
+      
+      return isInRange;
+    });
+    
+    if (shouldLog) {
+      console.log('TimelineView: Filtered entries for display:', filtered.length, 'entries');
+      console.log('TimelineView: Filtered entry IDs:', filtered.map(e => e.id));
+    }
+    
+    return filtered;
+  }, [timeEntries, selectedDate]);
 
-  const getProjectColor = (projectId: string) => {
+  // Update display entries when filtered entries change
+  useEffect(() => {
+    console.log('TimelineView: Updating display entries:', filteredEntries.length, 'entries');
+    setDisplayEntries(filteredEntries);
+  }, [filteredEntries]);
+
+  const getProjectColor = useCallback((projectId: string) => {
     const colors = [
       '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
       '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
     ];
     const index = projects.findIndex(p => p.id === projectId);
     return colors[index % colors.length];
-  };
+  }, [projects]);
 
-  const getProjectName = (projectId: string) => {
+  const getProjectName = useCallback((projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     return project?.name || "Unknown Project";
-  };
+  }, [projects]);
 
-  const getTaskName = (taskId: string | null) => {
+  const getTaskName = useCallback((taskId: string | null) => {
     if (!taskId) return null;
     const task = subTasks.find(t => t.id === taskId);
     return task?.name || "Unknown Task";
-  };
+  }, [subTasks]);
 
-  const timeToY = (time: string) => {
+  const timeToY = useCallback((time: string) => {
     const [hours, minutes] = time.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes;
     return (totalMinutes / (24 * 60)) * 100; // Convert to percentage
-  };
+  }, []);
 
-  const yToTime = (y: number) => {
+  const yToTime = useCallback((y: number) => {
     const totalMinutes = (y / 100) * (24 * 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = Math.floor(totalMinutes % 60);
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (view !== 'day') return;
     
     const rect = e.currentTarget.getBoundingClientRect();
@@ -125,9 +183,9 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
       startTime: time,
       endTime: time,
     });
-  };
+  }, [view, yToTime]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging || !dragSelection) return;
     
     const rect = e.currentTarget.getBoundingClientRect();
@@ -139,9 +197,9 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
       endY: y,
       endTime: time,
     });
-  };
+  }, [isDragging, dragSelection, yToTime]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (!isDragging || !dragSelection) return;
     
     setIsDragging(false);
@@ -157,12 +215,24 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     } else {
       setDragSelection(null);
     }
-  };
+  }, [isDragging, dragSelection]);
 
-  const timeToMinutes = (time: string) => {
+  const timeToMinutes = useCallback((time: string) => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
-  };
+  }, []);
+
+  // Move getEntryPosition to top level to fix React hooks error
+  const getEntryPosition = useCallback((entry: TimeEntry) => {
+    const startTime = new Date(entry.startTime);
+    const startHour = startTime.getHours() + startTime.getMinutes() / 60;
+    const duration = entry.duration / 3600; // Convert to hours
+    
+    return {
+      top: `${(startHour / 24) * 100}%`,
+      height: `${Math.max((duration / 24) * 100, 0.5)}%`, // Minimum 0.5% height
+    };
+  }, []);
 
   // Day view - 24-hour timeline
   const renderDayView = () => {
@@ -176,17 +246,6 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
         );
       }
       return labels;
-    };
-
-    const getEntryPosition = (entry: TimeEntry) => {
-      const startTime = new Date(entry.startTime);
-      const startHour = startTime.getHours() + startTime.getMinutes() / 60;
-      const duration = entry.duration / 3600; // Convert to hours
-      
-      return {
-        top: `${(startHour / 24) * 100}%`,
-        height: `${Math.max((duration / 24) * 100, 0.5)}%`, // Minimum 0.5% height
-      };
     };
 
     return (
@@ -230,29 +289,31 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
           )}
 
           {/* Time Entries */}
-          {displayEntries.map((entry) => {
-            const position = getEntryPosition(entry);
-            const projectName = getProjectName(entry.projectId);
-            const taskName = getTaskName(entry.taskId);
-            const color = getProjectColor(entry.projectId);
-            
-            return (
-              <div
-                key={entry.id}
-                className="absolute left-2 right-2 rounded px-2 flex items-center text-white text-xs font-medium shadow-sm hover:shadow-md cursor-pointer transition-all"
-                style={{
-                  ...position,
-                  backgroundColor: color,
-                  minHeight: '24px',
-                }}
-                title={`${projectName}${taskName ? ` - ${taskName}` : ''}\n${format(new Date(entry.startTime), 'HH:mm')} - ${entry.endTime ? format(new Date(entry.endTime), 'HH:mm') : 'Running'}`}
-              >
-                <span className="truncate">
-                  {projectName}{taskName ? ` - ${taskName}` : ''}
-                </span>
-              </div>
-            );
-          })}
+          {useMemo(() => {
+            return displayEntries.map((entry) => {
+              const position = getEntryPosition(entry);
+              const projectName = getProjectName(entry.projectId);
+              const taskName = getTaskName(entry.taskId);
+              const color = getProjectColor(entry.projectId);
+              
+              return (
+                <div
+                  key={entry.id}
+                  className="absolute left-2 right-2 rounded px-2 flex items-center text-white text-xs font-medium shadow-sm hover:shadow-md cursor-pointer transition-all"
+                  style={{
+                    ...position,
+                    backgroundColor: color,
+                    minHeight: '24px',
+                  }}
+                  title={`${projectName}${taskName ? ` - ${taskName}` : ''}\n${format(new Date(entry.startTime), 'HH:mm')} - ${entry.endTime ? format(new Date(entry.endTime), 'HH:mm') : 'Running'}`}
+                >
+                  <span className="truncate">
+                    {projectName}{taskName ? ` - ${taskName}` : ''}
+                  </span>
+                </div>
+              );
+            });
+          }, [displayEntries, getEntryPosition, getProjectName, getTaskName, getProjectColor])}
 
           {/* Current Time Indicator */}
           {isSameDay(selectedDate, new Date()) && (
@@ -269,22 +330,28 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
 
         {/* Quick Entry Form */}
         {showQuickForm && dragSelection && (
-          <TimeEntryForm
-            projects={projects}
-            subTasks={subTasks}
-            prefilledData={{
-              startTime: dragSelection.startY < dragSelection.endY ? dragSelection.startTime : dragSelection.endTime,
-              endTime: dragSelection.startY < dragSelection.endY ? dragSelection.endTime : dragSelection.startTime,
-              date: format(selectedDate, 'yyyy-MM-dd'),
-            }}
-            onClose={() => {
-              setShowQuickForm(false);
-              setDragSelection(null);
-            }}
-            onSuccess={() => {
-              forceRefresh(); // Refresh the timeline after successful entry
-            }}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <TimeEntryForm
+                projects={projects}
+                subTasks={subTasks}
+                prefilledData={{
+                  startTime: dragSelection.startY < dragSelection.endY ? dragSelection.startTime : dragSelection.endTime,
+                  endTime: dragSelection.startY < dragSelection.endY ? dragSelection.endTime : dragSelection.startTime,
+                  date: format(selectedDate, 'yyyy-MM-dd'),
+                }}
+                onClose={() => {
+                  setShowQuickForm(false);
+                  setDragSelection(null);
+                }}
+                onSuccess={() => {
+                  setShowQuickForm(false);
+                  setDragSelection(null);
+                  forceRefresh(); // Refresh the timeline after successful entry
+                }}
+              />
+            </div>
+          </div>
         )}
       </div>
     );
@@ -456,14 +523,42 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     );
   };
 
-  switch (view) {
-    case "day":
-      return renderDayView();
-    case "week":
-      return renderWeekView();
-    case "month":
-      return renderMonthView();
-    default:
-      return renderDayView();
-  }
+  // Memoize the rendered content to prevent unnecessary re-renders
+  const renderedContent = useMemo(() => {
+    switch (view) {
+      case "day":
+        return renderDayView();
+      case "week":
+        return renderWeekView();
+      case "month":
+        return renderMonthView();
+      default:
+        return renderDayView();
+    }
+  }, [view, displayEntries, selectedDate, projects, subTasks, isDragging, dragSelection, showQuickForm]);
+
+  return (
+    <ErrorBoundary>
+      <div className="relative">
+        {/* Floating Add Button for Day View */}
+        {view === "day" && (
+          <div className="absolute top-4 right-4 z-10">
+            <TimeEntryForm 
+              projects={projects} 
+              subTasks={subTasks}
+              prefilledData={{
+                date: format(selectedDate, 'yyyy-MM-dd'),
+              }}
+              onSuccess={() => {
+                forceRefresh();
+              }}
+            />
+          </div>
+        )}
+        
+        {/* Timeline Content */}
+        {renderedContent}
+      </div>
+    </ErrorBoundary>
+  );
 };

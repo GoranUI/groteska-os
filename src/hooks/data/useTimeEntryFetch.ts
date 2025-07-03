@@ -3,6 +3,10 @@ import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTimeEntryCore } from "./useTimeEntryCore";
 
+// Global fetch state to prevent multiple simultaneous fetches
+let isFetching = false;
+let lastFetchParams: string | null = null;
+
 export function useTimeEntryFetch() {
   const { setTimeEntries, setLoadingState, handleApiError, transformEntry } = useTimeEntryCore();
 
@@ -13,7 +17,26 @@ export function useTimeEntryFetch() {
     from?: string;
     to?: string;
   }) => {
-    console.log('Fetching time entries with filters:', filters);
+    // Create a unique key for this fetch request
+    const fetchKey = JSON.stringify(filters || {});
+    
+    // Prevent duplicate fetches with same parameters
+    if (isFetching && lastFetchParams === fetchKey) {
+      console.log('useTimeEntryFetch: Skipping duplicate fetch with same parameters');
+      return { data: null, error: null };
+    }
+    
+    // Prevent multiple simultaneous fetches
+    if (isFetching) {
+      console.log('useTimeEntryFetch: Another fetch in progress, skipping');
+      return { data: null, error: null };
+    }
+    
+    console.log('useTimeEntryFetch: Starting fetch with filters:', filters);
+    console.trace('useTimeEntryFetch: Stack trace for fetch call');
+    
+    isFetching = true;
+    lastFetchParams = fetchKey;
     setLoadingState(true);
     
     try {
@@ -43,21 +66,25 @@ export function useTimeEntryFetch() {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Fetch error:', error);
+        console.error('useTimeEntryFetch: Supabase error:', error);
         return handleApiError(error, 'fetchTimeEntries');
       }
 
-      console.log('Fetched data:', data);
+      console.log('useTimeEntryFetch: Raw data from Supabase:', data?.length || 0, 'entries');
       const transformedEntries = (data || []).map(transformEntry);
-      console.log('Transformed entries:', transformedEntries);
+      console.log('useTimeEntryFetch: Transformed entries:', transformedEntries.length, 'entries');
+      console.log('useTimeEntryFetch: Setting state with', transformedEntries.length, 'entries');
+      console.trace('useTimeEntryFetch: Stack trace for setTimeEntries call');
       
       setTimeEntries(transformedEntries);
       
       return { data: transformedEntries, error: null };
     } catch (err) {
-      console.error('Fetch catch error:', err);
+      console.error('useTimeEntryFetch: Catch error:', err);
       return handleApiError(err, 'fetchTimeEntries');
     } finally {
+      isFetching = false;
+      lastFetchParams = null;
       setLoadingState(false);
     }
   }, [setTimeEntries, setLoadingState, handleApiError, transformEntry]);

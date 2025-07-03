@@ -44,22 +44,54 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
   });
 
   const parseDuration = (durationStr: string): number => {
-    const regex = /(?:(\d+)h)?(?:\s*(\d+)m)?/;
-    const match = durationStr.match(regex);
-    if (!match) return 0;
+    // Trim whitespace and convert to lowercase
+    const cleanStr = durationStr.trim().toLowerCase();
     
-    const hours = parseInt(match[1] || '0', 10);
-    const minutes = parseInt(match[2] || '0', 10);
-    return hours * 3600 + minutes * 60;
+    // More flexible regex that handles various formats
+    const regex = /^(\d+)\s*h(?:ours?)?\s*(\d+)\s*m(?:inutes?)?$|^(\d+)\s*h(?:ours?)?$|^(\d+)\s*m(?:inutes?)?$/;
+    const match = cleanStr.match(regex);
+    
+    if (!match) {
+      console.log('TimeEntryForm: Duration parsing failed for:', durationStr);
+      return 0;
+    }
+    
+    let hours = 0;
+    let minutes = 0;
+    
+    if (match[1] && match[2]) {
+      // Format: "2h30m" or "2 hours 30 minutes"
+      hours = parseInt(match[1], 10);
+      minutes = parseInt(match[2], 10);
+    } else if (match[3]) {
+      // Format: "2h" or "2 hours"
+      hours = parseInt(match[3], 10);
+    } else if (match[4]) {
+      // Format: "30m" or "30 minutes"
+      minutes = parseInt(match[4], 10);
+    }
+    
+    const totalSeconds = hours * 3600 + minutes * 60;
+    console.log('TimeEntryForm: Parsed duration:', { hours, minutes, totalSeconds });
+    
+    return totalSeconds;
   };
 
   const calculateEndTimeFromDuration = (startTime: string, durationSeconds: number): string => {
     const [hours, minutes] = startTime.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(hours, minutes, 0, 0);
     
-    const endDate = new Date(startDate.getTime() + durationSeconds * 1000);
-    return format(endDate, 'HH:mm');
+    // Calculate total minutes from start time
+    const startTotalMinutes = hours * 60 + minutes;
+    
+    // Add duration in minutes
+    const durationMinutes = Math.floor(durationSeconds / 60);
+    const endTotalMinutes = startTotalMinutes + durationMinutes;
+    
+    // Convert back to hours and minutes
+    const endHours = Math.floor(endTotalMinutes / 60) % 24; // Handle 24-hour overflow
+    const endMinutes = endTotalMinutes % 60;
+    
+    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +107,10 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
       let duration: number;
 
       if (inputMode === "duration" && formData.duration) {
+        console.log('TimeEntryForm: Parsing duration:', formData.duration);
         duration = parseDuration(formData.duration);
+        console.log('TimeEntryForm: Parsed duration in seconds:', duration);
+        
         if (duration <= 0) {
           alert("Please enter a valid duration (e.g., 2h30m)");
           return;
@@ -85,6 +120,32 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
         startTime = `${formData.date}T${formData.startTime}`;
         const calculatedEndTime = calculateEndTimeFromDuration(formData.startTime, duration);
         endTime = `${formData.date}T${calculatedEndTime}`;
+        
+        console.log('TimeEntryForm: Duration calculation:', {
+          startTime: formData.startTime,
+          duration: formData.duration,
+          durationSeconds: duration,
+          calculatedEndTime,
+          fullStartTime: startTime,
+          fullEndTime: endTime
+        });
+        
+        // Validate that the calculated end time is after start time
+        const startDateTime = new Date(startTime);
+        const endDateTime = new Date(endTime);
+        const calculatedDuration = Math.floor((endDateTime.getTime() - startDateTime.getTime()) / 1000);
+        
+        console.log('TimeEntryForm: Final validation:', {
+          startDateTime: startDateTime.toISOString(),
+          endDateTime: endDateTime.toISOString(),
+          calculatedDuration,
+          originalDuration: duration
+        });
+        
+        if (calculatedDuration <= 0) {
+          alert("Invalid duration calculation. Please check your start time and duration.");
+          return;
+        }
       } else {
         // Time range mode
         if (!formData.startTime || !formData.endTime) {
@@ -124,7 +185,7 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
         isBillable: false,
       });
 
-      console.log('Add time entry result:', result);
+      console.log('TimeEntryForm: Add time entry result:', result);
 
       if (result && !result.error) {
         // Reset form
@@ -140,11 +201,13 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
         
         setOpen(false);
         onClose?.();
+        
+        console.log('TimeEntryForm: Time entry added successfully, calling onSuccess');
         onSuccess?.(); // Trigger refresh
         
-        console.log('Time entry added successfully');
+        console.log('TimeEntryForm: Form reset and closed');
       } else {
-        console.error("Failed to add time entry:", result?.error);
+        console.error("TimeEntryForm: Failed to add time entry:", result?.error);
         alert(`Failed to add time entry: ${result?.error?.message || 'Unknown error'}`);
       }
     } catch (error) {
@@ -160,7 +223,11 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+        >
           <Plus className="h-4 w-4" />
           Add Manually
         </Button>
@@ -276,11 +343,14 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
                   <Label htmlFor="duration">Duration *</Label>
                   <Input
                     id="duration"
-                    placeholder="e.g., 2h30m"
+                    placeholder="e.g., 2h30m, 1h, 45m"
                     value={formData.duration}
                     onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Format: hours (h) and/or minutes (m). Examples: 2h30m, 1h, 45m
+                  </p>
                 </div>
               </div>
             )}

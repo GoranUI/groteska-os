@@ -4,6 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
 import { useTimeEntryCore } from "./useTimeEntryCore";
 
+// Import global state from core
+declare global {
+  var globalTimeEntries: TimeEntry[];
+}
+
+// Initialize global state if not exists
+if (typeof globalThis.globalTimeEntries === 'undefined') {
+  globalThis.globalTimeEntries = [];
+}
+
 export function useTimeEntryMutations() {
   const { setTimeEntries, setLoadingState, handleApiError, transformEntry, transformForDB } = useTimeEntryCore();
 
@@ -33,16 +43,36 @@ export function useTimeEntryMutations() {
         
         // Immediately update the state to include the new entry at the top
         setTimeEntries((prev) => {
+          console.log('Mutations: setTimeEntries callback triggered');
+          console.log('Mutations: Previous state has', prev.length, 'entries');
+          console.trace('Mutations: Stack trace for setTimeEntries call');
+          
           const updated = [transformedEntry, ...prev];
-          console.log('Updated entries in mutations:', updated);
+          console.log('Mutations: Updated entries state:', updated.length, 'entries');
+          console.log('Mutations: Previous entries:', prev.length);
+          console.log('Mutations: New entry details:', {
+            id: transformedEntry.id,
+            projectId: transformedEntry.projectId,
+            startTime: transformedEntry.startTime,
+            duration: transformedEntry.duration
+          });
+          
+          // Update global state immediately
+          globalThis.globalTimeEntries = updated;
+          console.log('Mutations: Updated global state with', updated.length, 'entries');
+          console.log('Mutations: Global state now contains:', globalThis.globalTimeEntries.map(e => e.id));
+          
+          // Force a small delay to ensure state propagation
+          setTimeout(() => {
+            console.log('Mutations: Dispatching timeEntryAdded event after delay');
+            window.dispatchEvent(new CustomEvent('timeEntryAdded', { detail: transformedEntry }));
+          }, 50);
+          
           return updated;
         });
         
-        // Force a re-render by setting a small timeout
-        setTimeout(() => {
-          console.log('Force refresh after creation');
-          window.dispatchEvent(new CustomEvent('timeEntryAdded', { detail: transformedEntry }));
-        }, 100);
+        // Event is now dispatched after the timeout above
+        console.log('Mutations: State update complete, event will be dispatched shortly');
       }
       
       return { data, error: null };
