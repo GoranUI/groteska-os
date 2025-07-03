@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Users, DollarSign } from "lucide-react";
+import { FolderOpen, Users, DollarSign, Fire } from "lucide-react";
 import { Project, SubTask, Client } from "@/types";
 
 interface ProjectListProps {
@@ -45,7 +45,7 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
     switch (status) {
       case 'negotiation': return 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
       case 'pending': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200';
-      case 'in_progress': return 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
+      case 'in_progress': return 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
       case 'waiting_on_client': return 'bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-200';
       case 'done': return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200';
       case 'canceled': return 'bg-red-100 text-red-800 hover:bg-red-200 border-red-200';
@@ -61,6 +61,18 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
       case 'low': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const renderPriorityBadge = (priority: string) => {
+    const isHigh = priority === 'high';
+    const className = `text-xs font-medium border w-fit ml-auto ${getPriorityColor(priority)} px-2 py-1`;
+    
+    return (
+      <Badge variant="outline" className={className}>
+        {isHigh && <Fire className="h-3 w-3 mr-1" />}
+        {formatPriority(priority)}
+      </Badge>
+    );
   };
 
   return (
@@ -117,12 +129,7 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
                           >
                             {formatStatus(project.status)}
                           </Badge>
-                          <Badge 
-                            variant="outline"
-                            className={`text-xs font-medium border ${getPriorityColor(project.priority)} px-2 py-1`}
-                          >
-                            {formatPriority(project.priority)}
-                          </Badge>
+                          {renderPriorityBadge(project.priority)}
                         </div>
                       </div>
                     </CardHeader>
@@ -135,7 +142,7 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
                         <div className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2">
                           <span className="text-gray-600 flex items-center">
                             <DollarSign className="h-4 w-4 mr-1" />
-                            Sub-tasks:
+                            Tasks:
                           </span>
                           <span className="font-semibold text-gray-900">{projectSubTasks.length}</span>
                         </div>

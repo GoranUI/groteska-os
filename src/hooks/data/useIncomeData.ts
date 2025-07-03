@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Income } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
 
 const transformIncome = (dbIncome: any): Income => ({
   id: dbIncome.id,
@@ -20,7 +21,7 @@ const transformIncome = (dbIncome: any): Income => ({
 
 export const useIncomeData = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { showSuccess, showError } = useToastNotifications();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,15 +43,11 @@ export const useIncomeData = () => {
       setIncomes((incomesData || []).map(transformIncome));
     } catch (error: any) {
       console.error('Error fetching incomes:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load income data. Please try again.",
-        variant: "destructive",
-      });
+      showError("Error", "Failed to load income data. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user, showError]);
 
   // Auto-fetch incomes when user changes
   useEffect(() => {
@@ -82,19 +79,12 @@ export const useIncomeData = () => {
       if (error) throw error;
 
       setIncomes(prev => [transformIncome(data), ...prev]);
-      toast({
-        title: "Success",
-        description: "Income has been added successfully.",
-      });
+      showSuccess("Success", "Income has been added successfully.");
     } catch (error: any) {
       console.error('Error adding income:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add income. Please try again.",
-        variant: "destructive",
-      });
+      showError("Error", "Failed to add income. Please try again.");
     }
-  }, [user, toast]);
+  }, [user, showSuccess, showError]);
 
   const addIncomeBulk = useCallback(async (incomes: Omit<Income, 'id'>[]) => {
     if (!user) return { success: 0, failed: 0 };
@@ -150,49 +140,39 @@ export const useIncomeData = () => {
         .from('incomes')
         .update(dbUpdates)
         .eq('id', id)
+        .eq('user_id', user?.id) // Additional security check
         .select()
         .single();
 
       if (error) throw error;
 
       setIncomes(prev => prev.map(income => income.id === id ? transformIncome(data) : income));
-      toast({
-        title: "Success",
-        description: "Income has been updated successfully.",
-      });
+      showSuccess("Success", "Income has been updated successfully.");
     } catch (error: any) {
       console.error('Error updating income:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update income. Please try again.",
-        variant: "destructive",
-      });
+      showError("Error", "Failed to update income. Please try again.");
     }
-  }, [toast]);
+  }, [user?.id, showSuccess, showError]);
 
   const deleteIncome = useCallback(async (id: string) => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('incomes')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id); // Additional security check
 
       if (error) throw error;
 
       setIncomes(prev => prev.filter(income => income.id !== id));
-      toast({
-        title: "Success",
-        description: "Income has been deleted successfully.",
-      });
+      showSuccess("Success", "Income has been deleted successfully.");
     } catch (error: any) {
       console.error('Error deleting income:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete income. Please try again.",
-        variant: "destructive",
-      });
+      showError("Error", "Failed to delete income. Please try again.");
     }
-  }, [toast]);
+  }, [user, showSuccess, showError]);
 
   return {
     incomes,

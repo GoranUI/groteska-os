@@ -85,7 +85,8 @@ export default function ProjectsPage() {
     setFilteredStatus(undefined);
     setFilteredPriority(undefined);
   };
-    const handleMarkAsPaid = async (subTaskId: string, clientName: string) => {
+
+  const handleMarkAsPaid = async (subTaskId: string, clientName: string) => {
     await markAsPaid(subTaskId, clientName);
   };
 
@@ -106,7 +107,7 @@ export default function ProjectsPage() {
             variant="outline"
           >
             <Plus className="mr-2 h-4 w-4" />
-            New Sub-task
+            New Task
           </Button>
         </div>
       </div>
@@ -119,7 +120,7 @@ export default function ProjectsPage() {
           </TabsTrigger>
           <TabsTrigger value="tasks" className="flex items-center space-x-2">
             <ListTodo className="h-4 w-4" />
-            <span>Sub-tasks</span>
+            <span>All Tasks</span>
           </TabsTrigger>
           <TabsTrigger value="payments" className="flex items-center space-x-2">
             <DollarSign className="h-4 w-4" />
