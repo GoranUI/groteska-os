@@ -25,9 +25,9 @@ interface TimeEntryFiltersProps {
 export function TimeEntryFilters({ projects, subTasks, onFiltersChange }: TimeEntryFiltersProps) {
   const [filters, setFilters] = useState({
     search: "",
-    projectId: "",
-    taskId: "",
-    billable: "",
+    projectId: "all",
+    taskId: "all",
+    billable: "all",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
   });
@@ -41,9 +41,9 @@ export function TimeEntryFilters({ projects, subTasks, onFiltersChange }: TimeEn
   const clearFilters = () => {
     const cleared = {
       search: "",
-      projectId: "",
-      taskId: "",
-      billable: "",
+      projectId: "all",
+      taskId: "all",
+      billable: "all",
       startDate: undefined,
       endDate: undefined,
     };
@@ -52,10 +52,15 @@ export function TimeEntryFilters({ projects, subTasks, onFiltersChange }: TimeEn
   };
 
   const filteredTasks = subTasks.filter(task => 
-    !filters.projectId || task.projectId === filters.projectId
+    filters.projectId === "all" || task.projectId === filters.projectId
   );
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== "" && value !== undefined);
+  const hasActiveFilters = filters.search !== "" || 
+    filters.projectId !== "all" || 
+    filters.taskId !== "all" || 
+    filters.billable !== "all" || 
+    filters.startDate !== undefined || 
+    filters.endDate !== undefined;
 
   return (
     <Card>
@@ -75,13 +80,13 @@ export function TimeEntryFilters({ projects, subTasks, onFiltersChange }: TimeEn
           {/* Project Filter */}
           <Select 
             value={filters.projectId} 
-            onValueChange={(value) => updateFilters({ projectId: value, taskId: "" })}
+            onValueChange={(value) => updateFilters({ projectId: value, taskId: "all" })}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All projects" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All projects</SelectItem>
+              <SelectItem value="all">All projects</SelectItem>
               {projects.map(project => (
                 <SelectItem key={project.id} value={project.id}>
                   {project.name}
@@ -94,13 +99,13 @@ export function TimeEntryFilters({ projects, subTasks, onFiltersChange }: TimeEn
           <Select 
             value={filters.taskId} 
             onValueChange={(value) => updateFilters({ taskId: value })}
-            disabled={!filters.projectId}
+            disabled={filters.projectId === "all"}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All tasks" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All tasks</SelectItem>
+              <SelectItem value="all">All tasks</SelectItem>
               {filteredTasks.map(task => (
                 <SelectItem key={task.id} value={task.id}>
                   {task.name}
@@ -118,7 +123,7 @@ export function TimeEntryFilters({ projects, subTasks, onFiltersChange }: TimeEn
               <SelectValue placeholder="All entries" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All entries</SelectItem>
+              <SelectItem value="all">All entries</SelectItem>
               <SelectItem value="billable">Billable only</SelectItem>
               <SelectItem value="non-billable">Non-billable only</SelectItem>
             </SelectContent>
