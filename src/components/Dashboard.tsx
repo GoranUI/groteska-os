@@ -6,7 +6,7 @@ import { TrendingUp, TrendingDown, Users, Receipt, DollarSign, ChevronLeft, Chev
 import { Button } from "@/components/ui/button";
 import { Income, Expense, Project, SubTask } from "@/types";
 import MonthlyExpenseChart from "@/components/MonthlyExpenseChart";
-import { TimeRangeFilter, TimeRange } from "@/components/TimeRangeFilter";
+
 import { ExportButton } from "@/components/ExportButton";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { format } from "date-fns";
@@ -60,7 +60,7 @@ export const Dashboard = ({
   deleteSavings,
 }: DashboardProps) => {
   const [recentTransactionsPage, setRecentTransactionsPage] = useState(1);
-  const [timeRange, setTimeRange] = useState<TimeRange>({ from: undefined, to: undefined });
+  const [timeRange, setTimeRange] = useState<{ from?: Date; to?: Date }>({ from: undefined, to: undefined });
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showSavingsForm, setShowSavingsForm] = useState(false);
@@ -161,10 +161,9 @@ export const Dashboard = ({
       <div className="container mx-auto py-12 px-4 md:px-6">
         {/* Controls Section */}
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-6">
-          <TimeRangeFilter 
-            onRangeChange={setTimeRange}
-            className="w-full lg:w-auto"
-          />
+          <div className="text-sm text-gray-500 mb-4">
+            Time range filtering removed
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
             <ExportButton 

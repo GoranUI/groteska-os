@@ -114,16 +114,3 @@ export interface UserProfile {
   updated_at: string;
 }
 
-export interface TimeEntry {
-  id: string;
-  projectId: string;
-  taskId?: string | null;
-  userId: string;
-  startTime: string; // ISO string
-  endTime?: string | null; // ISO string, null if running
-  duration: number; // in seconds
-  note?: string | null;
-  isBillable: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
