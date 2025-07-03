@@ -14,7 +14,6 @@ import { IncomeForm } from "@/components/IncomeForm";
 import { SavingsForm } from "@/components/SavingsForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { ExportButton } from "@/components/ExportButton";
-import { TimeTracker } from "@/components/TimeTracker";
 import { Project, SubTask } from "@/types";
 
 interface DashboardProps {
@@ -234,8 +233,6 @@ export const Dashboard = ({
           />
         )}
       </div>
-      
-      <TimeTracker projects={projects} subTasks={subTasks} />
     </div>
   );
 };

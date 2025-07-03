@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Dashboard } from "@/components/Dashboard";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
-import { TimeTracker } from "@/components/TimeTracker";
 
 export default function Index() {
   const {
@@ -72,9 +71,6 @@ export default function Index() {
         deleteExpense={deleteExpense}
         deleteSavings={deleteSavings}
       />
-      
-      {/* Add TimeTracker component */}
-      <TimeTracker projects={projects} subTasks={subTasks} />
     </div>
   );
 }
