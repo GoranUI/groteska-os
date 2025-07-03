@@ -234,6 +234,33 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     };
   }, []);
 
+  // Memoize rendered entries to prevent hook violations
+  const renderedEntries = useMemo(() => {
+    return displayEntries.map((entry) => {
+      const position = getEntryPosition(entry);
+      const projectName = getProjectName(entry.projectId);
+      const taskName = getTaskName(entry.taskId);
+      const color = getProjectColor(entry.projectId);
+      
+      return (
+        <div
+          key={entry.id}
+          className="absolute left-2 right-2 rounded px-2 flex items-center text-white text-xs font-medium shadow-sm hover:shadow-md cursor-pointer transition-all"
+          style={{
+            ...position,
+            backgroundColor: color,
+            minHeight: '24px',
+          }}
+          title={`${projectName}${taskName ? ` - ${taskName}` : ''}\n${format(new Date(entry.startTime), 'HH:mm')} - ${entry.endTime ? format(new Date(entry.endTime), 'HH:mm') : 'Running'}`}
+        >
+          <span className="truncate">
+            {projectName}{taskName ? ` - ${taskName}` : ''}
+          </span>
+        </div>
+      );
+    });
+  }, [displayEntries, getEntryPosition, getProjectName, getTaskName, getProjectColor]);
+
   // Day view - 24-hour timeline
   const renderDayView = () => {
     const generateTimeLabels = () => {
@@ -289,31 +316,7 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
           )}
 
           {/* Time Entries */}
-          {useMemo(() => {
-            return displayEntries.map((entry) => {
-              const position = getEntryPosition(entry);
-              const projectName = getProjectName(entry.projectId);
-              const taskName = getTaskName(entry.taskId);
-              const color = getProjectColor(entry.projectId);
-              
-              return (
-                <div
-                  key={entry.id}
-                  className="absolute left-2 right-2 rounded px-2 flex items-center text-white text-xs font-medium shadow-sm hover:shadow-md cursor-pointer transition-all"
-                  style={{
-                    ...position,
-                    backgroundColor: color,
-                    minHeight: '24px',
-                  }}
-                  title={`${projectName}${taskName ? ` - ${taskName}` : ''}\n${format(new Date(entry.startTime), 'HH:mm')} - ${entry.endTime ? format(new Date(entry.endTime), 'HH:mm') : 'Running'}`}
-                >
-                  <span className="truncate">
-                    {projectName}{taskName ? ` - ${taskName}` : ''}
-                  </span>
-                </div>
-              );
-            });
-          }, [displayEntries, getEntryPosition, getProjectName, getTaskName, getProjectColor])}
+          {renderedEntries}
 
           {/* Current Time Indicator */}
           {isSameDay(selectedDate, new Date()) && (
