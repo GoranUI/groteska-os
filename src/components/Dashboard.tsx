@@ -1,340 +1,224 @@
-
-import { useState, useMemo, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, Users, Receipt, DollarSign, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Income, Expense } from "@/types";
-import MonthlyExpenseChart from "@/components/MonthlyExpenseChart";
-import { TimeRangeFilter, TimeRange } from "@/components/TimeRangeFilter";
-import { ExportButton } from "@/components/ExportButton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { CircleDollarSign, PiggyBank, FileDown, FileUp, Users, LayoutDashboard } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
-import { format } from "date-fns";
+import { ExpenseForm } from "@/components/ExpenseForm";
+import { IncomeForm } from "@/components/IncomeForm";
+import { SavingsForm } from "@/components/SavingsForm";
+import { ExpenseTable } from "@/components/ExpenseTable";
+import { IncomeTable } from "@/components/IncomeTable";
+import { SavingsTable } from "@/components/SavingsTable";
+import { ImportDialog } from "@/components/import/ImportDialog";
+import { ExportButton } from "@/components/ExportButton";
+import { TimeTracker } from "@/components/TimeTracker";
+import { Project, SubTask } from "@/types";
 
 interface DashboardProps {
-  incomes: Income[];
-  expenses: Expense[];
-  rsdTotals: { income: number; expense: number; balance: number };
-  activeClients: number;
+  totalBalance: number;
+  totalInRSD: number;
+  exchangeRates: {
+    USD: number;
+    EUR: number;
+  };
+  clients: any[];
+  expenses: any[];
+  incomes: any[];
+  savings: any[];
+  projects: Project[];
+  subTasks: SubTask[];
+  addIncome: (data: any) => void;
+  addExpense: (data: any) => void;
+  addSavings: (data: any) => void;
+  updateIncome: (id: string, data: any) => void;
+  updateExpense: (id: string, data: any) => void;
+  updateSavings: (id: string, data: any) => void;
+  deleteIncome: (id: string) => void;
+  deleteExpense: (id: string) => void;
+  deleteSavings: (id: string) => void;
 }
 
-const Dashboard = ({ incomes, expenses, rsdTotals, activeClients }: DashboardProps) => {
-  const [recentTransactionsPage, setRecentTransactionsPage] = useState(1);
-  const [timeRange, setTimeRange] = useState<TimeRange>({ from: undefined, to: undefined });
-  const { lastUpdated, refetch, forceRefresh, loading: ratesLoading, error: ratesError } = useExchangeRates();
-  const itemsPerPage = 10;
-
-  // Daily rate limiting functionality
-  const canUpdateRates = useCallback(() => {
-    if (!lastUpdated) return true;
-    const today = new Date();
-    const lastUpdateDate = new Date(lastUpdated);
-    return today.toDateString() !== lastUpdateDate.toDateString();
-  }, [lastUpdated]);
-
-  const handleUpdateRates = useCallback(() => {
-    if (canUpdateRates()) {
-      forceRefresh();
-    } else {
-      // Show notification that rates were already updated today
-      console.log('Exchange rates already updated today');
-    }
-  }, [canUpdateRates, forceRefresh]);
-
-  // Filter data based on time range
-  const filteredData = useMemo(() => {
-    if (!timeRange.from && !timeRange.to) {
-      return { incomes, expenses };
-    }
-
-    const filterByDate = (items: any[]) => {
-      return items.filter(item => {
-        const itemDate = new Date(item.date);
-        if (timeRange.from && itemDate < timeRange.from) return false;
-        if (timeRange.to && itemDate > timeRange.to) return false;
-        return true;
-      });
-    };
-
-    return {
-      incomes: filterByDate(incomes),
-      expenses: filterByDate(expenses)
-    };
-  }, [incomes, expenses, timeRange]);
-
-  // Calculate filtered totals for responsive metrics
-  const { rates } = useExchangeRates();
-  
-  const filteredTotals = useMemo(() => {
-    const totalIncomeRSD = filteredData.incomes.reduce((sum, income) => {
-      const rate = income.currency === "RSD" ? 1 : rates[income.currency as keyof typeof rates] || 1;
-      return sum + (Number(income.amount) * rate);
-    }, 0);
-    
-    const totalExpenseRSD = filteredData.expenses.reduce((sum, expense) => {
-      const rate = expense.currency === "RSD" ? 1 : rates[expense.currency as keyof typeof rates] || 1;
-      return sum + (Number(expense.amount) * rate);
-    }, 0);
-    
-    return { 
-      income: totalIncomeRSD, 
-      expense: totalExpenseRSD,
-      balance: totalIncomeRSD - totalExpenseRSD
-    };
-  }, [filteredData, rates]);
-
-  // Calculate totals by currency for filtered data
-  const totalIncomeByCurrency = filteredData.incomes.reduce((acc, income) => {
-    acc[income.currency] = (acc[income.currency] || 0) + income.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalExpenseByCurrency = filteredData.expenses.reduce((acc, expense) => {
-    acc[expense.currency] = (acc[expense.currency] || 0) + expense.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // Prepare chart data for income vs expenses
-  const currencyData = ['USD', 'EUR', 'RSD'].map(currency => ({
-    currency,
-    income: totalIncomeByCurrency[currency] || 0,
-    expenses: totalExpenseByCurrency[currency] || 0,
-  })).filter(data => data.income > 0 || data.expenses > 0);
-
-  // Recent transactions with pagination
-  const allTransactions = [
-    ...filteredData.incomes.map(i => ({ ...i, type: 'income' as const })),
-    ...filteredData.expenses.map(e => ({ ...e, type: 'expense' as const }))
-  ]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const totalTransactionPages = Math.ceil(allTransactions.length / itemsPerPage);
-  const startIndex = (recentTransactionsPage - 1) * itemsPerPage;
-  const paginatedTransactions = allTransactions.slice(startIndex, startIndex + itemsPerPage);
+export const Dashboard = ({
+  totalBalance,
+  totalInRSD,
+  exchangeRates,
+  clients,
+  expenses,
+  incomes,
+  savings,
+  projects,
+  subTasks,
+  addIncome,
+  addExpense,
+  addSavings,
+  updateIncome,
+  updateExpense,
+  updateSavings,
+  deleteIncome,
+  deleteExpense,
+  deleteSavings,
+}: DashboardProps) => {
+  const { toast } = useToast();
+  const [showIncomeForm, setShowIncomeForm] = useState(false);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [showSavingsForm, setShowSavingsForm] = useState(false);
+  const [editingIncome, setEditingIncome] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [editingSavings, setEditingSavings] = useState(null);
 
   return (
-    <div className="space-y-6">
-      {/* Controls Section */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <TimeRangeFilter 
-          onRangeChange={setTimeRange}
-          className="w-full lg:w-auto"
-        />
-        
-        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-          <ExportButton 
-            incomes={filteredData.incomes}
-            expenses={filteredData.expenses}
-          />
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUpdateRates}
-            disabled={ratesLoading || !canUpdateRates()}
-            className="gap-2"
-            title={!canUpdateRates() ? "Exchange rates already updated today" : "Update exchange rates"}
-          >
-            <RefreshCw className={`h-4 w-4 ${ratesLoading ? 'animate-spin' : ''}`} />
-            {!canUpdateRates() ? 'Rates Updated Today' : 'Update Rates'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Exchange Rate Status */}
-      {lastUpdated && (
-        <div className="text-sm text-gray-500 text-center lg:text-right">
-          Exchange rates last updated: {format(lastUpdated, 'MMM dd, yyyy HH:mm')}
-        </div>
-      )}
-
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">
-                  Total Income (RSD)
-                  {(timeRange.from || timeRange.to) && (
-                    <span className="block text-xs text-orange-600">Filtered</span>
-                  )}
-                </p>
-                <p className="text-xl lg:text-2xl font-bold text-green-600 truncate">
-                  {filteredTotals.income.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Balance
+              </CardTitle>
+              <CircleDollarSign className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {totalBalance.toLocaleString()} EUR
               </div>
-              <div className="p-2 lg:p-3 bg-green-50 rounded-full flex-shrink-0">
-                <TrendingUp className="h-5 w-5 lg:h-6 lg:w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">
-                  Total Expenses (RSD)
-                  {(timeRange.from || timeRange.to) && (
-                    <span className="block text-xs text-orange-600">Filtered</span>
-                  )}
-                </p>
-                <p className="text-xl lg:text-2xl font-bold text-red-600 truncate">
-                  {filteredTotals.expense.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-              <div className="p-2 lg:p-3 bg-red-50 rounded-full flex-shrink-0">
-                <Receipt className="h-5 w-5 lg:h-6 lg:w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">
-                  Net Balance (RSD)
-                  <span className="block text-xs text-blue-600">All Time</span>
-                </p>
-                <p className={`text-xl lg:text-2xl font-bold truncate ${rsdTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {rsdTotals.balance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-              <div className={`p-2 lg:p-3 rounded-full flex-shrink-0 ${rsdTotals.balance >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                <DollarSign className={`h-5 w-5 lg:h-6 lg:w-6 ${rsdTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-600 truncate">Active Clients</p>
-                <p className="text-xl lg:text-2xl font-bold text-blue-600">{activeClients}</p>
-              </div>
-              <div className="p-2 lg:p-3 bg-blue-50 rounded-full flex-shrink-0">
-                <Users className="h-5 w-5 lg:h-6 lg:w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-        <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">Income vs Expenses</CardTitle>
-            <p className="text-sm text-gray-600">Comparison by currency</p>
-          </CardHeader>
-          <CardContent className="pb-6">
-            <div className="h-64 lg:h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={currencyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="currency" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                    }}
-                  />
-                  <Bar dataKey="income" fill="#10b981" name="Income" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <MonthlyExpenseChart expenses={filteredData.expenses} />
-      </div>
-
-      {/* Recent Transactions */}
-      <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold text-gray-900">Recent Transactions</CardTitle>
-              <p className="text-sm text-gray-600">
-                Latest income and expense entries
-                {(timeRange.from || timeRange.to) && ' (filtered)'}
+              <p className="text-sm text-gray-500">
+                = {totalInRSD.toLocaleString()} RSD
               </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setRecentTransactionsPage(Math.max(1, recentTransactionsPage - 1))}
-                disabled={recentTransactionsPage === 1}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-gray-600 hidden sm:inline">
-                {recentTransactionsPage} of {totalTransactionPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setRecentTransactionsPage(Math.min(totalTransactionPages, recentTransactionsPage + 1))}
-                disabled={recentTransactionsPage === totalTransactionPages}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Active Clients
+              </CardTitle>
+              <Users className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{clients.length}</div>
+              <p className="text-sm text-gray-500">
+                {clients.length > 0 ? 'Clients' : 'No clients yet'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Savings
+              </CardTitle>
+              <PiggyBank className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{savings.length}</div>
+              <p className="text-sm text-gray-500">
+                {savings.length > 0 ? 'Savings entries' : 'No savings yet'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="lg:col-span-2">
+            <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Recent Expenses
+                </CardTitle>
+                <Button size="sm" onClick={() => setShowExpenseForm(true)}>
+                  Add Expense
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <ExpenseTable
+                  expenses={expenses}
+                  onEdit={setEditingExpense}
+                  onDelete={deleteExpense}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
-        <CardContent className="pb-6">
-          <div className="space-y-3 lg:space-y-4">
-            {paginatedTransactions.map((transaction) => (
-              <div 
-                key={`${transaction.type}-${transaction.id}`} 
-                className="flex items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-xl border border-gray-100"
-              >
-                <div className="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
-                  <div className={`w-3 h-3 rounded-full flex-shrink-0 ${transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 truncate">
-                      {'client' in transaction ? transaction.client : transaction.description}
-                    </p>
-                    <p className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.amount.toLocaleString()} {transaction.currency}
-                  </p>
-                  <p className="text-sm text-gray-500 hidden sm:block">
-                    {'category' in transaction && transaction.category}
-                  </p>
-                </div>
-              </div>
-            ))}
+
+          <div>
+            <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Recent Income
+                </CardTitle>
+                <Button size="sm" onClick={() => setShowIncomeForm(true)}>
+                  Add Income
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <IncomeTable
+                  incomes={incomes}
+                  onEdit={setEditingIncome}
+                  onDelete={deleteIncome}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div>
+            <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Savings Overview
+                </CardTitle>
+                <Button size="sm" onClick={() => setShowSavingsForm(true)}>
+                  Add Savings
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <SavingsTable
+                  savings={savings}
+                  onEdit={setEditingSavings}
+                  onDelete={deleteSavings}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {showIncomeForm && (
+          <IncomeForm
+            onSubmit={(data) => {
+              addIncome(data);
+              setShowIncomeForm(false);
+            }}
+            onCancel={() => setShowIncomeForm(false)}
+          />
+        )}
+
+        {showExpenseForm && (
+          <ExpenseForm
+            onSubmit={(data) => {
+              addExpense(data);
+              setShowExpenseForm(false);
+            }}
+            onCancel={() => setShowExpenseForm(false)}
+          />
+        )}
+
+        {showSavingsForm && (
+          <SavingsForm
+            onSubmit={(data) => {
+              addSavings(data);
+              setShowSavingsForm(false);
+            }}
+            onCancel={() => setShowSavingsForm(false)}
+          />
+        )}
+      </div>
+      
+      <TimeTracker projects={projects} subTasks={subTasks} />
     </div>
   );
 };
-
-export default Dashboard;

@@ -8,6 +8,7 @@ import { ProjectList } from "@/components/ProjectList";
 import { SubTaskList } from "@/components/SubTaskList";
 import { SubTaskFilters } from "@/components/SubTaskFilters";
 import { PaymentTracker } from "@/components/PaymentTracker";
+import { TimeTracker } from "@/components/TimeTracker";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useProjectData } from "@/hooks/data/useProjectData";
 import { useSubTaskData } from "@/hooks/data/useSubTaskData";
@@ -190,6 +191,9 @@ export default function ProjectsPage() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Add TimeTracker component */}
+      <TimeTracker projects={projects} subTasks={subTasks} />
     </div>
   );
 }

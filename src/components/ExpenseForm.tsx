@@ -85,7 +85,10 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
 
     const selectedDate = new Date(date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    
+    // Set both dates to midnight for proper comparison
+    selectedDate.setHours(0, 0, 0, 0);
+    today.setHours(23, 59, 59, 999); // Set to end of today to allow today's date
     
     if (selectedDate > today) {
       showError("Validation Error", "Expense date cannot be in the future");

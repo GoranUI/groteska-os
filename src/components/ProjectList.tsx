@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { FolderOpen, Users, DollarSign, Flame, Edit } from "lucide-react";
 import { Project, SubTask, Client } from "@/types";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectListProps {
   clients: Client[];
@@ -13,9 +14,16 @@ interface ProjectListProps {
 }
 
 export const ProjectList = ({ clients, projects, subTasks, onProjectClick, onEdit }: ProjectListProps) => {
+  const navigate = useNavigate();
+
   const getClientName = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
     return client?.name || 'Unknown Client';
+  };
+
+  const handleClientClick = (clientId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/clients?filter=${clientId}`);
   };
 
   const getProjectSubTasks = (projectId: string) => {
@@ -124,7 +132,12 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick, onEdi
                         <h3 className="font-semibold text-gray-900 mb-1 leading-tight">{project.name}</h3>
                         <p className="text-sm text-gray-600 flex items-center">
                           <Users className="h-4 w-4 mr-1.5 text-gray-500" />
-                          {getClientName(project.clientId)}
+                          <button 
+                            onClick={(e) => handleClientClick(project.clientId, e)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                          >
+                            {getClientName(project.clientId)}
+                          </button>
                         </p>
                       </div>
                       <div className="flex items-center h-2">
