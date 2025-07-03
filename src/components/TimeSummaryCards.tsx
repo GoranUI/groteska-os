@@ -17,11 +17,22 @@ export const TimeSummaryCards = ({ selectedDate, activeView }: TimeSummaryCardsP
   const [lastWeekTime, setLastWeekTime] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Listen for changes in timeEntries to trigger refresh
+  // Listen for changes in timeEntries and custom events
   useEffect(() => {
     setRefreshTrigger(prev => prev + 1);
     console.log('Time entries changed, triggering summary refresh:', timeEntries);
   }, [timeEntries]);
+
+  // Listen for custom events to force refresh
+  useEffect(() => {
+    const handleTimeEntryAdded = () => {
+      console.log('Custom event received - refreshing summary');
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener('timeEntryAdded', handleTimeEntryAdded);
+    return () => window.removeEventListener('timeEntryAdded', handleTimeEntryAdded);
+  }, []);
 
   useEffect(() => {
     if (!user) return;

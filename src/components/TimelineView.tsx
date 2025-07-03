@@ -34,6 +34,17 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     setRefreshKey(prev => prev + 1);
   };
 
+  // Listen for custom events to force refresh
+  useEffect(() => {
+    const handleTimeEntryAdded = () => {
+      console.log('Custom event received in TimelineView - refreshing');
+      forceRefresh();
+    };
+    
+    window.addEventListener('timeEntryAdded', handleTimeEntryAdded);
+    return () => window.removeEventListener('timeEntryAdded', handleTimeEntryAdded);
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 

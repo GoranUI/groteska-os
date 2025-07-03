@@ -1,8 +1,14 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
+
+// Create a context for time entries to ensure state sharing across components
+const TimeEntryContext = createContext<{
+  timeEntries: TimeEntry[];
+  setTimeEntries: React.Dispatch<React.SetStateAction<TimeEntry[]>>;
+} | null>(null);
 
 export function useTimeEntryCore() {
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);

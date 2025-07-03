@@ -31,12 +31,18 @@ export function useTimeEntryMutations() {
         const transformedEntry = transformEntry(data);
         console.log('Transformed entry:', transformedEntry);
         
-        // Update the state to include the new entry
+        // Immediately update the state to include the new entry at the top
         setTimeEntries((prev) => {
           const updated = [transformedEntry, ...prev];
-          console.log('Updated entries:', updated);
+          console.log('Updated entries in mutations:', updated);
           return updated;
         });
+        
+        // Force a re-render by setting a small timeout
+        setTimeout(() => {
+          console.log('Force refresh after creation');
+          window.dispatchEvent(new CustomEvent('timeEntryAdded', { detail: transformedEntry }));
+        }, 100);
       }
       
       return { data, error: null };

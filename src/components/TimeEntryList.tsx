@@ -20,6 +20,18 @@ export const TimeEntryList = ({ projects, subTasks, selectedDate, view }: TimeEn
   const { user } = useAuth();
   const { timeEntries, fetchTimeEntries, deleteTimeEntry } = useTimeEntryData();
   const [groupedEntries, setGroupedEntries] = useState<Record<string, TimeEntry[]>>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Listen for custom events to force refresh
+  useEffect(() => {
+    const handleTimeEntryAdded = () => {
+      console.log('Custom event received in TimeEntryList - refreshing');
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener('timeEntryAdded', handleTimeEntryAdded);
+    return () => window.removeEventListener('timeEntryAdded', handleTimeEntryAdded);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -46,7 +58,7 @@ export const TimeEntryList = ({ projects, subTasks, selectedDate, view }: TimeEn
       from,
       to,
     });
-  }, [selectedDate, view, user, fetchTimeEntries]);
+  }, [selectedDate, view, user, fetchTimeEntries, refreshTrigger]);
 
   useEffect(() => {
     // Group entries by date
