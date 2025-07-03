@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FolderOpen, Users, DollarSign, Flame } from "lucide-react";
@@ -73,6 +72,12 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
         {formatPriority(priority)}
       </Badge>
     );
+  };
+
+  const handleEditProject = (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation(); // Prevent triggering onProjectClick
+    // This will be handled by the parent component
+    console.log('Edit project:', projectId);
   };
 
   return (
@@ -159,6 +164,15 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
                             <span className="text-gray-600">Pending:</span>
                             <span className="font-semibold text-orange-700">
                               {pendingAmount.toLocaleString()} {project.currency}
+                            </span>
+                          </div>
+                        )}
+
+                        {project.billingType === 'hourly' && project.hourlyRate && (
+                          <div className="flex items-center justify-between text-sm bg-blue-50 rounded-lg p-2">
+                            <span className="text-gray-600">Hourly Rate:</span>
+                            <span className="font-semibold text-blue-700">
+                              {project.hourlyRate} {project.currency}/hr
                             </span>
                           </div>
                         )}

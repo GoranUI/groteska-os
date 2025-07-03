@@ -37,6 +37,10 @@ const InvoicesPage = () => {
     }
   };
 
+  const handleUpdateStatus = async (id: string, status: "sent" | "paid") => {
+    await updateInvoice(id, { status });
+  };
+
   const handleCancel = () => {
     setShowForm(false);
     setEditingInvoice(null);
@@ -81,6 +85,7 @@ const InvoicesPage = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onView={setViewingInvoice}
+          onUpdateStatus={handleUpdateStatus}
         />
       )}
 

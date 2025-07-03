@@ -28,6 +28,9 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
   const [status, setStatus] = useState<"pending" | "paid">("pending");
   const [dueDate, setDueDate] = useState("");
 
+  const selectedProject = projects.find(p => p.id === projectId);
+  const isHourlyProject = selectedProject?.billingType === 'hourly';
+
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
@@ -50,6 +53,21 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
     }
   }, [initialData]);
 
+  // Auto-calculate amount when hours change for hourly projects
+  useEffect(() => {
+    if (isHourlyProject && selectedProject?.hourlyRate && hours) {
+      const calculatedAmount = parseFloat(hours) * selectedProject.hourlyRate;
+      setAmount(calculatedAmount.toString());
+    }
+  }, [hours, isHourlyProject, selectedProject?.hourlyRate]);
+
+  // Set currency based on selected project
+  useEffect(() => {
+    if (selectedProject) {
+      setCurrency(selectedProject.currency);
+    }
+  }, [selectedProject]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -71,10 +89,10 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
       return;
     }
 
-    if (!amount || Number(amount) <= 0) {
+    if (!amount || parseFloat(amount) <= 0) {
       toast({
         title: "Validation Error",
-        description: "Please enter a valid amount",
+        description: "Amount must be greater than 0",
         variant: "destructive",
       });
       return;
@@ -84,8 +102,8 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
       name: name.trim(),
       description: description.trim() || undefined,
       projectId,
-      amount: Number(amount),
-      hours: hours ? Number(hours) : undefined,
+      amount: parseFloat(amount),
+      hours: hours ? parseFloat(hours) : undefined,
       currency,
       status,
       dueDate: dueDate || undefined,
@@ -107,15 +125,15 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
     <Card className="border-0 shadow-sm ring-1 ring-gray-200">
       <CardHeader className="pb-4">
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-green-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-green-600" /> : <Plus className="h-5 w-5 text-green-600" />}
+          <div className="p-2 bg-blue-50 rounded-lg">
+            {initialData ? <Edit3 className="h-5 w-5 text-blue-600" /> : <Plus className="h-5 w-5 text-blue-600" />}
           </div>
           <div>
             <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Sub-task" : "Create New Sub-task"}
+              {initialData ? "Edit Task" : "Create New Task"}
             </CardTitle>
             <p className="text-sm text-gray-600">
-              {initialData ? "Update sub-task information" : "Add a new sub-task to a project"}
+              {initialData ? "Update task information" : "Add a new task to your project"}
             </p>
           </div>
         </div>
@@ -147,7 +165,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
               <SelectContent>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
-                    {project.name}
+                    {project.name} ({project.billingType === 'hourly' ? 'Hourly' : 'Fixed'})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -165,9 +183,28 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
             />
           </div>
 
+          {isHourlyProject && (
+            <div className="space-y-2">
+              <Label htmlFor="hours" className="text-sm font-medium text-gray-700">
+                Hours {selectedProject?.hourlyRate && `(Rate: ${selectedProject.hourlyRate} ${selectedProject.currency}/hr)`}
+              </Label>
+              <Input
+                id="hours"
+                type="number"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                step="0.25"
+                className="h-10"
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
               Amount <span className="text-red-500">*</span>
+              {isHourlyProject && selectedProject?.hourlyRate && " (Auto-calculated)"}
             </Label>
             <Input
               id="amount"
@@ -178,21 +215,8 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
               min="0"
               step="0.01"
               className="h-10"
+              readOnly={isHourlyProject && selectedProject?.hourlyRate && hours !== ""}
               required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="hours" className="text-sm font-medium text-gray-700">Hours Worked</Label>
-            <Input
-              id="hours"
-              type="number"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              placeholder="0.0"
-              min="0"
-              step="0.1"
-              className="h-10"
             />
           </div>
 
@@ -211,7 +235,7 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm font-medium text-gray-700">Payment Status</Label>
+            <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
             <Select value={status} onValueChange={(value: "pending" | "paid") => setStatus(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
@@ -237,10 +261,10 @@ export const SubTaskForm = ({ onSubmit, initialData, onCancel, projects }: SubTa
           <div className="md:col-span-2 flex gap-3">
             <Button 
               type="submit" 
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-              {initialData ? "Update Sub-task" : "Create Sub-task"}
+              {initialData ? "Update Task" : "Create Task"}
             </Button>
             {initialData && (
               <Button 
