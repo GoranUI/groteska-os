@@ -64,10 +64,16 @@ export const useIncomeData = () => {
       const { data, error } = await supabase
         .from('incomes')
         .insert([{ 
-          ...income, 
+          amount: income.amount,
+          currency: income.currency,
+          client: income.client,
           client_id: income.clientId,
           project_id: income.projectId,
           sub_task_id: income.subTaskId,
+          date: income.date,
+          category: income.category,
+          description: income.description,
+          status: income.status,
           user_id: user.id 
         }])
         .select()
@@ -95,10 +101,16 @@ export const useIncomeData = () => {
 
     try {
       const dbIncomes = incomes.map(income => ({
-        ...income,
+        amount: income.amount,
+        currency: income.currency,
+        client: income.client,
         client_id: income.clientId,
         project_id: income.projectId,
         sub_task_id: income.subTaskId,
+        date: income.date,
+        category: income.category,
+        description: income.description,
+        status: income.status,
         user_id: user.id
       }));
 
@@ -121,12 +133,18 @@ export const useIncomeData = () => {
 
   const updateIncome = useCallback(async (id: string, updates: Partial<Income>) => {
     try {
-      const dbUpdates = {
-        ...updates,
-        client_id: updates.clientId,
-        project_id: updates.projectId,
-        sub_task_id: updates.subTaskId,
-      };
+      const dbUpdates: any = {};
+      
+      if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
+      if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+      if (updates.client !== undefined) dbUpdates.client = updates.client;
+      if (updates.clientId !== undefined) dbUpdates.client_id = updates.clientId;
+      if (updates.projectId !== undefined) dbUpdates.project_id = updates.projectId;
+      if (updates.subTaskId !== undefined) dbUpdates.sub_task_id = updates.subTaskId;
+      if (updates.date !== undefined) dbUpdates.date = updates.date;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
 
       const { data, error } = await supabase
         .from('incomes')
