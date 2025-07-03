@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
-import { Edit, Trash2, Play, Copy, MoreHorizontal } from "lucide-react";
+import { Edit, Trash2, Play, Copy, MoreHorizontal, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { useTimeTracker } from "@/hooks/useTimeTracker";
+import { TimeEntryFilters } from "@/components/TimeEntryFilters";
 import { TimeEntry, Project, SubTask } from "@/types";
 
 interface TimeEntryTableProps {
@@ -23,12 +26,66 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
     deleteTimeEntry,
     formatDuration,
     startTimer,
+    updateTimeEntry,
   } = useTimeTracker();
 
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [editingDuration, setEditingDuration] = useState<string | null>(null);
+  const [tempDuration, setTempDuration] = useState("");
+  const [filters, setFilters] = useState({
+    search: "",
+    projectId: "",
+    taskId: "",
+    billable: "",
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
+  });
 
-  // Group entries by date
-  const groupedEntries = timeEntries.reduce((groups, entry) => {
+  // Filter entries based on filters and date range
+  const filteredEntries = useMemo(() => {
+    return timeEntries.filter(entry => {
+      const entryDate = new Date(entry.startTime);
+      
+      // Date range filter
+      if (startDate && entryDate < startDate) return false;
+      if (endDate && entryDate > endDate) return false;
+      
+      // Text search
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        const project = projects.find(p => p.id === entry.projectId);
+        const task = subTasks.find(t => t.id === entry.taskId);
+        
+        if (
+          !entry.description?.toLowerCase().includes(search) &&
+          !project?.name.toLowerCase().includes(search) &&
+          !task?.name.toLowerCase().includes(search)
+        ) {
+          return false;
+        }
+      }
+      
+      // Project filter
+      if (filters.projectId && entry.projectId !== filters.projectId) return false;
+      
+      // Task filter
+      if (filters.taskId && entry.taskId !== filters.taskId) return false;
+      
+      // Billable filter
+      if (filters.billable === "billable" && !entry.isBillable) return false;
+      if (filters.billable === "non-billable" && entry.isBillable) return false;
+      
+      // Date range filters
+      if (filters.startDate && entryDate < filters.startDate) return false;
+      if (filters.endDate && entryDate > filters.endDate) return false;
+      
+      return true;
+    });
+  }, [timeEntries, filters, projects, subTasks, startDate, endDate]);
+
+  // Group filtered entries by date
+  const groupedEntries = filteredEntries.reduce((groups, entry) => {
     const date = format(parseISO(entry.startTime), 'yyyy-MM-dd');
     if (!groups[date]) {
       groups[date] = [];
@@ -93,6 +150,59 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedEntries.size === 0) return;
+    
+    if (window.confirm(`Are you sure you want to delete ${selectedEntries.size} time entries?`)) {
+      for (const entryId of selectedEntries) {
+        await deleteTimeEntry(entryId);
+      }
+      setSelectedEntries(new Set());
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allEntryIds = filteredEntries.map(entry => entry.id);
+      setSelectedEntries(new Set(allEntryIds));
+    } else {
+      setSelectedEntries(new Set());
+    }
+  };
+
+  const handleSelectEntry = (entryId: string, checked: boolean) => {
+    const newSelected = new Set(selectedEntries);
+    if (checked) {
+      newSelected.add(entryId);
+    } else {
+      newSelected.delete(entryId);
+    }
+    setSelectedEntries(newSelected);
+  };
+
+  const handleDurationEdit = async (entryId: string, duration: string) => {
+    const durationSeconds = parseDurationToSeconds(duration);
+    if (durationSeconds > 0) {
+      await updateTimeEntry(entryId, {});
+    }
+    setEditingDuration(null);
+    setTempDuration("");
+  };
+
+  const parseDurationToSeconds = (duration: string): number => {
+    const parts = duration.split(':').map(part => parseInt(part, 10));
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
+    return 0;
+  };
+
+  const toggleBillable = async (entry: TimeEntry) => {
+    await updateTimeEntry(entry.id, { isBillable: !entry.isBillable });
+  };
+
   if (loading) {
     return (
       <Card>
@@ -104,18 +214,54 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Time Entries</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {sortedDates.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No time entries found</p>
-              <p className="text-sm">Start tracking time to see entries here</p>
+    <div className="space-y-4">
+      {/* Filters */}
+      <TimeEntryFilters 
+        projects={projects}
+        subTasks={subTasks}
+        onFiltersChange={setFilters}
+      />
+
+      {/* Bulk Actions */}
+      {selectedEntries.size > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                {selectedEntries.size} entries selected
+              </span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleBulkDelete}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected
+                </Button>
+              </div>
             </div>
-          ) : (
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Time Entries ({filteredEntries.length})</CardTitle>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={selectedEntries.size === filteredEntries.length && filteredEntries.length > 0}
+                onCheckedChange={handleSelectAll}
+              />
+              <span className="text-sm text-muted-foreground">Select all</span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {sortedDates.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No time entries found</p>
+                <p className="text-sm">Try adjusting your filters or start tracking time</p>
+              </div>
+            ) : (
             sortedDates.map(date => {
               const entries = groupedEntries[date];
               const isExpanded = expandedDays.has(date);
@@ -147,6 +293,14 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-12">
+                              <Checkbox
+                                checked={entries.every(entry => selectedEntries.has(entry.id))}
+                                onCheckedChange={(checked) => {
+                                  entries.forEach(entry => handleSelectEntry(entry.id, !!checked));
+                                }}
+                              />
+                            </TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead>Project</TableHead>
                             <TableHead>Task</TableHead>
@@ -164,6 +318,12 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
 
                             return (
                               <TableRow key={entry.id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedEntries.has(entry.id)}
+                                    onCheckedChange={(checked) => handleSelectEntry(entry.id, !!checked)}
+                                  />
+                                </TableCell>
                                 <TableCell>
                                   <div className="max-w-xs truncate">
                                     {entry.description || 'No description'}
@@ -193,20 +353,54 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <span className="font-mono">
-                                    {formatDuration(entry.duration)}
-                                  </span>
+                                  {editingDuration === entry.id ? (
+                                    <Input
+                                      value={tempDuration}
+                                      onChange={(e) => setTempDuration(e.target.value)}
+                                      onBlur={() => handleDurationEdit(entry.id, tempDuration)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          handleDurationEdit(entry.id, tempDuration);
+                                        } else if (e.key === 'Escape') {
+                                          setEditingDuration(null);
+                                          setTempDuration("");
+                                        }
+                                      }}
+                                      placeholder="HH:MM:SS"
+                                      className="w-20 font-mono text-xs"
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <span 
+                                      className="font-mono cursor-pointer hover:bg-muted px-1 rounded"
+                                      onClick={() => {
+                                        setEditingDuration(entry.id);
+                                        setTempDuration(formatDuration(entry.duration));
+                                      }}
+                                    >
+                                      {formatDuration(entry.duration)}
+                                    </span>
+                                  )}
                                 </TableCell>
                                 <TableCell>
-                                  {entry.isBillable ? (
-                                    <Badge variant="default" className="bg-green-100 text-green-800">
-                                      Billable
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="secondary">
-                                      Non-billable
-                                    </Badge>
-                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => toggleBillable(entry)}
+                                    className="h-auto p-1"
+                                  >
+                                    {entry.isBillable ? (
+                                      <Badge variant="default" className="bg-green-100 text-green-800">
+                                        <CheckSquare className="h-3 w-3 mr-1" />
+                                        Billable
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="secondary">
+                                        <Square className="h-3 w-3 mr-1" />
+                                        Non-billable
+                                      </Badge>
+                                    )}
+                                  </Button>
                                 </TableCell>
                                 <TableCell>
                                   <DropdownMenu>
@@ -248,9 +442,10 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
                 </div>
               );
             })
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

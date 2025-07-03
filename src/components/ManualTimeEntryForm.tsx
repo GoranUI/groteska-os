@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { format } from "date-fns";
-import { Plus, Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Save, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTimeTracker } from "@/hooks/useTimeTracker";
 import { Project, SubTask } from "@/types";
 
@@ -18,7 +18,6 @@ interface ManualTimeEntryFormProps {
 
 export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormProps) {
   const { addTimeEntry } = useTimeTracker();
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -26,12 +25,24 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
     taskId: '',
     description: '',
     date: format(new Date(), 'yyyy-MM-dd'),
-    startTime: format(new Date(), 'HH:mm'),
+    startTime: '',
     endTime: '',
     isBillable: false,
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const resetForm = useCallback(() => {
+    setFormData({
+      projectId: '',
+      taskId: '',
+      description: '',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      startTime: '',
+      endTime: '',
+      isBillable: false,
+    });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent, saveAndNew = false) => {
     e.preventDefault();
     if (!formData.projectId || !formData.startTime || !formData.endTime) return;
 
@@ -54,18 +65,17 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
         isBillable: formData.isBillable,
       });
 
-      // Reset form
-      setFormData({
-        projectId: '',
-        taskId: '',
-        description: '',
-        date: format(new Date(), 'yyyy-MM-dd'),
-        startTime: format(new Date(), 'HH:mm'),
-        endTime: '',
-        isBillable: false,
-      });
-
-      setOpen(false);
+      if (saveAndNew) {
+        // Keep project, task, and date but reset times and description
+        setFormData(prev => ({
+          ...prev,
+          description: '',
+          startTime: '',
+          endTime: '',
+        }));
+      } else {
+        resetForm();
+      }
     } catch (error) {
       console.error('Error adding time entry:', error);
     } finally {
@@ -85,19 +95,18 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
     return colors[index % colors.length];
   };
 
+  const isFormValid = formData.projectId && formData.startTime && formData.endTime;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Plus className="h-4 w-4" />
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Plus className="h-5 w-5" />
           Add Manual Entry
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add Time Entry</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form className="space-y-6">
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
@@ -106,82 +115,82 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
               placeholder="What did you work on?"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
+              rows={2}
             />
           </div>
 
-          {/* Project Selection */}
-          <div className="space-y-2">
-            <Label>Project *</Label>
-            <Select 
-              value={formData.projectId} 
-              onValueChange={(value) => setFormData(prev => ({ 
-                ...prev, 
-                projectId: value, 
-                taskId: '' // Reset task when project changes
-              }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map(project => (
-                  <SelectItem key={project.id} value={project.id}>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getProjectColor(project.id) }}
-                      />
-                      {project.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Project and Task Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Project *</Label>
+              <Select 
+                value={formData.projectId} 
+                onValueChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  projectId: value, 
+                  taskId: '' // Reset task when project changes
+                }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map(project => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: getProjectColor(project.id) }}
+                        />
+                        {project.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Task (Optional)</Label>
+              <Select 
+                value={formData.taskId} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, taskId: value }))}
+                disabled={!formData.projectId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select task" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredTasks.map(task => (
+                    <SelectItem key={task.id} value={task.id}>
+                      {task.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Task Selection */}
-          <div className="space-y-2">
-            <Label>Task (Optional)</Label>
-            <Select 
-              value={formData.taskId} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, taskId: value }))}
-              disabled={!formData.projectId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select task" />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredTasks.map(task => (
-                  <SelectItem key={task.id} value={task.id}>
-                    {task.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Date and Time Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Date *
+              </Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                required
+              />
+            </div>
 
-          {/* Date */}
-          <div className="space-y-2">
-            <Label htmlFor="date" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Date *
-            </Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-              required
-            />
-          </div>
-
-          {/* Time Range */}
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startTime" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Start Time *
+                Start *
               </Label>
               <Input
                 id="startTime"
@@ -191,8 +200,9 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="endTime">End Time *</Label>
+              <Label htmlFor="endTime">End *</Label>
               <Input
                 id="endTime"
                 type="time"
@@ -203,37 +213,43 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
             </div>
           </div>
 
-          {/* Billable Toggle */}
+          {/* Billable and Actions Row */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="billable" className="text-sm font-medium">
-              Billable time
-            </Label>
-            <Switch
-              id="billable"
-              checked={formData.isBillable}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isBillable: checked }))}
-            />
-          </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="billable"
+                checked={formData.isBillable}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isBillable: checked }))}
+              />
+              <Label htmlFor="billable" className="text-sm font-medium">
+                Billable time
+              </Label>
+            </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!formData.projectId || !formData.startTime || !formData.endTime || loading}
-            >
-              {loading ? 'Adding...' : 'Add Entry'}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={!isFormValid || loading}
+                className="gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save & New
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => handleSubmit(e, false)}
+                disabled={!isFormValid || loading}
+                className="gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {loading ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 }

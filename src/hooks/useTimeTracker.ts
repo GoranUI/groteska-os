@@ -307,12 +307,12 @@ export function useTimeTracker() {
     return () => clearInterval(interval);
   }, [activeEntry]);
 
-  // Initial fetch
+  // Initial fetch - Fixed dependency array
   useEffect(() => {
     if (user) {
       fetchTimeEntries();
     }
-  }, [user, fetchTimeEntries]);
+  }, [user?.id]); // Only depend on user.id to prevent infinite loops
 
   return {
     timeEntries,
