@@ -67,9 +67,9 @@ export const useIncomeData = () => {
           amount: income.amount,
           currency: income.currency,
           client: income.client,
-          client_id: income.clientId,
-          project_id: income.projectId,
-          sub_task_id: income.subTaskId,
+          client_id: income.clientId || null,
+          project_id: income.projectId || null,
+          sub_task_id: income.subTaskId || null,
           date: income.date,
           category: income.category,
           description: income.description,
@@ -104,9 +104,9 @@ export const useIncomeData = () => {
         amount: income.amount,
         currency: income.currency,
         client: income.client,
-        client_id: income.clientId,
-        project_id: income.projectId,
-        sub_task_id: income.subTaskId,
+        client_id: income.clientId || null,
+        project_id: income.projectId || null,
+        sub_task_id: income.subTaskId || null,
         date: income.date,
         category: income.category,
         description: income.description,
@@ -138,9 +138,9 @@ export const useIncomeData = () => {
       if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
       if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
       if (updates.client !== undefined) dbUpdates.client = updates.client;
-      if (updates.clientId !== undefined) dbUpdates.client_id = updates.clientId;
-      if (updates.projectId !== undefined) dbUpdates.project_id = updates.projectId;
-      if (updates.subTaskId !== undefined) dbUpdates.sub_task_id = updates.subTaskId;
+      if (updates.clientId !== undefined) dbUpdates.client_id = updates.clientId || null;
+      if (updates.projectId !== undefined) dbUpdates.project_id = updates.projectId || null;
+      if (updates.subTaskId !== undefined) dbUpdates.sub_task_id = updates.subTaskId || null;
       if (updates.date !== undefined) dbUpdates.date = updates.date;
       if (updates.category !== undefined) dbUpdates.category = updates.category;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
