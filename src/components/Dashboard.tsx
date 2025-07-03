@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,6 @@ import { ExpenseForm } from "@/components/ExpenseForm";
 import { IncomeForm } from "@/components/IncomeForm";
 import { SavingsForm } from "@/components/SavingsForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
-import { IncomeTable } from "@/components/IncomeTable";
-import { SavingsTable } from "@/components/SavingsTable";
-import { ImportDialog } from "@/components/import/ImportDialog";
 import { ExportButton } from "@/components/ExportButton";
 import { TimeTracker } from "@/components/TimeTracker";
 import { Project, SubTask } from "@/types";
@@ -155,11 +153,20 @@ export const Dashboard = ({
                 </Button>
               </CardHeader>
               <CardContent>
-                <IncomeTable
-                  incomes={incomes}
-                  onEdit={setEditingIncome}
-                  onDelete={deleteIncome}
-                />
+                <div className="space-y-2">
+                  {incomes.slice(0, 5).map((income) => (
+                    <div key={income.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div>
+                        <p className="font-medium">{income.client}</p>
+                        <p className="text-sm text-gray-500">{income.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{income.amount} {income.currency}</p>
+                        <p className="text-sm text-gray-500">{income.category}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -177,11 +184,20 @@ export const Dashboard = ({
                 </Button>
               </CardHeader>
               <CardContent>
-                <SavingsTable
-                  savings={savings}
-                  onEdit={setEditingSavings}
-                  onDelete={deleteSavings}
-                />
+                <div className="space-y-2">
+                  {savings.slice(0, 5).map((saving) => (
+                    <div key={saving.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div>
+                        <p className="font-medium">{saving.description}</p>
+                        <p className="text-sm text-gray-500">{saving.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{saving.amount} {saving.currency}</p>
+                        <p className="text-sm text-gray-500">{saving.type}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -189,6 +205,7 @@ export const Dashboard = ({
 
         {showIncomeForm && (
           <IncomeForm
+            clients={clients}
             onSubmit={(data) => {
               addIncome(data);
               setShowIncomeForm(false);

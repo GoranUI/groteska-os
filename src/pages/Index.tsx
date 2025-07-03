@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Dashboard } from "@/components/Dashboard";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
@@ -25,14 +26,19 @@ export default function Index() {
     getTotalBalance,
     getTotalInRSD,
   } = useSupabaseData();
-  const { exchangeRates } = useExchangeRates();
+  const { rates } = useExchangeRates();
   const [totalBalance, setTotalBalance] = useState(0);
   const [totalInRSD, setTotalInRSD] = useState(0);
 
   useEffect(() => {
     if (incomes && expenses) {
-      setTotalBalance(getTotalBalance(incomes, expenses));
-      setTotalInRSD(getTotalInRSD(incomes, expenses));
+      const balance = getTotalBalance(incomes, expenses);
+      const totalRSD = getTotalInRSD(incomes, expenses);
+      
+      // Set the balance as a single number (EUR equivalent)
+      setTotalBalance(typeof balance === 'object' ? balance.EUR || 0 : balance);
+      // Set the RSD total as a single number
+      setTotalInRSD(typeof totalRSD === 'object' ? totalRSD.balance || 0 : totalRSD);
     }
   }, [incomes, expenses, getTotalBalance, getTotalInRSD]);
 
@@ -49,7 +55,7 @@ export default function Index() {
       <Dashboard
         totalBalance={totalBalance}
         totalInRSD={totalInRSD}
-        exchangeRates={exchangeRates}
+        exchangeRates={{ USD: rates.USD, EUR: rates.EUR }}
         clients={clients}
         expenses={expenses}
         incomes={incomes}
