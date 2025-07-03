@@ -1,1 +1,17 @@
+# This is a simplified config.toml that should work with the CLI
+# Save this to supabase/config.toml
+
+[project]
 project_id = "sgzgtnbwzmnozdtofyez"
+
+# Remove any db_url entries completely
+
+# Keep only the supported keys in each section
+# For example, in the [auth] section, remove problematic keys like:
+# - enable_confirmations
+# - max_frequency
+# - otp_expiry
+# - otp_length
+# - additional_redirect_urls
+# - minimum_password_length
+# - site_url

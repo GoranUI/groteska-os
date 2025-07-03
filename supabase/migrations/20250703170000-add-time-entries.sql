@@ -19,19 +19,25 @@ ALTER TABLE public.time_entries ENABLE ROW LEVEL SECURITY;
 -- Policy: Users can view their own time entries
 CREATE POLICY "Users can view their own time entries"
   ON public.time_entries FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id);
 
 -- Policy: Users can insert their own time entries
 CREATE POLICY "Users can insert their own time entries"
   ON public.time_entries FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((SELECT auth.uid()) = user_id);
 
 -- Policy: Users can update their own time entries
 CREATE POLICY "Users can update their own time entries"
   ON public.time_entries FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id);
 
 -- Policy: Users can delete their own time entries
 CREATE POLICY "Users can delete their own time entries"
   ON public.time_entries FOR DELETE
-  USING (auth.uid() = user_id); 
+  USING ((SELECT auth.uid()) = user_id);
+
+-- Create indexes for better performance
+CREATE INDEX idx_time_entries_project_id ON public.time_entries(project_id);
+CREATE INDEX idx_time_entries_task_id ON public.time_entries(task_id);
+CREATE INDEX idx_time_entries_user_id ON public.time_entries(user_id);
+CREATE INDEX idx_time_entries_start_time ON public.time_entries(start_time);

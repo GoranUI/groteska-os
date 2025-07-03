@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ImportPage from "./pages/ImportPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
+import TimeReportPage from "./pages/TimeReportPage";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +57,7 @@ const App = () => (
             <Route path="/invoices" element={<ProtectedLayout><InvoicesPage /></ProtectedLayout>} />
             <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
+            <Route path="/time-report" element={<ProtectedLayout><TimeReportPage /></ProtectedLayout>} />
             <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
             </Routes>
           </SecurityWrapper>
