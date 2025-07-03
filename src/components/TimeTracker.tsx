@@ -1,9 +1,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTimeEntryData } from "@/hooks/data/useTimeEntryData";
 import { Project, SubTask } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
+import { Play, Square, Clock } from "lucide-react";
 
 interface TimeTrackerProps {
   projects: Project[];
@@ -130,70 +132,100 @@ export const TimeTracker = ({ projects, subTasks }: TimeTrackerProps) => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 bg-white shadow-xl rounded-lg p-4 flex flex-col gap-3 w-80 border border-gray-200">
-      <div className="flex items-center gap-2">
-        <select
-          className="border rounded px-2 py-1 flex-1 text-sm"
-          value={projectId}
-          onChange={e => setProjectId(e.target.value)}
-          disabled={running}
-        >
-          <option value="">Select Project</option>
-          {projects.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-        <select
-          className="border rounded px-2 py-1 flex-1 text-sm"
-          value={taskId}
-          onChange={e => setTaskId(e.target.value)}
-          disabled={running || !projectId}
-        >
-          <option value="">Select Task (Optional)</option>
-          {subTasks.filter(t => t.projectId === projectId).map(t => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
-      </div>
-      
-      <input
-        className="border rounded px-2 py-1 w-full text-sm"
-        placeholder="Add a note (optional)"
-        value={note}
-        onChange={e => setNote(e.target.value)}
-        disabled={running}
-        maxLength={255}
-      />
-      
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xl font-bold text-gray-800">
-          {formatElapsed(elapsed)}
-        </span>
-        {running ? (
-          <Button 
-            onClick={handleStop} 
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm"
-            size="sm"
-          >
-            Stop Timer
-          </Button>
-        ) : (
-          <Button 
-            onClick={handleStart} 
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
-            disabled={!projectId}
-            size="sm"
-          >
-            Start Timer
-          </Button>
-        )}
-      </div>
-      
-      {running && (
-        <div className="text-xs text-gray-500 text-center">
-          Tracking time for {projects.find(p => p.id === projectId)?.name}
+    <Card className="sticky top-6">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Clock className="h-5 w-5" />
+          Timer
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Timer Display */}
+        <div className="text-center py-6">
+          <div className="text-3xl font-mono font-bold text-gray-900 mb-2">
+            {formatElapsed(elapsed)}
+          </div>
+          {running && projectId && (
+            <div className="text-sm text-gray-600">
+              Tracking: {projects.find(p => p.id === projectId)?.name}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Project Selection */}
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Project
+            </label>
+            <select
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={projectId}
+              onChange={e => setProjectId(e.target.value)}
+              disabled={running}
+            >
+              <option value="">Select Project</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Task (Optional)
+            </label>
+            <select
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={taskId}
+              onChange={e => setTaskId(e.target.value)}
+              disabled={running || !projectId}
+            >
+              <option value="">Select Task</option>
+              {subTasks.filter(t => t.projectId === projectId).map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="What are you working on?"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              disabled={running}
+              maxLength={255}
+            />
+          </div>
+        </div>
+
+        {/* Start/Stop Button */}
+        <div className="pt-2">
+          {running ? (
+            <Button 
+              onClick={handleStop} 
+              className="w-full bg-red-600 hover:bg-red-700 text-white gap-2"
+            >
+              <Square className="h-4 w-4" />
+              Stop Timer
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleStart} 
+              className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+              disabled={!projectId}
+            >
+              <Play className="h-4 w-4" />
+              Start Timer
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
