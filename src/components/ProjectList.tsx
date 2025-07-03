@@ -1,16 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Users, DollarSign, Flame } from "lucide-react";
+import { FolderOpen, Users, DollarSign, Flame, Edit } from "lucide-react";
 import { Project, SubTask, Client } from "@/types";
+import { Button } from "@/components/ui/button";
 
 interface ProjectListProps {
   clients: Client[];
   projects: Project[];
   subTasks: SubTask[];
   onProjectClick?: (projectId: string) => void;
+  onEdit?: (project: Project) => void;
 }
 
-export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: ProjectListProps) => {
+export const ProjectList = ({ clients, projects, subTasks, onProjectClick, onEdit }: ProjectListProps) => {
   const getClientName = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
     return client?.name || 'Unknown Client';
@@ -74,10 +76,9 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
     );
   };
 
-  const handleEditProject = (e: React.MouseEvent, projectId: string) => {
-    e.stopPropagation(); // Prevent triggering onProjectClick
-    // This will be handled by the parent component
-    console.log('Edit project:', projectId);
+  const handleEditProject = (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation();
+    if (onEdit) onEdit(project);
   };
 
   return (
@@ -111,23 +112,23 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
                 return (
                   <Card 
                     key={project.id} 
-                    className={`border border-gray-200 transition-all duration-200 ${
+                    className={`group border border-gray-200 transition-all duration-200 ${
                       onProjectClick 
                         ? 'cursor-pointer hover:shadow-lg hover:border-blue-300 hover:bg-gradient-to-br hover:from-white hover:to-blue-50/30' 
                         : 'hover:shadow-md'
                     }`}
                     onClick={() => onProjectClick?.(project.id)}
                   >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1 leading-tight">{project.name}</h3>
-                          <p className="text-sm text-gray-600 flex items-center">
-                            <Users className="h-4 w-4 mr-1.5 text-gray-500" />
-                            {getClientName(project.clientId)}
-                          </p>
-                        </div>
-                        <div className="flex flex-col gap-2 ml-3">
+                    <CardHeader className="pb-3 flex flex-row items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1 leading-tight">{project.name}</h3>
+                        <p className="text-sm text-gray-600 flex items-center">
+                          <Users className="h-4 w-4 mr-1.5 text-gray-500" />
+                          {getClientName(project.clientId)}
+                        </p>
+                      </div>
+                      <div className="flex items-center h-2">
+                        <div className="flex items-center ml-auto space-x-2">
                           <Badge 
                             variant="outline"
                             className={`text-xs font-medium border ${getStatusColor(project.status)} px-2 py-1`}
@@ -136,6 +137,16 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
                           </Badge>
                           {renderPriorityBadge(project.priority)}
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleEditProject(e, project)}
+                          className="hidden group-hover:inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 focus-visible:ring-2 focus-visible:ring-ring transition-colors ml-1"
+                          aria-label="Edit Project"
+                          tabIndex={-1}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -147,7 +158,7 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
                         <div className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2">
                           <span className="text-gray-600 flex items-center">
                             <DollarSign className="h-4 w-4 mr-1" />
-                            Tasks:
+                            Active Tasks:
                           </span>
                           <span className="font-semibold text-gray-900">{projectSubTasks.length}</span>
                         </div>

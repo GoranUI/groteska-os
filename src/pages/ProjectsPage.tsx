@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -142,6 +141,7 @@ export default function ProjectsPage() {
             projects={projects}
             subTasks={subTasks}
             onProjectClick={handleProjectClick}
+            onEdit={handleEditProject}
           />
         </TabsContent>
 
