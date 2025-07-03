@@ -4,37 +4,93 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useTimeEntryData } from "@/hooks/data/useTimeEntryData";
 import { useAuth } from "@/hooks/useAuth";
 import { Project, SubTask } from "@/types";
 import { Plus } from "lucide-react";
+import { format } from "date-fns";
 
 interface TimeEntryFormProps {
   projects: Project[];
   subTasks: SubTask[];
+  prefilledData?: {
+    startTime?: string;
+    endTime?: string;
+    date?: string;
+  };
+  onClose?: () => void;
 }
 
-export const TimeEntryForm = ({ projects, subTasks }: TimeEntryFormProps) => {
+export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose }: TimeEntryFormProps) => {
   const { user } = useAuth();
   const { addTimeEntry } = useTimeEntryData();
   const [open, setOpen] = useState(false);
+  const [inputMode, setInputMode] = useState<"time-range" | "duration">("time-range");
+  
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const currentTime = format(new Date(), 'HH:mm');
+  const currentDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
+  
   const [formData, setFormData] = useState({
     projectId: "",
     taskId: "",
-    startTime: "",
-    endTime: "",
+    date: prefilledData?.date || currentDate,
+    startTime: prefilledData?.startTime || currentTime,
+    endTime: prefilledData?.endTime || "",
+    duration: "",
     note: "",
   });
 
+  const parseDuration = (durationStr: string): number => {
+    const regex = /(?:(\d+)h)?(?:(\d+)m)?/;
+    const match = durationStr.match(regex);
+    if (!match) return 0;
+    
+    const hours = parseInt(match[1] || '0', 10);
+    const minutes = parseInt(match[2] || '0', 10);
+    return hours * 3600 + minutes * 60;
+  };
+
+  const calculateEndTimeFromDuration = (startTime: string, durationSeconds: number): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    
+    const endDate = new Date(startDate.getTime() + durationSeconds * 1000);
+    return format(endDate, 'HH:mm');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.projectId || !formData.startTime || !formData.endTime) return;
+    if (!user || !formData.projectId || !formData.date) return;
 
-    const startTime = new Date(formData.startTime).toISOString();
-    const endTime = new Date(formData.endTime).toISOString();
-    const duration = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
+    let startTime: string;
+    let endTime: string;
+    let duration: number;
+
+    if (inputMode === "duration" && formData.duration) {
+      duration = parseDuration(formData.duration);
+      if (duration <= 0) {
+        alert("Please enter a valid duration (e.g., 2h30m)");
+        return;
+      }
+      
+      // Calculate end time from duration
+      startTime = `${formData.date}T${formData.startTime}`;
+      const calculatedEndTime = calculateEndTimeFromDuration(formData.startTime, duration);
+      endTime = `${formData.date}T${calculatedEndTime}`;
+    } else {
+      // Time range mode
+      if (!formData.startTime || !formData.endTime) {
+        alert("Please provide both start and end times");
+        return;
+      }
+      
+      startTime = `${formData.date}T${formData.startTime}`;
+      endTime = `${formData.date}T${formData.endTime}`;
+      duration = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
+    }
 
     if (duration <= 0) {
       alert("End time must be after start time");
@@ -46,8 +102,8 @@ export const TimeEntryForm = ({ projects, subTasks }: TimeEntryFormProps) => {
         projectId: formData.projectId,
         taskId: formData.taskId || null,
         userId: user.id,
-        startTime,
-        endTime,
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
         duration,
         note: formData.note,
         isBillable: false,
@@ -56,11 +112,14 @@ export const TimeEntryForm = ({ projects, subTasks }: TimeEntryFormProps) => {
       setFormData({
         projectId: "",
         taskId: "",
-        startTime: "",
+        date: currentDate,
+        startTime: currentTime,
         endTime: "",
+        duration: "",
         note: "",
       });
       setOpen(false);
+      onClose?.();
     } catch (error) {
       console.error("Error adding time entry:", error);
       alert("Failed to add time entry. Please try again.");
@@ -118,27 +177,84 @@ export const TimeEntryForm = ({ projects, subTasks }: TimeEntryFormProps) => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="startTime">Start Time *</Label>
-              <Input
-                id="startTime"
-                type="datetime-local"
-                value={formData.startTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                required
-              />
+          <div>
+            <Label htmlFor="date">Date *</Label>
+            <Input
+              id="date"
+              type="date"
+              value={formData.date}
+              onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={inputMode === "time-range" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setInputMode("time-range")}
+              >
+                Time Range
+              </Button>
+              <Button
+                type="button"
+                variant={inputMode === "duration" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setInputMode("duration")}
+              >
+                Duration
+              </Button>
             </div>
-            <div>
-              <Label htmlFor="endTime">End Time *</Label>
-              <Input
-                id="endTime"
-                type="datetime-local"
-                value={formData.endTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                required
-              />
-            </div>
+
+            {inputMode === "time-range" ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime">Start Time *</Label>
+                  <Input
+                    id="startTime"
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endTime">End Time *</Label>
+                  <Input
+                    id="endTime"
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime">Start Time *</Label>
+                  <Input
+                    id="startTime"
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="duration">Duration *</Label>
+                  <Input
+                    id="duration"
+                    placeholder="e.g., 2h30m"
+                    value={formData.duration}
+                    onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

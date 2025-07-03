@@ -15,6 +15,12 @@ export const TimeSummaryCards = ({ selectedDate, activeView }: TimeSummaryCardsP
   const { timeEntries, fetchTimeEntries } = useTimeEntryData();
   const [totalTime, setTotalTime] = useState(0);
   const [lastWeekTime, setLastWeekTime] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Force refresh when timeEntries change
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [timeEntries]);
 
   useEffect(() => {
     if (!user) return;
@@ -36,6 +42,7 @@ export const TimeSummaryCards = ({ selectedDate, activeView }: TimeSummaryCardsP
         break;
     }
 
+    // Fetch current period data
     fetchTimeEntries({
       userId: user.id,
       from,
@@ -56,7 +63,7 @@ export const TimeSummaryCards = ({ selectedDate, activeView }: TimeSummaryCardsP
         setLastWeekTime(lastWeekTotal);
       }
     });
-  }, [selectedDate, activeView, user, fetchTimeEntries]);
+  }, [selectedDate, activeView, user, fetchTimeEntries, refreshKey]);
 
   useEffect(() => {
     const total = timeEntries.reduce((sum, entry) => sum + entry.duration, 0);
