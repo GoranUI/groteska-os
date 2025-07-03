@@ -20,17 +20,18 @@ interface TimeEntryFormProps {
     date?: string;
   };
   onClose?: () => void;
+  onSuccess?: () => void; // Add callback for successful submission
 }
 
-export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose }: TimeEntryFormProps) => {
+export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSuccess }: TimeEntryFormProps) => {
   const { user } = useAuth();
   const { addTimeEntry } = useTimeEntryData();
   const [open, setOpen] = useState(false);
   const [inputMode, setInputMode] = useState<"time-range" | "duration">("time-range");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const currentDate = format(new Date(), 'yyyy-MM-dd');
   const currentTime = format(new Date(), 'HH:mm');
-  const currentDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
   
   const [formData, setFormData] = useState({
     projectId: "",
@@ -43,7 +44,7 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose }: Ti
   });
 
   const parseDuration = (durationStr: string): number => {
-    const regex = /(?:(\d+)h)?(?:(\d+)m)?/;
+    const regex = /(?:(\d+)h)?(?:\s*(\d+)m)?/;
     const match = durationStr.match(regex);
     if (!match) return 0;
     
@@ -63,42 +64,45 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose }: Ti
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.projectId || !formData.date) return;
+    if (!user || !formData.projectId || !formData.date || isSubmitting) return;
 
-    let startTime: string;
-    let endTime: string;
-    let duration: number;
-
-    if (inputMode === "duration" && formData.duration) {
-      duration = parseDuration(formData.duration);
-      if (duration <= 0) {
-        alert("Please enter a valid duration (e.g., 2h30m)");
-        return;
-      }
-      
-      // Calculate end time from duration
-      startTime = `${formData.date}T${formData.startTime}`;
-      const calculatedEndTime = calculateEndTimeFromDuration(formData.startTime, duration);
-      endTime = `${formData.date}T${calculatedEndTime}`;
-    } else {
-      // Time range mode
-      if (!formData.startTime || !formData.endTime) {
-        alert("Please provide both start and end times");
-        return;
-      }
-      
-      startTime = `${formData.date}T${formData.startTime}`;
-      endTime = `${formData.date}T${formData.endTime}`;
-      duration = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
-    }
-
-    if (duration <= 0) {
-      alert("End time must be after start time");
-      return;
-    }
+    setIsSubmitting(true);
+    console.log('Form submission started with data:', formData);
 
     try {
-      await addTimeEntry({
+      let startTime: string;
+      let endTime: string;
+      let duration: number;
+
+      if (inputMode === "duration" && formData.duration) {
+        duration = parseDuration(formData.duration);
+        if (duration <= 0) {
+          alert("Please enter a valid duration (e.g., 2h30m)");
+          return;
+        }
+        
+        // Calculate end time from duration
+        startTime = `${formData.date}T${formData.startTime}`;
+        const calculatedEndTime = calculateEndTimeFromDuration(formData.startTime, duration);
+        endTime = `${formData.date}T${calculatedEndTime}`;
+      } else {
+        // Time range mode
+        if (!formData.startTime || !formData.endTime) {
+          alert("Please provide both start and end times");
+          return;
+        }
+        
+        startTime = `${formData.date}T${formData.startTime}`;
+        endTime = `${formData.date}T${formData.endTime}`;
+        duration = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
+      }
+
+      if (duration <= 0) {
+        alert("End time must be after start time");
+        return;
+      }
+
+      console.log('Submitting time entry:', {
         projectId: formData.projectId,
         taskId: formData.taskId || null,
         userId: user.id,
@@ -109,20 +113,45 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose }: Ti
         isBillable: false,
       });
 
-      setFormData({
-        projectId: "",
-        taskId: "",
-        date: currentDate,
-        startTime: currentTime,
-        endTime: "",
-        duration: "",
-        note: "",
+      const result = await addTimeEntry({
+        projectId: formData.projectId,
+        taskId: formData.taskId || null,
+        userId: user.id,
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        duration,
+        note: formData.note,
+        isBillable: false,
       });
-      setOpen(false);
-      onClose?.();
+
+      console.log('Add time entry result:', result);
+
+      if (result && !result.error) {
+        // Reset form
+        setFormData({
+          projectId: "",
+          taskId: "",
+          date: currentDate,
+          startTime: currentTime,
+          endTime: "",
+          duration: "",
+          note: "",
+        });
+        
+        setOpen(false);
+        onClose?.();
+        onSuccess?.(); // Trigger refresh
+        
+        console.log('Time entry added successfully');
+      } else {
+        console.error("Failed to add time entry:", result?.error);
+        alert(`Failed to add time entry: ${result?.error?.message || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error("Error adding time entry:", error);
       alert("Failed to add time entry. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -268,10 +297,12 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose }: Ti
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit">Add Entry</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Adding...' : 'Add Entry'}
+            </Button>
           </div>
         </form>
       </DialogContent>

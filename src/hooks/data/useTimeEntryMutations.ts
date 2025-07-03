@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
@@ -7,10 +8,12 @@ export function useTimeEntryMutations() {
   const { setTimeEntries, setLoadingState, handleApiError, transformEntry, transformForDB } = useTimeEntryCore();
 
   const addTimeEntry = useCallback(async (entry: Omit<TimeEntry, "id" | "createdAt" | "updatedAt">) => {
+    console.log('Adding time entry:', entry);
     setLoadingState(true);
     
     try {
       const dbEntry = transformForDB(entry);
+      console.log('Transformed DB entry:', dbEntry);
       
       const { data, error } = await supabase
         .from("time_entries")
@@ -19,16 +22,26 @@ export function useTimeEntryMutations() {
         .single();
       
       if (error) {
+        console.error('Supabase error:', error);
         return handleApiError(error, 'addTimeEntry');
       }
       
       if (data) {
+        console.log('Entry created successfully:', data);
         const transformedEntry = transformEntry(data);
-        setTimeEntries((prev) => [transformedEntry, ...prev]);
+        console.log('Transformed entry:', transformedEntry);
+        
+        // Update the state to include the new entry
+        setTimeEntries((prev) => {
+          const updated = [transformedEntry, ...prev];
+          console.log('Updated entries:', updated);
+          return updated;
+        });
       }
       
       return { data, error: null };
     } catch (err) {
+      console.error('Catch block error:', err);
       return handleApiError(err, 'addTimeEntry');
     } finally {
       setLoadingState(false);

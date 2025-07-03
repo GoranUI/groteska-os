@@ -13,6 +13,7 @@ export function useTimeEntryFetch() {
     from?: string;
     to?: string;
   }) => {
+    console.log('Fetching time entries with filters:', filters);
     setLoadingState(true);
     
     try {
@@ -31,23 +32,30 @@ export function useTimeEntryFetch() {
         query = query.eq("task_id", filters.taskId);
       }
       if (filters?.from) {
+        // Ensure we're filtering on the date part correctly
         query = query.gte("start_time", filters.from);
       }
       if (filters?.to) {
+        // Include the full end of day for the 'to' date
         query = query.lte("start_time", filters.to);
       }
 
       const { data, error } = await query;
 
       if (error) {
+        console.error('Fetch error:', error);
         return handleApiError(error, 'fetchTimeEntries');
       }
 
+      console.log('Fetched data:', data);
       const transformedEntries = (data || []).map(transformEntry);
+      console.log('Transformed entries:', transformedEntries);
+      
       setTimeEntries(transformedEntries);
       
       return { data: transformedEntries, error: null };
     } catch (err) {
+      console.error('Fetch catch error:', err);
       return handleApiError(err, 'fetchTimeEntries');
     } finally {
       setLoadingState(false);

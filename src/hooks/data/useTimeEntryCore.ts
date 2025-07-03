@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
@@ -41,8 +42,19 @@ export function useTimeEntryCore() {
   }, []);
 
   const handleApiError = useCallback((err: any, operation: string) => {
+    console.error(`Error in ${operation}:`, err);
+    let errorMessage = `Failed to ${operation}`;
+    
+    // Better error handling for different error types
+    if (err?.message) {
+      errorMessage = err.message;
+    } else if (typeof err === 'string') {
+      errorMessage = err;
+    } else if (err?.error?.message) {
+      errorMessage = err.error.message;
+    }
+    
     handleError(err, { operation });
-    const errorMessage = `Failed to ${operation}`;
     setError(errorMessage);
     return { data: null, error: { message: errorMessage } };
   }, [handleError]);

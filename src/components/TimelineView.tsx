@@ -27,6 +27,12 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
   const [isDragging, setIsDragging] = useState(false);
   const [dragSelection, setDragSelection] = useState<DragSelection | null>(null);
   const [showQuickForm, setShowQuickForm] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Force refresh function
+  const forceRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -48,14 +54,16 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
         break;
     }
 
+    console.log('Fetching time entries for timeline:', { from, to, userId: user.id });
     fetchTimeEntries({
       userId: user.id,
       from,
       to,
     });
-  }, [selectedDate, view, user, fetchTimeEntries]);
+  }, [selectedDate, view, user, fetchTimeEntries, refreshKey]);
 
   useEffect(() => {
+    console.log('Timeline entries updated:', timeEntries);
     setDisplayEntries(timeEntries);
   }, [timeEntries]);
 
@@ -261,6 +269,9 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
             onClose={() => {
               setShowQuickForm(false);
               setDragSelection(null);
+            }}
+            onSuccess={() => {
+              forceRefresh(); // Refresh the timeline after successful entry
             }}
           />
         )}
