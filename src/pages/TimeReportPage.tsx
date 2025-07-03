@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { format } from "date-fns";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useProjectData } from "@/hooks/data/useProjectData";
 import { useSubTaskData } from "@/hooks/data/useSubTaskData";
@@ -43,7 +44,11 @@ export default function TimeReportPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Time Tracker</h1>
           </div>
           <div className="flex items-center gap-3">
-            <TimeEntryForm projects={projects} subTasks={subTasks} />
+            <TimeEntryForm 
+              projects={projects} 
+              subTasks={subTasks} 
+              prefilledData={{ date: format(selectedDate, 'yyyy-MM-dd') }}
+            />
             <Button
               variant="outline"
               size="sm"

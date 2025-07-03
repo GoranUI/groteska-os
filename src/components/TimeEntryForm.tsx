@@ -30,7 +30,7 @@ export const TimeEntryForm = ({ projects, subTasks, prefilledData, onClose, onSu
   const [inputMode, setInputMode] = useState<"time-range" | "duration">("time-range");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const currentDate = prefilledData?.date || format(new Date(), 'yyyy-MM-dd');
   const currentTime = format(new Date(), 'HH:mm');
   
   const [formData, setFormData] = useState({
