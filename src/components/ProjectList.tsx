@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Users, DollarSign, Fire } from "lucide-react";
+import { FolderOpen, Users, DollarSign, Flame } from "lucide-react";
 import { Project, SubTask, Client } from "@/types";
 
 interface ProjectListProps {
@@ -69,7 +69,7 @@ export const ProjectList = ({ clients, projects, subTasks, onProjectClick }: Pro
     
     return (
       <Badge variant="outline" className={className}>
-        {isHigh && <Fire className="h-3 w-3 mr-1" />}
+        {isHigh && <Flame className="h-3 w-3 mr-1" />}
         {formatPriority(priority)}
       </Badge>
     );
