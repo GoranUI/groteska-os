@@ -1,1 +1,24 @@
+# supabase/config.toml
+
 project_id = "sgzgtnbwzmnozdtofyez"
+# … other root-level settings …
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "https://e2d80dc1-3871-481c-ba66-8cdfc3bc0a2c.lovableproject.com/**",
+  "https://id-preview--e2d80dc1-3871-481c-ba66-8cdfc3bc0a2c.lovable.app/**",
+  "https://ledger-zen-flow.lovable.app/**",
+  "https://preview--ledger-zen-flow.lovable.app/**"
+]
+minimum_password_length = 8
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 6
+otp_expiry = 43200
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+# …any other [auth.*] sections…
