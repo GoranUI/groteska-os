@@ -30,11 +30,10 @@ export const TimeReport = ({ projects, subTasks, users }: TimeReportProps) => {
   // Calculate totals
   const totalSeconds = timeEntries.reduce((sum, t) => sum + t.duration, 0);
   const billableSeconds = timeEntries.filter(t => t.isBillable).reduce((sum, t) => sum + t.duration, 0);
-  // Calculate billable amount (using project or task rate)
+  // Calculate billable amount (using project rate)
   const billableAmount = timeEntries.filter(t => t.isBillable).reduce((sum, t) => {
     const project = projects.find(p => p.id === t.projectId);
-    const task = subTasks.find(st => st.id === t.taskId);
-    const rate = (task?.hourlyRate || project?.hourlyRate || 0);
+    const rate = (project?.hourlyRate || 0);
     return sum + (rate * (t.duration / 3600));
   }, 0);
 
@@ -52,7 +51,7 @@ export const TimeReport = ({ projects, subTasks, users }: TimeReportProps) => {
         const project = projects.find(p => p.id === t.projectId);
         const task = subTasks.find(st => st.id === t.taskId);
         const user = users.find(u => u.id === t.userId);
-        const rate = (task?.hourlyRate || project?.hourlyRate || 0);
+        const rate = (project?.hourlyRate || 0);
         const amount = t.isBillable ? (rate * (t.duration / 3600)) : 0;
         return [
           project?.name || "-",
@@ -80,7 +79,7 @@ export const TimeReport = ({ projects, subTasks, users }: TimeReportProps) => {
       const project = projects.find(p => p.id === t.projectId);
       const task = subTasks.find(st => st.id === t.taskId);
       const user = users.find(u => u.id === t.userId);
-      const rate = (task?.hourlyRate || project?.hourlyRate || 0);
+      const rate = (project?.hourlyRate || 0);
       const amount = t.isBillable ? (rate * (t.duration / 3600)) : 0;
       doc.text(
         `${project?.name || "-"} | ${task?.name || "-"} | ${user?.name || t.userId} | ${(t.duration / 3600).toFixed(2)}h | ${t.isBillable ? "Billable" : "Non-billable"} | $${amount.toFixed(2)}`,
@@ -143,7 +142,7 @@ export const TimeReport = ({ projects, subTasks, users }: TimeReportProps) => {
               const project = projects.find(p => p.id === t.projectId);
               const task = subTasks.find(st => st.id === t.taskId);
               const user = users.find(u => u.id === t.userId);
-              const rate = (task?.hourlyRate || project?.hourlyRate || 0);
+              const rate = (project?.hourlyRate || 0);
               const amount = t.isBillable ? (rate * (t.duration / 3600)) : 0;
               return (
                 <tr key={t.id} className="border-b hover:bg-gray-50">

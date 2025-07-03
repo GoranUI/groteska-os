@@ -25,7 +25,23 @@ export function useTimeEntryData() {
     if (filters?.to) query = query.lte("end_time", filters.to);
     const { data, error } = await query.order("start_time", { ascending: false });
     if (error) setError(error.message);
-    setTimeEntries(data || []);
+    
+    // Transform database response to match TimeEntry interface
+    const transformedData = data?.map(entry => ({
+      id: entry.id.toString(),
+      projectId: entry.project_id || '',
+      taskId: entry.task_id,
+      userId: entry.user_id,
+      startTime: entry.start_time,
+      endTime: entry.end_time,
+      duration: entry.duration || 0,
+      note: entry.description,
+      isBillable: false, // Default value since not in DB yet
+      createdAt: entry.created_at,
+      updatedAt: entry.updated_at
+    })) || [];
+    
+    setTimeEntries(transformedData);
     setLoading(false);
   }, []);
 
@@ -33,9 +49,36 @@ export function useTimeEntryData() {
   const addTimeEntry = useCallback(async (entry: Omit<TimeEntry, "id" | "createdAt" | "updatedAt">) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.from("time_entries").insert([entry]).select().single();
+    
+    // Transform TimeEntry to database format
+    const dbEntry = {
+      project_id: entry.projectId,
+      task_id: entry.taskId,
+      user_id: entry.userId,
+      start_time: entry.startTime,
+      end_time: entry.endTime,
+      duration: entry.duration,
+      description: entry.note
+    };
+    
+    const { data, error } = await supabase.from("time_entries").insert([dbEntry]).select().single();
     if (error) setError(error.message);
-    if (data) setTimeEntries((prev) => [data, ...prev]);
+    if (data) {
+      const transformedEntry = {
+        id: data.id.toString(),
+        projectId: data.project_id || '',
+        taskId: data.task_id,
+        userId: data.user_id,
+        startTime: data.start_time,
+        endTime: data.end_time,
+        duration: data.duration || 0,
+        note: data.description,
+        isBillable: false,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+      setTimeEntries((prev) => [transformedEntry, ...prev]);
+    }
     setLoading(false);
     return { data, error };
   }, []);
@@ -44,9 +87,35 @@ export function useTimeEntryData() {
   const updateTimeEntry = useCallback(async (id: string, updates: Partial<Omit<TimeEntry, "id" | "createdAt" | "updatedAt">>) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.from("time_entries").update(updates).eq("id", id).select().single();
+    
+    // Transform updates to database format
+    const dbUpdates: any = {};
+    if (updates.projectId) dbUpdates.project_id = updates.projectId;
+    if (updates.taskId !== undefined) dbUpdates.task_id = updates.taskId;
+    if (updates.userId) dbUpdates.user_id = updates.userId;
+    if (updates.startTime) dbUpdates.start_time = updates.startTime;
+    if (updates.endTime !== undefined) dbUpdates.end_time = updates.endTime;
+    if (updates.duration !== undefined) dbUpdates.duration = updates.duration;
+    if (updates.note !== undefined) dbUpdates.description = updates.note;
+    
+    const { data, error } = await supabase.from("time_entries").update(dbUpdates).eq("id", parseInt(id)).select().single();
     if (error) setError(error.message);
-    if (data) setTimeEntries((prev) => prev.map((t) => (t.id === id ? data : t)));
+    if (data) {
+      const transformedEntry = {
+        id: data.id.toString(),
+        projectId: data.project_id || '',
+        taskId: data.task_id,
+        userId: data.user_id,
+        startTime: data.start_time,
+        endTime: data.end_time,
+        duration: data.duration || 0,
+        note: data.description,
+        isBillable: false,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+      setTimeEntries((prev) => prev.map((t) => (t.id === id ? transformedEntry : t)));
+    }
     setLoading(false);
     return { data, error };
   }, []);
@@ -55,7 +124,7 @@ export function useTimeEntryData() {
   const deleteTimeEntry = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
-    const { error } = await supabase.from("time_entries").delete().eq("id", id);
+    const { error } = await supabase.from("time_entries").delete().eq("id", parseInt(id));
     if (error) setError(error.message);
     setTimeEntries((prev) => prev.filter((t) => t.id !== id));
     setLoading(false);

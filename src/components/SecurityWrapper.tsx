@@ -19,11 +19,22 @@ export const SecurityWrapper = ({ children }: SecurityWrapperProps) => {
       });
     }
 
-    // Set up Content Security Policy headers programmatically
+    // Set up strengthened Content Security Policy headers
     const meta = document.createElement('meta');
     meta.httpEquiv = 'Content-Security-Policy';
-    meta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; font-src 'self';";
+    meta.content = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';";
     document.head.appendChild(meta);
+
+    // Add additional security headers
+    const xFrameOptions = document.createElement('meta');
+    xFrameOptions.httpEquiv = 'X-Frame-Options';
+    xFrameOptions.content = 'DENY';
+    document.head.appendChild(xFrameOptions);
+
+    const xContentType = document.createElement('meta');
+    xContentType.httpEquiv = 'X-Content-Type-Options';
+    xContentType.content = 'nosniff';
+    document.head.appendChild(xContentType);
 
     // Monitor for suspicious activity
     const handleError = (event: ErrorEvent) => {
@@ -52,7 +63,14 @@ export const SecurityWrapper = ({ children }: SecurityWrapperProps) => {
     return () => {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      document.head.removeChild(meta);
+      // Clean up security headers
+      try {
+        document.head.removeChild(meta);
+        document.head.removeChild(xFrameOptions);
+        document.head.removeChild(xContentType);
+      } catch (e) {
+        // Headers may already be removed
+      }
     };
   }, [user]);
 

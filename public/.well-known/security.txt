@@ -1,0 +1,12 @@
+Contact: mailto:security@yourapp.com
+Expires: 2025-12-31T23:59:59.000Z
+Encryption: https://keys.openpgp.org/
+Preferred-Languages: en
+Canonical: https://yourapp.com/.well-known/security.txt
+Policy: https://yourapp.com/security-policy
+
+# Security Disclosure Policy
+# If you discover a security vulnerability, please report it responsibly.
+# Do not create public issues for security vulnerabilities.
+# 
+# We appreciate your help in keeping our users safe!

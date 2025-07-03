@@ -103,11 +103,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        // Log failed authentication attempts for security monitoring
+        console.warn('[SECURITY] Failed login attempt:', {
+          email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Partially mask email
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      return { error };
+    } catch (err) {
+      console.error('[SECURITY] Login error:', err);
+      return { error: { message: 'Authentication failed' } };
+    }
   };
 
   const signOut = async () => {
