@@ -44,11 +44,6 @@ export default function TimeReportPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Time Tracker</h1>
           </div>
           <div className="flex items-center gap-3">
-            <TimeEntryForm 
-              projects={projects} 
-              subTasks={subTasks} 
-              prefilledData={{ date: format(selectedDate, 'yyyy-MM-dd') }}
-            />
             <Button
               variant="outline"
               size="sm"

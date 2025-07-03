@@ -106,26 +106,32 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     }
     
     const filtered = timeEntries.filter(entry => {
-      const entryDate = new Date(entry.startTime);
-      const isInRange = entryDate >= startOfDayDate && entryDate <= endOfDayDate;
-      
-      if (shouldLog) {
-        console.log('TimelineView: Entry filter check:', {
+      // For day view, use strict date matching
+      if (view === "day") {
+        const entryDate = new Date(entry.startTime);
+        const isInRange = entryDate >= startOfDayDate && entryDate <= endOfDayDate;
+        
+        // Force logging for now to debug
+        console.log('TimelineView: Day view entry filter check:', {
           id: entry.id,
           entryDate: entryDate.toISOString(),
+          startOfDayDate: startOfDayDate.toISOString(),
+          endOfDayDate: endOfDayDate.toISOString(),
           isInRange,
           startTime: entry.startTime,
-          projectId: entry.projectId
+          projectId: entry.projectId,
+          view: view
         });
+        
+        return isInRange;
+      } else {
+        // For week/month views, just return all timeEntries as they're already filtered by the fetch
+        return true;
       }
-      
-      return isInRange;
     });
     
-    if (shouldLog) {
-      console.log('TimelineView: Filtered entries for display:', filtered.length, 'entries');
-      console.log('TimelineView: Filtered entry IDs:', filtered.map(e => e.id));
-    }
+    console.log('TimelineView: Filtered entries for display:', filtered.length, 'entries');
+    console.log('TimelineView: Filtered entry IDs:', filtered.map(e => e.id));
     
     return filtered;
   }, [timeEntries, selectedDate]);
@@ -267,7 +273,7 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
       const labels = [];
       for (let i = 0; i <= 23; i++) {
         labels.push(
-          <div key={i} className="absolute text-xs text-gray-500 -left-12 -translate-y-1/2" style={{ top: `${(i / 24) * 100}%` }}>
+          <div key={i} className="absolute text-xs text-gray-500 -translate-y-1/2 text-right pr-2" style={{ top: `${(i / 24) * 100}%`, right: 0 }}>
             {i.toString().padStart(2, '0')}:00
           </div>
         );
@@ -276,9 +282,9 @@ export const TimelineView = ({ selectedDate, view, projects, subTasks }: Timelin
     };
 
     return (
-      <div className="relative pl-16 pr-4">
+        <div className="relative pl-20 pr-4">
         {/* Time Labels */}
-        <div className="absolute left-0 top-0 bottom-0">
+        <div className="absolute left-0 top-0 bottom-0 w-16">
           {generateTimeLabels()}
         </div>
 
