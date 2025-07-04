@@ -17,9 +17,18 @@ interface TimeEntryTableProps {
   subTasks: SubTask[];
   startDate?: Date;
   endDate?: Date;
+  selectedEntries?: Set<string>;
+  onSelectionChange?: (selected: Set<string>) => void;
 }
 
-export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeEntryTableProps) {
+export function TimeEntryTable({ 
+  projects, 
+  subTasks, 
+  startDate, 
+  endDate, 
+  selectedEntries: externalSelectedEntries,
+  onSelectionChange 
+}: TimeEntryTableProps) {
   const {
     timeEntries,
     loading,
@@ -32,6 +41,10 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
   const [editingDuration, setEditingDuration] = useState<string | null>(null);
+  
+  // Use external selectedEntries if provided, otherwise use internal state
+  const effectiveSelectedEntries = externalSelectedEntries || selectedEntries;
+  const effectiveSetSelectedEntries = onSelectionChange || setSelectedEntries;
   const [tempDuration, setTempDuration] = useState("");
   const [filters, setFilters] = useState({
     search: "",
@@ -151,33 +164,33 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
   };
 
   const handleBulkDelete = async () => {
-    if (selectedEntries.size === 0) return;
+    if (effectiveSelectedEntries.size === 0) return;
     
-    if (window.confirm(`Are you sure you want to delete ${selectedEntries.size} time entries?`)) {
-      for (const entryId of selectedEntries) {
+    if (window.confirm(`Are you sure you want to delete ${effectiveSelectedEntries.size} time entries?`)) {
+      for (const entryId of effectiveSelectedEntries) {
         await deleteTimeEntry(entryId);
       }
-      setSelectedEntries(new Set());
+      effectiveSetSelectedEntries(new Set());
     }
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const allEntryIds = filteredEntries.map(entry => entry.id);
-      setSelectedEntries(new Set(allEntryIds));
+      effectiveSetSelectedEntries(new Set(allEntryIds));
     } else {
-      setSelectedEntries(new Set());
+      effectiveSetSelectedEntries(new Set());
     }
   };
 
   const handleSelectEntry = (entryId: string, checked: boolean) => {
-    const newSelected = new Set(selectedEntries);
+    const newSelected = new Set(effectiveSelectedEntries);
     if (checked) {
       newSelected.add(entryId);
     } else {
       newSelected.delete(entryId);
     }
-    setSelectedEntries(newSelected);
+    effectiveSetSelectedEntries(newSelected);
   };
 
   const handleDurationEdit = async (entryId: string, duration: string) => {
@@ -223,12 +236,12 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
       />
 
       {/* Bulk Actions */}
-      {selectedEntries.size > 0 && (
+      {effectiveSelectedEntries.size > 0 && (
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                {selectedEntries.size} entries selected
+                {effectiveSelectedEntries.size} entries selected
               </span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleBulkDelete}>
@@ -246,10 +259,10 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
           <div className="flex items-center justify-between">
             <CardTitle>Time Entries ({filteredEntries.length})</CardTitle>
             <div className="flex items-center gap-2">
-              <Checkbox
-                checked={selectedEntries.size === filteredEntries.length && filteredEntries.length > 0}
-                onCheckedChange={handleSelectAll}
-              />
+                              <Checkbox
+                  checked={effectiveSelectedEntries.size === filteredEntries.length && filteredEntries.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
               <span className="text-sm text-muted-foreground">Select all</span>
             </div>
           </div>
@@ -294,12 +307,12 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-12">
-                              <Checkbox
-                                checked={entries.every(entry => selectedEntries.has(entry.id))}
-                                onCheckedChange={(checked) => {
-                                  entries.forEach(entry => handleSelectEntry(entry.id, !!checked));
-                                }}
-                              />
+                                              <Checkbox
+                  checked={entries.every(entry => effectiveSelectedEntries.has(entry.id))}
+                  onCheckedChange={(checked) => {
+                    entries.forEach(entry => handleSelectEntry(entry.id, !!checked));
+                  }}
+                />
                             </TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead>Project</TableHead>
@@ -319,10 +332,10 @@ export function TimeEntryTable({ projects, subTasks, startDate, endDate }: TimeE
                             return (
                               <TableRow key={entry.id}>
                                 <TableCell>
-                                  <Checkbox
-                                    checked={selectedEntries.has(entry.id)}
-                                    onCheckedChange={(checked) => handleSelectEntry(entry.id, !!checked)}
-                                  />
+                                                  <Checkbox
+                  checked={effectiveSelectedEntries.has(entry.id)}
+                  onCheckedChange={(checked) => handleSelectEntry(entry.id, !!checked)}
+                />
                                 </TableCell>
                                 <TableCell>
                                   <div className="max-w-xs truncate">

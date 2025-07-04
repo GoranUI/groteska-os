@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { format } from "date-fns";
-import { Calendar, Clock, Save, Plus } from "lucide-react";
+import { Calendar, Clock, Save, Plus, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,8 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
     date: format(new Date(), 'yyyy-MM-dd'),
     startTime: '',
     endTime: '',
-    isBillable: false,
+    duration: '',
+    isBillable: true, // Enable billable by default
   });
 
   const resetForm = useCallback(() => {
@@ -38,8 +39,38 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
       date: format(new Date(), 'yyyy-MM-dd'),
       startTime: '',
       endTime: '',
-      isBillable: false,
+      duration: '',
+      isBillable: true,
     });
+  }, []);
+
+  // Calculate duration from start and end time
+  const calculateDuration = useCallback((startTime: string, endTime: string): string => {
+    if (!startTime || !endTime) return '';
+    
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    
+    if (end <= start) return '';
+    
+    const diffMs = end.getTime() - start.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}`;
+  }, []);
+
+  // Calculate start time from end time and duration
+  const calculateStartTime = useCallback((endTime: string, duration: string): string => {
+    if (!endTime || !duration) return '';
+    
+    const [hours, minutes] = duration.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return '';
+    
+    const end = new Date(`2000-01-01T${endTime}`);
+    const start = new Date(end.getTime() - (hours * 60 * 60 * 1000) - (minutes * 60 * 1000));
+    
+    return start.toTimeString().slice(0, 5);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent, saveAndNew = false) => {
@@ -72,6 +103,7 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
           description: '',
           startTime: '',
           endTime: '',
+          duration: '',
         }));
       } else {
         resetForm();
@@ -171,51 +203,93 @@ export function ManualTimeEntryForm({ projects, subTasks }: ManualTimeEntryFormP
             </div>
           </div>
 
-          {/* Date and Time Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Date, Start Time, End Time, and Duration Row */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="date" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Date *
-              </Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                required
-              />
+              <Label htmlFor="date">Date *</Label>
+              <div className="relative">
+                <Input
+                  id="date"
+                  type="text"
+                  placeholder="YYYY-MM-DD"
+                  value={formData.date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  required
+                />
+                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="startTime" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Start *
-              </Label>
-              <Input
-                id="startTime"
-                type="time"
-                value={formData.startTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                required
-              />
+              <Label htmlFor="startTime">Start *</Label>
+              <div className="relative">
+                <Input
+                  id="startTime"
+                  type="text"
+                  placeholder="HH:MM"
+                  value={formData.startTime}
+                  onChange={(e) => {
+                    const newStartTime = e.target.value;
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      startTime: newStartTime,
+                      duration: calculateDuration(newStartTime, prev.endTime)
+                    }));
+                  }}
+                  required
+                />
+                <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="endTime">End *</Label>
-              <Input
-                id="endTime"
-                type="time"
-                value={formData.endTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="endTime"
+                  type="text"
+                  placeholder="HH:MM"
+                  value={formData.endTime}
+                  onChange={(e) => {
+                    const newEndTime = e.target.value;
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      endTime: newEndTime,
+                      duration: calculateDuration(prev.startTime, newEndTime)
+                    }));
+                  }}
+                  required
+                />
+                <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration</Label>
+              <div className="relative">
+                <Input
+                  id="duration"
+                  type="text"
+                  placeholder="HH:MM"
+                  value={formData.duration}
+                  onChange={(e) => {
+                    const newDuration = e.target.value;
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      duration: newDuration,
+                      startTime: calculateStartTime(prev.endTime, newDuration)
+                    }));
+                  }}
+                />
+                <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           </div>
 
           {/* Billable and Actions Row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-gray-500" />
               <Switch
                 id="billable"
                 checked={formData.isBillable}

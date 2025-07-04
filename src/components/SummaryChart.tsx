@@ -10,6 +10,17 @@ interface SummaryChartProps {
 }
 
 export function SummaryChart({ timeEntries, projects, formatDuration }: SummaryChartProps) {
+  const COLORS = [
+    '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
+    '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
+    '#F97316', '#6366F1', '#14B8A6', '#DC2626'
+  ];
+
+  const getProjectColor = (projectId: string, projects: Project[]): string => {
+    const index = projects.findIndex(p => p.id === projectId);
+    return COLORS[index % COLORS.length];
+  };
+
   // Prepare data for charts
   const projectData = timeEntries.reduce((acc, entry) => {
     const project = projects.find(p => p.id === entry.projectId);
@@ -37,17 +48,6 @@ export function SummaryChart({ timeEntries, projects, formatDuration }: SummaryC
     hours: Math.round((item.duration / 3600) * 100) / 100,
     billableHours: Math.round((item.billableDuration / 3600) * 100) / 100,
   }));
-
-  const COLORS = [
-    '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
-    '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
-    '#F97316', '#6366F1', '#14B8A6', '#DC2626'
-  ];
-
-  const getProjectColor = (projectId: string, projects: Project[]): string => {
-    const index = projects.findIndex(p => p.id === projectId);
-    return COLORS[index % COLORS.length];
-  };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
