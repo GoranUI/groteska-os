@@ -31,15 +31,13 @@ export default function Index() {
 
   useEffect(() => {
     if (incomes && expenses) {
-      const balance = getTotalBalance(incomes, expenses);
       const totalRSD = getTotalInRSD(incomes, expenses);
       
-      // Set the balance as a single number (EUR equivalent)
-      setTotalBalance(typeof balance === 'object' ? balance.EUR || 0 : balance);
-      // Set the RSD total as a single number
-      setTotalInRSD(typeof totalRSD === 'object' ? totalRSD.balance || 0 : totalRSD);
+      // Set both values as RSD amounts
+      setTotalBalance(totalRSD.balance);
+      setTotalInRSD(totalRSD.balance);
     }
-  }, [incomes, expenses, getTotalBalance, getTotalInRSD]);
+  }, [incomes, expenses, getTotalInRSD]);
 
   if (loading) {
     return (

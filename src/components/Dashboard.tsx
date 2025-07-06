@@ -199,13 +199,10 @@ export const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-600 truncate">
-                    Total Balance
+                    Total Balance (RSD)
                   </p>
                   <p className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                    {totalBalance.toLocaleString()} EUR
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    = {totalInRSD.toLocaleString()} RSD
+                    {totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD
                   </p>
                 </div>
                 <div className="p-2 lg:p-3 bg-gray-100 rounded-full flex-shrink-0">
