@@ -89,7 +89,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Use production domain for email redirects instead of localhost
+    const redirectUrl = window.location.origin.includes('localhost') 
+      ? 'https://id-preview--e2d80dc1-3871-481c-ba66-8cdfc3bc0a2c.lovable.app/'
+      : `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
       email,
