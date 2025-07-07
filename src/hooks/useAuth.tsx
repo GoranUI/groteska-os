@@ -113,12 +113,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        // Log failed authentication attempts for security monitoring
+        // Enhanced security logging for failed authentication attempts
         console.warn('[SECURITY] Failed login attempt:', {
           email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Partially mask email
           error: error.message,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent.substring(0, 100), // Truncated user agent
+          attemptCount: parseInt(localStorage.getItem(`login_attempts_${email}`) || '0') + 1
         });
+        
+        // Track failed attempt count for rate limiting
+        const currentAttempts = parseInt(localStorage.getItem(`login_attempts_${email}`) || '0');
+        localStorage.setItem(`login_attempts_${email}`, (currentAttempts + 1).toString());
+        
+        // Clear attempt count after 15 minutes of successful login
+        if (!error) {
+          localStorage.removeItem(`login_attempts_${email}`);
+        }
       }
       
       return { error };

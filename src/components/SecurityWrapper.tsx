@@ -22,7 +22,7 @@ export const SecurityWrapper = ({ children }: SecurityWrapperProps) => {
     // Set up strengthened Content Security Policy headers
     const meta = document.createElement('meta');
     meta.httpEquiv = 'Content-Security-Policy';
-    meta.content = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';";
+    meta.content = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;";
     document.head.appendChild(meta);
 
     // Add additional security headers
@@ -35,6 +35,24 @@ export const SecurityWrapper = ({ children }: SecurityWrapperProps) => {
     xContentType.httpEquiv = 'X-Content-Type-Options';
     xContentType.content = 'nosniff';
     document.head.appendChild(xContentType);
+
+    // Add Referrer Policy
+    const referrerPolicy = document.createElement('meta');
+    referrerPolicy.httpEquiv = 'Referrer-Policy';
+    referrerPolicy.content = 'strict-origin-when-cross-origin';
+    document.head.appendChild(referrerPolicy);
+
+    // Add Permissions Policy
+    const permissionsPolicy = document.createElement('meta');
+    permissionsPolicy.httpEquiv = 'Permissions-Policy';
+    permissionsPolicy.content = 'camera=(), microphone=(), geolocation=(), payment=(), usb=()';
+    document.head.appendChild(permissionsPolicy);
+
+    // Add Strict Transport Security (simulated via meta tag)
+    const hsts = document.createElement('meta');
+    hsts.httpEquiv = 'Strict-Transport-Security';
+    hsts.content = 'max-age=31536000; includeSubDomains';
+    document.head.appendChild(hsts);
 
     // Monitor for suspicious activity
     const handleError = (event: ErrorEvent) => {
@@ -68,6 +86,9 @@ export const SecurityWrapper = ({ children }: SecurityWrapperProps) => {
         document.head.removeChild(meta);
         document.head.removeChild(xFrameOptions);
         document.head.removeChild(xContentType);
+        document.head.removeChild(referrerPolicy);
+        document.head.removeChild(permissionsPolicy);
+        document.head.removeChild(hsts);
       } catch (e) {
         // Headers may already be removed
       }
