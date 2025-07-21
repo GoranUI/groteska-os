@@ -77,6 +77,18 @@ export interface Savings {
   description: string;
 }
 
+export interface Budget {
+  id: string;
+  userId: string;
+  category: string;
+  amount: number;
+  currency: "USD" | "EUR" | "RSD";
+  month: number;
+  year: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface InvoiceItem {
   id?: string;
   description: string;
@@ -127,4 +139,3 @@ export interface TimeEntry {
   createdAt: string;
   updatedAt: string;
 }
-

@@ -19,6 +19,7 @@ import InvoicesPage from "./pages/InvoicesPage";
 import SettingsPage from "./pages/SettingsPage";
 import ImportPage from "./pages/ImportPage";
 import TimeTrackerPage from "./pages/TimeTrackerPage";
+import BudgetPage from "./pages/BudgetPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/savings" element={<ProtectedLayout><SavingsPage /></ProtectedLayout>} />
             <Route path="/invoices" element={<ProtectedLayout><InvoicesPage /></ProtectedLayout>} />
              <Route path="/time-tracker" element={<ProtectedLayout><TimeTrackerPage /></ProtectedLayout>} />
+             <Route path="/budget" element={<ProtectedLayout><BudgetPage /></ProtectedLayout>} />
              <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             
