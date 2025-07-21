@@ -221,27 +221,31 @@ export default function TimeTrackerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header with Actions */}
-      <div className="bg-card border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto p-4 lg:p-8 space-y-8">
+        {/* Enhanced Header */}
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="p-3 bg-info/10 rounded-2xl">
+              <BarChart3 className="h-8 w-8 text-info" />
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">Time Tracker</h1>
-              <p className="text-sm text-muted-foreground">Track your time across projects and tasks</p>
-            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary">
+              Time Tracker
+            </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleBulkExport} disabled={selectedEntries.size === 0}>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Track your time across projects and tasks with precision and insights
+          </p>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <Button variant="outline" size="sm" className="gap-2 focus-ring" onClick={handleBulkExport} disabled={selectedEntries.size === 0}>
               <Download className="h-4 w-4" />
               Export Selected ({selectedEntries.size})
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2" disabled={selectedEntries.size === 0}>
+                <Button variant="outline" size="sm" className="gap-2 focus-ring" disabled={selectedEntries.size === 0}>
                   <Settings className="h-4 w-4" />
                   Bulk Actions ({selectedEntries.size})
                 </Button>
@@ -255,7 +259,7 @@ export default function TimeTrackerPage() {
                   <Edit className="h-4 w-4 mr-2" />
                   Clear Selection
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBulkDelete} className="text-red-600">
+                <DropdownMenuItem onClick={handleBulkDelete} className="text-destructive">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Selected
                 </DropdownMenuItem>
@@ -263,95 +267,106 @@ export default function TimeTrackerPage() {
             </DropdownMenu>
           </div>
         </div>
-      </div>
 
-      <div className="p-6 space-y-6">
-        {/* Timer Widget */}
-        <ErrorBoundary fallback={
-          <Card className="w-full">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">Timer widget failed to load</p>
-            </CardContent>
-          </Card>
-        }>
-          <TimeTrackerWidget projects={projects} subTasks={subTasks} />
-        </ErrorBoundary>
+        <div className="space-y-8">
+          {/* Timer Widget */}
+          <ErrorBoundary fallback={
+            <Card className="card-elevated">
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">Timer widget failed to load</p>
+              </CardContent>
+            </Card>
+          }>
+            <TimeTrackerWidget projects={projects} subTasks={subTasks} />
+          </ErrorBoundary>
 
-        {/* Manual Entry Section */}
-        <ErrorBoundary fallback={
-          <Card className="w-full">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">Manual entry form failed to load</p>
-            </CardContent>
-          </Card>
-        }>
-          <ManualTimeEntryForm projects={projects} subTasks={subTasks} />
-        </ErrorBoundary>
+          {/* Manual Entry Section */}
+          <ErrorBoundary fallback={
+            <Card className="card-elevated">
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">Manual entry form failed to load</p>
+              </CardContent>
+            </Card>
+          }>
+            <ManualTimeEntryForm projects={projects} subTasks={subTasks} />
+          </ErrorBoundary>
 
-        {/* Overview Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Overview</CardTitle>
-              <div className="flex items-center gap-2">
-                <Tabs value={overviewPeriod} onValueChange={v => setOverviewPeriod(v as any)}>
-                  <TabsList>
-                    <TabsTrigger value="day">Day</TabsTrigger>
-                    <TabsTrigger value="week">Week</TabsTrigger>
-                    <TabsTrigger value="month">Month</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                <Button variant="outline" size="sm" onClick={handlePrev}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleToday}>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {overviewLabel}
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleNext}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="space-y-4">
-                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="text-sm text-primary font-medium">Total Time</div>
-                  <div className="text-2xl font-bold text-primary">{formatDuration(overviewSummary.total)}</div>
+          {/* Overview Card */}
+          <Card className="card-elevated">
+            <CardHeader className="bg-gradient-to-r from-info/5 to-info-light/5 border-b border-border/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-info/10 rounded-xl">
+                    <Calendar className="h-5 w-5 text-info" />
+                  </div>
+                  <CardTitle className="text-xl font-semibold text-foreground">Time Overview</CardTitle>
                 </div>
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-950 dark:border-green-800">
-                  <div className="text-sm text-green-600 dark:text-green-400 font-medium">Billable Time</div>
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">{formatDuration(overviewSummary.billable)}</div>
+                <div className="flex items-center gap-3">
+                  <Tabs value={overviewPeriod} onValueChange={v => setOverviewPeriod(v as any)}>
+                    <TabsList className="bg-muted/50">
+                      <TabsTrigger value="day">Day</TabsTrigger>
+                      <TabsTrigger value="week">Week</TabsTrigger>
+                      <TabsTrigger value="month">Month</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <div className="flex items-center gap-1">
+                    <Button variant="outline" size="sm" onClick={handlePrev} className="focus-ring">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleToday} className="focus-ring">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {overviewLabel}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleNext} className="focus-ring">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="lg:col-span-2">
-                <ErrorBoundary fallback={<div className="h-64 flex items-center justify-center"><p className="text-muted-foreground">Chart failed to load</p></div>}>
-                  <SummaryChart timeEntries={overviewEntries} projects={projects} formatDuration={formatDuration} />
-                </ErrorBoundary>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="space-y-4">
+                  <div className="p-6 bg-gradient-to-r from-info/10 to-info-light/10 rounded-xl border border-info/20">
+                    <div className="text-sm text-info font-medium">Total Time</div>
+                    <div className="text-3xl font-bold text-info mt-2">{formatDuration(overviewSummary.total)}</div>
+                  </div>
+                  <div className="p-6 bg-gradient-to-r from-success/10 to-success-light/10 rounded-xl border border-success/20">
+                    <div className="text-sm text-success font-medium">Billable Time</div>
+                    <div className="text-3xl font-bold text-success mt-2">{formatDuration(overviewSummary.billable)}</div>
+                  </div>
+                </div>
+                <div className="lg:col-span-2">
+                  <ErrorBoundary fallback={
+                    <div className="h-64 flex items-center justify-center bg-muted/30 rounded-xl">
+                      <p className="text-muted-foreground">Chart failed to load</p>
+                    </div>
+                  }>
+                    <SummaryChart timeEntries={overviewEntries} projects={projects} formatDuration={formatDuration} />
+                  </ErrorBoundary>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Time Entries Table */}
-        <ErrorBoundary fallback={
-          <Card className="w-full">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">Time entries table failed to load</p>
             </CardContent>
           </Card>
-        }>
-          <TimeEntryTable 
-            projects={projects} 
-            subTasks={subTasks}
-            startDate={weekStart}
-            endDate={weekEnd}
-            selectedEntries={selectedEntries}
-            onSelectionChange={setSelectedEntries}
-          />
-        </ErrorBoundary>
+
+          {/* Time Entries Table */}
+          <ErrorBoundary fallback={
+            <Card className="card-elevated">
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">Time entries table failed to load</p>
+              </CardContent>
+            </Card>
+          }>
+            <TimeEntryTable 
+              projects={projects} 
+              subTasks={subTasks}
+              startDate={weekStart}
+              endDate={weekEnd}
+              selectedEntries={selectedEntries}
+              onSelectionChange={setSelectedEntries}
+            />
+          </ErrorBoundary>
+        </div>
       </div>
     </div>
   );
