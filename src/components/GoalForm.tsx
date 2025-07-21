@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit3, CalendarIcon, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CalendarIcon, Target, Edit3, Sparkles, TrendingUp } from "lucide-react";
 import { FinancialGoal } from "@/types";
 import { validateAmount } from "@/utils/securityUtils";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
@@ -129,251 +130,294 @@ export const GoalForm = ({ onSubmit, initialData, onCancel }: GoalFormProps) => 
   };
 
   const goalTypeOptions = [
-    { value: "savings", label: "Savings Goal", icon: "💰" },
-    { value: "debt_payoff", label: "Debt Payoff", icon: "💳" },
-    { value: "income", label: "Income Target", icon: "📈" },
-    { value: "investment", label: "Investment Goal", icon: "📊" },
-    { value: "expense_reduction", label: "Expense Reduction", icon: "📉" },
-    { value: "emergency_fund", label: "Emergency Fund", icon: "🛡️" },
+    { value: "savings", label: "Savings Goal", icon: "💰", color: "success", description: "Build wealth over time" },
+    { value: "debt_payoff", label: "Debt Payoff", icon: "💳", color: "warning", description: "Eliminate debt burden" },
+    { value: "income", label: "Income Target", icon: "📈", color: "info", description: "Increase earnings" },
+    { value: "investment", label: "Investment Goal", icon: "📊", color: "primary", description: "Grow investments" },
+    { value: "expense_reduction", label: "Expense Reduction", icon: "📉", color: "danger", description: "Cut spending" },
+    { value: "emergency_fund", label: "Emergency Fund", icon: "🛡️", color: "info", description: "Financial safety net" },
   ];
 
+  const selectedGoalType = goalTypeOptions.find(option => option.value === goalType);
+
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-purple-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-purple-600" /> : <Plus className="h-5 w-5 text-purple-600" />}
-          </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Financial Goal" : "Create New Financial Goal"}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              {initialData ? "Update your financial goal" : "Set a target and track your progress"}
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-                Goal Title <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Buy a new car"
-                className="h-10"
-                required
-              />
+    <div className="animate-fade-in">
+      <Card className="card-elevated border-0 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary-light/5 border-b border-border/50">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              {initialData ? (
+                <Edit3 className="h-6 w-6 text-primary" />
+              ) : (
+                <Sparkles className="h-6 w-6 text-primary" />
+              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="goalType" className="text-sm font-medium text-gray-700">
-                Goal Type <span className="text-red-500">*</span>
-              </Label>
-              <Select value={goalType} onValueChange={(value: any) => setGoalType(value)}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {goalTypeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <span className="flex items-center gap-2">
-                        <span>{option.icon}</span>
-                        {option.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                {initialData ? "Edit Financial Goal" : "Create New Financial Goal"}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {initialData ? "Update your financial goal details" : "Set a target and track your progress toward financial success"}
+              </p>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-              Description <span className="text-xs text-gray-500">(optional)</span>
-            </Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your goal and why it's important to you..."
-              className="min-h-[80px]"
-              maxLength={500}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="targetAmount" className="text-sm font-medium text-gray-700">
-                Target Amount <span className="text-red-500">*</span>
+        </CardHeader>
+        
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Goal Type Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-foreground">
+                Goal Type <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="targetAmount"
-                type="number"
-                step="0.01"
-                min="0.01"
-                max="1000000000"
-                value={targetAmount}
-                onChange={(e) => setTargetAmount(e.target.value)}
-                placeholder="0.00"
-                className="h-10"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currentAmount" className="text-sm font-medium text-gray-700">
-                Current Amount
-              </Label>
-              <Input
-                id="currentAmount"
-                type="number"
-                step="0.01"
-                min="0"
-                max="1000000000"
-                value={currentAmount}
-                onChange={(e) => setCurrentAmount(e.target.value)}
-                placeholder="0.00"
-                className="h-10"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
-                Currency <span className="text-red-500">*</span>
-              </Label>
-              <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="RSD">RSD</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">
-                Target Date <span className="text-xs text-gray-500">(optional)</span>
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {goalTypeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setGoalType(option.value as any)}
                     className={cn(
-                      "h-10 w-full justify-start text-left font-normal",
-                      !targetDate && "text-muted-foreground"
+                      "p-4 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.02]",
+                      goalType === option.value
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-primary/30 hover:bg-primary/5"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {targetDate ? format(targetDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={targetDate}
-                    onSelect={setTargetDate}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-foreground">{option.label}</p>
+                        <p className="text-xs text-muted-foreground">{option.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-sm font-medium text-foreground">
+                  Goal Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Buy a new car, Emergency fund"
+                  className="focus-ring h-11"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-medium text-foreground">
+                  Category <span className="text-xs text-muted-foreground">(optional)</span>
+                </Label>
+                <Input
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="e.g., Home, Travel, Education"
+                  className="focus-ring h-11"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority" className="text-sm font-medium text-gray-700">
-                Priority
+              <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                Description <span className="text-xs text-muted-foreground">(optional)</span>
               </Label>
-              <Select value={priority} onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">🔵 Low</SelectItem>
-                  <SelectItem value="medium">🟡 Medium</SelectItem>
-                  <SelectItem value="high">🔴 High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-              Category <span className="text-xs text-gray-500">(optional)</span>
-            </Label>
-            <Input
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g., Home, Travel, Education"
-              className="h-10"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isRecurring"
-                checked={isRecurring}
-                onCheckedChange={setIsRecurring}
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe your goal and why it's important to you..."
+                className="focus-ring min-h-[100px] resize-none"
+                maxLength={500}
               />
-              <Label htmlFor="isRecurring" className="text-sm font-medium text-gray-700">
-                Recurring Goal
-              </Label>
             </div>
 
-            {isRecurring && (
+            {/* Financial Details */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="recurringPeriod" className="text-sm font-medium text-gray-700">
-                  Recurring Period
+                <Label htmlFor="targetAmount" className="text-sm font-medium text-foreground">
+                  Target Amount <span className="text-destructive">*</span>
                 </Label>
-                <Select value={recurringPeriod} onValueChange={(value: any) => setRecurringPeriod(value)}>
-                  <SelectTrigger className="h-10">
+                <Input
+                  id="targetAmount"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  max="1000000000"
+                  value={targetAmount}
+                  onChange={(e) => setTargetAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="focus-ring h-11"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currentAmount" className="text-sm font-medium text-foreground">
+                  Current Amount
+                </Label>
+                <Input
+                  id="currentAmount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="1000000000"
+                  value={currentAmount}
+                  onChange={(e) => setCurrentAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="focus-ring h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currency" className="text-sm font-medium text-foreground">
+                  Currency <span className="text-destructive">*</span>
+                </Label>
+                <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
+                  <SelectTrigger className="focus-ring h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                    <SelectItem value="yearly">Yearly</SelectItem>
+                    <SelectItem value="RSD">🇷🇸 RSD</SelectItem>
+                    <SelectItem value="USD">🇺🇸 USD</SelectItem>
+                    <SelectItem value="EUR">🇪🇺 EUR</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
+            </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button 
-              type="submit" 
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Target className="h-4 w-4 mr-2" />}
-              {initialData ? "Update Goal" : "Create Goal"}
-            </Button>
-            {initialData && (
+            {/* Timeline and Priority */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  Target Date <span className="text-xs text-muted-foreground">(optional)</span>
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "h-11 w-full justify-start text-left font-normal focus-ring",
+                        !targetDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {targetDate ? format(targetDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={targetDate}
+                      onSelect={setTargetDate}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="priority" className="text-sm font-medium text-foreground">
+                  Priority Level
+                </Label>
+                <Select value={priority} onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}>
+                  <SelectTrigger className="focus-ring h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-info"></div>
+                        Low Priority
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="medium">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-warning"></div>
+                        Medium Priority
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="high">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-danger"></div>
+                        High Priority
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Recurring Settings */}
+            <div className="space-y-4 p-4 bg-muted/30 rounded-xl border border-border/50">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="isRecurring" className="text-sm font-medium text-foreground">
+                    Recurring Goal
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Set this goal to repeat automatically
+                  </p>
+                </div>
+                <Switch
+                  id="isRecurring"
+                  checked={isRecurring}
+                  onCheckedChange={setIsRecurring}
+                />
+              </div>
+
+              {isRecurring && (
+                <div className="space-y-2 animate-slide-up">
+                  <Label htmlFor="recurringPeriod" className="text-sm font-medium text-foreground">
+                    Recurring Period
+                  </Label>
+                  <Select value={recurringPeriod} onValueChange={(value: any) => setRecurringPeriod(value)}>
+                    <SelectTrigger className="focus-ring h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
               <Button 
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                type="submit" 
+                className="btn-primary flex-1 h-11"
               >
-                Cancel
+                <Target className="h-4 w-4 mr-2" />
+                {initialData ? "Update Goal" : "Create Goal"}
               </Button>
-            )}
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              {initialData && onCancel && (
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  className="focus-ring h-11 px-6"
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
