@@ -33,51 +33,62 @@ export const ProfileSettings = () => {
   };
 
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <User className="h-5 w-5 text-blue-600" />
+    <Card className="card-elevated bg-card/50 backdrop-blur-sm border-border/20">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary-light/5 border-b border-border/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              <User className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                Profile Settings
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Manage your personal information and preferences
+              </p>
+            </div>
           </div>
-          <CardTitle className="text-lg font-semibold text-gray-900">
-            Profile Settings
-          </CardTitle>
         </div>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="fullName">Full Name</Label>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-medium text-muted-foreground">Full Name</Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your full name"
+                className="h-10 transition-colors"
               />
             </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">Email</Label>
               <Input
                 id="email"
                 value={user?.email || ''}
                 disabled
-                className="bg-gray-50"
+                className="h-10 bg-muted/50 text-muted-foreground"
               />
             </div>
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="phone" className="text-sm font-medium text-muted-foreground">Phone Number</Label>
               <Input
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Your phone number"
+                className="h-10 transition-colors"
               />
             </div>
           </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Profile'}
-          </Button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading} className="btn-primary focus-ring">
+              {loading ? 'Saving...' : 'Save Profile'}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

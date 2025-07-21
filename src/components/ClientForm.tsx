@@ -115,24 +115,26 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
 
 
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-orange-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-orange-600" /> : <Plus className="h-5 w-5 text-orange-600" />}
-          </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Client" : "Add New Client"}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              {initialData ? "Update client information" : "Add a new client to your database"}
-            </p>
+    <Card className="card-elevated bg-card/50 backdrop-blur-sm border-border/20">
+      <CardHeader className="bg-gradient-to-r from-accent/5 to-accent-light/5 border-b border-border/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-accent/10 rounded-xl">
+              {initialData ? <Edit3 className="h-6 w-6 text-accent" /> : <Plus className="h-6 w-6 text-accent" />}
+            </div>
+            <div>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                {initialData ? "Edit Client" : "Add New Client"}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {initialData ? "Update client information" : "Add a new client to your database"}
+              </p>
+            </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-700">
               Name <span className="text-red-500">*</span>
@@ -192,7 +194,7 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
           <div className="md:col-span-2 flex gap-3">
             <Button 
               type="submit" 
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="btn-primary focus-ring"
             >
               {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
               {initialData ? "Update Client" : "Add Client"}
@@ -202,7 +204,7 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
                 type="button"
                 variant="outline"
                 onClick={onCancel}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="btn-secondary focus-ring"
               >
                 Cancel
               </Button>

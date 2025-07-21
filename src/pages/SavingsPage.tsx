@@ -20,34 +20,52 @@ const SavingsPage = () => {
   }
 
   return (
-    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900">Savings Tracker</h1>
-          <p className="text-gray-600">Track your savings deposits and withdrawals</p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto p-4 lg:p-8 space-y-8">
+        {/* Enhanced Header */}
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="p-3 bg-success/10 rounded-2xl">
+              <svg className="h-8 w-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-success via-success-light to-success bg-clip-text text-transparent">
+              Savings Tracker
+            </h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Build your financial future with smart savings tracking and insights
+          </p>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <ExportButton savings={savings} type="savings" />
+          </div>
         </div>
-        <ExportButton savings={savings} type="savings" />
+
+        <div className="space-y-8">
+          <SavingsTracker savings={savings} convertToRSD={convertToRSD} addSavings={addSavings} />
+
+          <SavingsForm
+            onSubmit={editingSaving ? 
+              (data) => {
+                updateSavings(editingSaving.id, data);
+                setEditingSaving(null);
+              } :
+              addSavings
+            }
+            initialData={editingSaving}
+            onCancel={() => setEditingSaving(null)}
+          />
+
+          <SavingsList
+            savings={savings}
+            onEdit={setEditingSaving}
+            onDelete={deleteSavings}
+          />
+        </div>
       </div>
-
-      <SavingsTracker savings={savings} convertToRSD={convertToRSD} addSavings={addSavings} />
-
-      <SavingsForm
-        onSubmit={editingSaving ? 
-          (data) => {
-            updateSavings(editingSaving.id, data);
-            setEditingSaving(null);
-          } :
-          addSavings
-        }
-        initialData={editingSaving}
-        onCancel={() => setEditingSaving(null)}
-      />
-
-      <SavingsList
-        savings={savings}
-        onEdit={setEditingSaving}
-        onDelete={deleteSavings}
-      />
     </div>
   );
 };

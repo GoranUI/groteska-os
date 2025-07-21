@@ -110,24 +110,26 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
   };
 
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-blue-600" /> : <Plus className="h-5 w-5 text-blue-600" />}
-          </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Project" : "Create New Project"}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              {initialData ? "Update project information" : "Add a new project to your portfolio"}
-            </p>
+    <Card className="card-elevated bg-card/50 backdrop-blur-sm border-border/20">
+      <CardHeader className="bg-gradient-to-r from-info/5 to-info-light/5 border-b border-border/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-info/10 rounded-xl">
+              {initialData ? <Edit3 className="h-6 w-6 text-info" /> : <Plus className="h-6 w-6 text-info" />}
+            </div>
+            <div>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                {initialData ? "Edit Project" : "Create New Project"}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {initialData ? "Update project information" : "Add a new project to your portfolio"}
+              </p>
+            </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-700">
               Project Name <span className="text-red-500">*</span>
@@ -287,7 +289,7 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
           <div className="md:col-span-2 flex gap-3">
             <Button 
               type="submit" 
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="btn-primary focus-ring"
             >
               {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
               {initialData ? "Update Project" : "Create Project"}
@@ -297,7 +299,7 @@ export const ProjectForm = ({ onSubmit, initialData, onCancel, clients }: Projec
                 type="button"
                 variant="outline"
                 onClick={onCancel}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="btn-secondary focus-ring"
               >
                 Cancel
               </Button>

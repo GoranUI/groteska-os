@@ -53,18 +53,18 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
   };
 
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
+    <Card className="card-elevated bg-card/50 backdrop-blur-sm border-border/20">
+      <CardHeader className="bg-gradient-to-r from-success/5 to-success-light/5 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="p-2 bg-orange-50 rounded-lg">
-              <PlusIcon className="h-5 w-5 text-orange-600" />
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-success/10 rounded-xl">
+              <PlusIcon className="h-6 w-6 text-success" />
             </div>
             <div>
-              <CardTitle className="text-lg font-semibold text-gray-900">
+              <CardTitle className="text-xl font-semibold text-foreground">
                 {initialData ? 'Edit Savings Entry' : 'Add Savings Entry'}
               </CardTitle>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {initialData ? 'Update your savings record' : 'Record a new deposit or withdrawal'}
               </p>
             </div>
@@ -74,15 +74,15 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-foreground focus-ring"
             >
               <XMarkIcon className="h-5 w-5" />
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <CardContent className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="space-y-2">
             <Label htmlFor="type" className="text-sm font-medium text-gray-700">Type</Label>
             <Select value={type} onValueChange={(value: "deposit" | "withdrawal") => setType(value)}>
@@ -152,7 +152,7 @@ export const SavingsForm = ({ onSubmit, initialData, onCancel }: SavingsFormProp
           <div className="md:col-span-2 lg:col-span-5">
             <Button 
               type="submit" 
-              className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white"
+              className="w-full md:w-auto btn-primary focus-ring"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               {initialData ? 'Update Savings' : 'Add Savings'}
