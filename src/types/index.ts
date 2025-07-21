@@ -126,6 +126,35 @@ export interface UserProfile {
   updated_at: string;
 }
 
+export interface FinancialGoal {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  goalType: "savings" | "debt_payoff" | "income" | "investment" | "expense_reduction" | "emergency_fund";
+  targetAmount: number;
+  currentAmount: number;
+  currency: "USD" | "EUR" | "RSD";
+  targetDate?: string;
+  status: "active" | "completed" | "paused" | "cancelled";
+  priority: "low" | "medium" | "high";
+  category?: string;
+  isRecurring: boolean;
+  recurringPeriod?: "weekly" | "monthly" | "quarterly" | "yearly";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GoalMilestone {
+  id: string;
+  goalId: string;
+  title: string;
+  targetAmount: number;
+  achievedAt?: string;
+  createdAt: string;
+  milestoneOrder: number;
+}
+
 export interface TimeEntry {
   id: string;
   userId: string;

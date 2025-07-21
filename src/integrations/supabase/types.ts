@@ -125,6 +125,101 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_goals: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          current_amount: number
+          description: string | null
+          goal_type: string
+          id: string
+          is_recurring: boolean | null
+          priority: string
+          recurring_period: string | null
+          status: string
+          target_amount: number
+          target_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          current_amount?: number
+          description?: string | null
+          goal_type: string
+          id?: string
+          is_recurring?: boolean | null
+          priority?: string
+          recurring_period?: string | null
+          status?: string
+          target_amount?: number
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          current_amount?: number
+          description?: string | null
+          goal_type?: string
+          id?: string
+          is_recurring?: boolean | null
+          priority?: string
+          recurring_period?: string | null
+          status?: string
+          target_amount?: number
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goal_milestones: {
+        Row: {
+          achieved_at: string | null
+          created_at: string
+          goal_id: string
+          id: string
+          milestone_order: number
+          target_amount: number
+          title: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          created_at?: string
+          goal_id: string
+          id?: string
+          milestone_order?: number
+          target_amount: number
+          title: string
+        }
+        Update: {
+          achieved_at?: string | null
+          created_at?: string
+          goal_id?: string
+          id?: string
+          milestone_order?: number
+          target_amount?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_milestones_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "financial_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incomes: {
         Row: {
           amount: number
