@@ -13,6 +13,7 @@ import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { getEnhancedSuggestedCategory, learnFromCorrection } from "@/utils/expenseCategorizationService";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useBudgetData } from "@/hooks/data/useBudgetData";
+import { cn } from "@/lib/utils";
 
 interface ExpenseFormProps {
   onSubmit: (data: Omit<Expense, 'id'>) => void;
@@ -170,62 +171,29 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   };
 
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-orange-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-orange-600" /> : <Plus className="h-5 w-5 text-orange-600" />}
-          </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Expense" : "Add New Expense"}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              {initialData ? "Update expense entry" : "Record a new expense entry"}
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
-                Amount <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                max="1000000000"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="h-10"
-                required
-              />
+    <div className="animate-fade-in">
+      <Card className="card-elevated border-0 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-destructive/5 to-destructive-light/5 border-b border-border/50">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-destructive/10 rounded-xl">
+              {initialData ? <Edit3 className="h-6 w-6 text-destructive" /> : <Plus className="h-6 w-6 text-destructive" />}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
-                Currency <span className="text-red-500">*</span>
-              </Label>
-              <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="RSD">RSD</SelectItem>
-                </SelectContent>
-              </Select>
+            <div>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                {initialData ? "Edit Expense Entry" : "Add New Expense"}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {initialData ? "Update your expense details" : "Record a new expense and track your spending"}
+              </p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-                Category <span className="text-red-500">*</span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Expense Category Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-foreground">
+                Expense Category <span className="text-destructive">*</span>
                 {suggestedCategory && (
                   <Badge className={`ml-2 ${getConfidenceColor(suggestedCategory.confidence)} border font-medium`}>
                     <Sparkles className="h-3 w-3 mr-1" />
@@ -233,78 +201,133 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
                   </Badge>
                 )}
               </Label>
-              <Select value={category} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Recurring">Recurring</SelectItem>
-                  <SelectItem value="Food">Food</SelectItem>
-                  <SelectItem value="External Food">External Food</SelectItem>
-                  <SelectItem value="Transport">Transport</SelectItem>
-                  <SelectItem value="Holiday">Holiday</SelectItem>
-                  <SelectItem value="Utilities">Utilities</SelectItem>
-                  <SelectItem value="Software">Software</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
-                  <SelectItem value="Office">Office</SelectItem>
-                  <SelectItem value="Cash Withdrawal">Cash Withdrawal</SelectItem>
-                  <SelectItem value="Medical/Health">Medical/Health</SelectItem>
-                  <SelectItem value="Fees">Fees</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { value: "Recurring", label: "Recurring", icon: "🔄", description: "Regular monthly expenses" },
+                  { value: "Food", label: "Food", icon: "🍽️", description: "Groceries and food items" },
+                  { value: "External Food", label: "External Food", icon: "🍕", description: "Restaurants and takeout" },
+                  { value: "Transport", label: "Transport", icon: "🚗", description: "Travel and commute costs" },
+                  { value: "Holiday", label: "Holiday", icon: "🏖️", description: "Vacation expenses" },
+                  { value: "Utilities", label: "Utilities", icon: "⚡", description: "Power, water, internet" },
+                  { value: "Software", label: "Software", icon: "💻", description: "Apps and subscriptions" },
+                  { value: "Marketing", label: "Marketing", icon: "📢", description: "Advertising and promotion" },
+                  { value: "Office", label: "Office", icon: "🏢", description: "Office supplies and equipment" },
+                  { value: "Cash Withdrawal", label: "Cash Withdrawal", icon: "💸", description: "ATM withdrawals" },
+                  { value: "Medical/Health", label: "Medical/Health", icon: "🏥", description: "Healthcare expenses" },
+                  { value: "Fees", label: "Fees", icon: "📊", description: "Bank and service fees" },
+                  { value: "Other", label: "Other", icon: "📦", description: "Miscellaneous expenses" }
+                ].map((cat) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => handleCategoryChange(cat.value)}
+                    className={cn(
+                      "p-4 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.02]",
+                      category === cat.value
+                        ? "border-destructive bg-destructive/5 shadow-md"
+                        : "border-border hover:border-destructive/30 hover:bg-destructive/5"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{cat.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-foreground">{cat.label}</p>
+                        <p className="text-xs text-muted-foreground">{cat.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="amount" className="text-sm font-medium text-foreground">
+                  Amount <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="1000000000"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="focus-ring h-11"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currency" className="text-sm font-medium text-foreground">
+                  Currency <span className="text-destructive">*</span>
+                </Label>
+                <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
+                  <SelectTrigger className="focus-ring h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RSD">🇷🇸 RSD</SelectItem>
+                    <SelectItem value="USD">🇺🇸 USD</SelectItem>
+                    <SelectItem value="EUR">🇪🇺 EUR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date" className="text-sm font-medium text-gray-700">
-                Date <span className="text-red-500">*</span>
+              <Label htmlFor="date" className="text-sm font-medium text-foreground">
+                Date <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="date"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="h-10"
+                className="focus-ring h-11"
                 required
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-              Description <span className="text-xs text-gray-500">(optional)</span>
-            </Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={handleDescriptionChange}
-              placeholder="Describe your expense (optional)..."
-              className="min-h-[80px]"
-              maxLength={1000}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                Description <span className="text-xs text-muted-foreground">(optional)</span>
+              </Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={handleDescriptionChange}
+                placeholder="Add details about this expense..."
+                className="focus-ring min-h-[100px] resize-none"
+                maxLength={1000}
+              />
+            </div>
 
-          <div className="flex gap-3">
-            <Button 
-              type="submit" 
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-              {initialData ? "Update Expense" : "Add Expense"}
-            </Button>
-            {initialData && (
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
               <Button 
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                type="submit" 
+                className="btn-destructive flex-1 h-11"
               >
-                Cancel
+                {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                {initialData ? "Update Expense" : "Add Expense"}
               </Button>
-            )}
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              {initialData && (
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  className="focus-ring h-11 px-6"
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
