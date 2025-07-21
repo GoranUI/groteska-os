@@ -14,6 +14,7 @@ import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useClientData } from "@/hooks/data/useClientData";
+import { cn } from "@/lib/utils";
 
 interface IncomeFormProps {
   clients: Client[];
@@ -162,61 +163,105 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
   };
 
   return (
-    <Card className="border-0 shadow-sm ring-1 ring-gray-200">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-2">
-          <div className="p-2 bg-orange-50 rounded-lg">
-            {initialData ? <Edit3 className="h-5 w-5 text-orange-600" /> : <Plus className="h-5 w-5 text-orange-600" />}
+    <div className="animate-fade-in">
+      <Card className="card-elevated border-0 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-success/5 to-success-light/5 border-b border-border/50">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-success/10 rounded-xl">
+              {initialData ? <Edit3 className="h-6 w-6 text-success" /> : <Plus className="h-6 w-6 text-success" />}
+            </div>
+            <div>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                {initialData ? "Edit Income Entry" : "Add New Income"}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {initialData ? "Update your income details" : "Record a new income source and track your earnings"}
+              </p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              {initialData ? "Edit Income" : "Add New Income"}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              {initialData ? "Update income entry" : "Record a new income entry (already paid)"}
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
-              Amount <span className="text-red-500">*</span>
+        </CardHeader>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Income Category Selection */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-foreground">
+              Income Category <span className="text-destructive">*</span>
             </Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              max="1000000000"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="h-10"
-              required
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { value: "freelance", label: "Freelance Work", icon: "💼", description: "Independent project work" },
+                { value: "salary", label: "Salary", icon: "💰", description: "Regular employment income" },
+                { value: "consulting", label: "Consulting", icon: "🎯", description: "Advisory services" },
+                { value: "investment", label: "Investment", icon: "📈", description: "Returns from investments" },
+                { value: "main-bank", label: "Main Bank", icon: "🏦", description: "Primary bank account" },
+                { value: "savings", label: "Savings", icon: "🐷", description: "Savings account income" },
+                { value: "cash", label: "Cash", icon: "💵", description: "Cash payments" },
+                { value: "one-time", label: "One-time Project", icon: "➕", description: "Single project payment" }
+              ].map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setCategory(cat.value as any)}
+                  className={cn(
+                    "p-4 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.02]",
+                    category === cat.value
+                      ? "border-success bg-success/5 shadow-md"
+                      : "border-border hover:border-success/30 hover:bg-success/5"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{cat.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground">{cat.label}</p>
+                      <p className="text-xs text-muted-foreground">{cat.description}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
-              Currency <span className="text-red-500">*</span>
-            </Label>
-            <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
-              <SelectTrigger className="h-10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD</SelectItem>
-                <SelectItem value="EUR">EUR</SelectItem>
-                <SelectItem value="RSD">RSD</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium text-foreground">
+                Amount <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                min="0"
+                max="1000000000"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="focus-ring h-11"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency" className="text-sm font-medium text-foreground">
+                Currency <span className="text-destructive">*</span>
+              </Label>
+              <Select value={currency} onValueChange={(value: "USD" | "EUR" | "RSD") => setCurrency(value)}>
+                <SelectTrigger className="focus-ring h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="RSD">🇷🇸 RSD</SelectItem>
+                  <SelectItem value="USD">🇺🇸 USD</SelectItem>
+                  <SelectItem value="EUR">🇪🇺 EUR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
+          {/* Client Selection with Enhanced UI */}
           <div className="space-y-2">
-            <Label htmlFor="client" className="text-sm font-medium text-gray-700">
-              Client <span className="text-xs text-gray-500">(optional)</span>
+            <Label htmlFor="client" className="text-sm font-medium text-foreground">
+              Client <span className="text-xs text-muted-foreground">(optional)</span>
             </Label>
             <Popover open={showClientPopover} onOpenChange={setShowClientPopover}>
               <PopoverTrigger asChild>
@@ -224,7 +269,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
                   variant="outline"
                   role="combobox"
                   aria-expanded={showClientPopover}
-                  className="h-10 w-full justify-between"
+                  className="h-11 w-full justify-between focus-ring"
                 >
                   {clientId
                     ? clients.find((client) => client.id === clientId)?.name
@@ -232,7 +277,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0" align="start">
+              <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput 
                     placeholder="Search clients..." 
@@ -276,7 +321,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
                           <div className="flex flex-col">
                             <span>{client.name}</span>
                             {client.company && (
-                              <span className="text-xs text-gray-500">{client.company}</span>
+                              <span className="text-xs text-muted-foreground">{client.company}</span>
                             )}
                           </div>
                         </CommandItem>
@@ -293,22 +338,25 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
                         placeholder="Client name"
                         value={newClientName}
                         onChange={(e) => setNewClientName(e.target.value)}
+                        className="focus-ring"
                       />
                       <Input
                         placeholder="Email (optional)"
                         value={newClientEmail}
                         onChange={(e) => setNewClientEmail(e.target.value)}
+                        className="focus-ring"
                       />
                       <Input
                         placeholder="Company (optional)"
                         value={newClientCompany}
                         onChange={(e) => setNewClientCompany(e.target.value)}
+                        className="focus-ring"
                       />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           onClick={handleCreateClient}
-                          className="flex-1"
+                          className="flex-1 btn-success"
                         >
                           <UserPlus className="mr-2 h-4 w-4" />
                           Create Client
@@ -321,6 +369,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
                             setNewClientEmail("");
                             setNewClientCompany("");
                           }}
+                          className="focus-ring"
                         >
                           Cancel
                         </Button>
@@ -333,54 +382,38 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium text-gray-700">
-              Date <span className="text-red-500">*</span>
+            <Label htmlFor="date" className="text-sm font-medium text-foreground">
+              Date <span className="text-destructive">*</span>
             </Label>
             <Input
               id="date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="h-10"
+              className="focus-ring h-11"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-              Category <span className="text-red-500">*</span>
-            </Label>
-            <Select value={category} onValueChange={(value: "main-bank" | "savings" | "cash" | "one-time") => setCategory(value)}>
-              <SelectTrigger className="h-10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="main-bank">Main Bank Account</SelectItem>
-                <SelectItem value="savings">Savings</SelectItem>
-                <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="one-time">One-time Project</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="md:col-span-2 lg:col-span-6 space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-              Description <span className="text-xs text-gray-500">(optional)</span>
+            <Label htmlFor="description" className="text-sm font-medium text-foreground">
+              Description <span className="text-xs text-muted-foreground">(optional)</span>
             </Label>
             <Textarea
               id="description"
               value={description}
               onChange={handleDescriptionChange}
-              placeholder="Optional description"
-              className="min-h-[80px]"
+              placeholder="Add details about this income source..."
+              className="focus-ring min-h-[100px] resize-none"
               maxLength={1000}
             />
           </div>
 
-          <div className="md:col-span-2 lg:col-span-6 flex gap-3">
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
             <Button 
               type="submit" 
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="btn-success flex-1 h-11"
             >
               {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
               {initialData ? "Update Income" : "Add Income"}
@@ -390,14 +423,15 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
                 type="button"
                 variant="outline"
                 onClick={onCancel}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="focus-ring h-11 px-6"
               >
                 Cancel
               </Button>
             )}
           </div>
         </form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
