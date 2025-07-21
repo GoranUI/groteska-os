@@ -133,13 +133,20 @@ export const IncomeList = ({ incomes, onEdit, onDelete }: IncomeListProps) => {
                     </TableCell>
                     <TableCell>
                       <Badge 
-                        variant={income.category === 'full-time' ? 'default' : 'secondary'}
-                        className={income.category === 'full-time' 
-                          ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
-                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                        variant={income.category === 'main-bank' ? 'default' : 'secondary'}
+                        className={
+                          income.category === 'main-bank' 
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                            : income.category === 'savings'
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                            : income.category === 'cash'
+                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                         }
                       >
-                        {income.category}
+                        {income.category === 'main-bank' ? 'Main Bank Account' : 
+                         income.category === 'one-time' ? 'One-time Project' : 
+                         income.category.charAt(0).toUpperCase() + income.category.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>

@@ -31,7 +31,7 @@ export const useFinancialData = () => {
       client: "Tech Corp",
       clientId: "1",
       date: "2024-07-01",
-      category: "full-time",
+      category: "main-bank",
       description: "Monthly salary"
     },
     {

@@ -52,7 +52,7 @@ export interface Income {
   projectId?: string | null;
   subTaskId?: string | null;
   date: string;
-  category: "full-time" | "one-time";
+  category: "main-bank" | "savings" | "cash" | "one-time";
   description?: string;
   status?: "paid" | "pending";
 }

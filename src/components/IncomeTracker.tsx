@@ -20,7 +20,7 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [client, setClient] = useState("");
   const [date, setDate] = useState("");
-  const [category, setCategory] = useState<"full-time" | "one-time">("one-time");
+  const [category, setCategory] = useState<"main-bank" | "savings" | "cash" | "one-time">("one-time");
   const [status, setStatus] = useState<"paid" | "pending">("paid");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -121,13 +121,15 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="category" className="text-sm font-medium text-gray-700">Category</Label>
-              <Select value={category} onValueChange={(value: "full-time" | "one-time") => setCategory(value)}>
+              <Select value={category} onValueChange={(value: "main-bank" | "savings" | "cash" | "one-time") => setCategory(value)}>
                 <SelectTrigger className="h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full-time">Full-time</SelectItem>
-                  <SelectItem value="one-time">One-time</SelectItem>
+                  <SelectItem value="main-bank">Main Bank Account</SelectItem>
+                  <SelectItem value="savings">Savings</SelectItem>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="one-time">One-time Project</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -219,13 +221,20 @@ const IncomeTracker = ({ incomes, onAddIncome }: IncomeTrackerProps) => {
                       </TableCell>
                       <TableCell>
                         <Badge 
-                          variant={income.category === 'full-time' ? 'default' : 'secondary'}
-                          className={income.category === 'full-time' 
-                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
-                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                          variant={income.category === 'main-bank' ? 'default' : 'secondary'}
+                          className={
+                            income.category === 'main-bank' 
+                              ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                              : income.category === 'savings'
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                              : income.category === 'cash'
+                              ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                           }
                         >
-                          {income.category}
+                          {income.category === 'main-bank' ? 'Main Bank Account' : 
+                           income.category === 'one-time' ? 'One-time Project' : 
+                           income.category.charAt(0).toUpperCase() + income.category.slice(1)}
                         </Badge>
                       </TableCell>
                     </TableRow>

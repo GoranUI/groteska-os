@@ -14,7 +14,7 @@ const transformIncome = (dbIncome: any): Income => ({
   projectId: dbIncome.project_id,
   subTaskId: dbIncome.sub_task_id,
   date: dbIncome.date,
-  category: dbIncome.category as "full-time" | "one-time",
+  category: dbIncome.category as "main-bank" | "savings" | "cash" | "one-time",
   description: dbIncome.description,
   status: "paid", // All income entries are now paid by default
 });

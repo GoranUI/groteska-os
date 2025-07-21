@@ -66,7 +66,7 @@ export const ImportIncomes = () => {
         currency: income.currency as "USD" | "EUR" | "RSD",
         client: income.client,
         date: income.date,
-        category: income.category as "full-time" | "one-time",
+        category: income.category as "main-bank" | "savings" | "cash" | "one-time",
         description: income.description,
       }));
 

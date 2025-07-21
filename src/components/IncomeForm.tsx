@@ -30,7 +30,7 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [clientId, setClientId] = useState("");
   const [date, setDate] = useState("");
-  const [category, setCategory] = useState<"full-time" | "one-time">("one-time");
+  const [category, setCategory] = useState<"main-bank" | "savings" | "cash" | "one-time">("one-time");
   const [description, setDescription] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   const [showClientPopover, setShowClientPopover] = useState(false);
@@ -350,13 +350,15 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
             <Label htmlFor="category" className="text-sm font-medium text-gray-700">
               Category <span className="text-red-500">*</span>
             </Label>
-            <Select value={category} onValueChange={(value: "full-time" | "one-time") => setCategory(value)}>
+            <Select value={category} onValueChange={(value: "main-bank" | "savings" | "cash" | "one-time") => setCategory(value)}>
               <SelectTrigger className="h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="full-time">Full-time</SelectItem>
-                <SelectItem value="one-time">One-time</SelectItem>
+                <SelectItem value="main-bank">Main Bank Account</SelectItem>
+                <SelectItem value="savings">Savings</SelectItem>
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="one-time">One-time Project</SelectItem>
               </SelectContent>
             </Select>
           </div>
