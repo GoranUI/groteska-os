@@ -7,9 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { ImportExpenses } from "@/components/import/ImportExpenses";
 import { ExportButton } from "@/components/ExportButton";
+import { BudgetAlertsWidget } from "@/components/BudgetAlertsWidget";
+import { useBudgetData } from "@/hooks/data/useBudgetData";
 
 const ExpensesPage = () => {
   const { expenses, addExpense, updateExpense, deleteExpense, loading } = useExpenseData();
+  const { budgets } = useBudgetData();
   const [editingExpense, setEditingExpense] = useState(null);
 
   if (loading) {
@@ -29,6 +32,12 @@ const ExpensesPage = () => {
         </div>
         <ExportButton expenses={expenses} type="expenses" />
       </div>
+
+      <BudgetAlertsWidget 
+        budgets={budgets} 
+        expenses={expenses} 
+        className="mb-6" 
+      />
 
       <Tabs defaultValue="manual" className="w-full">
         <TabsList className="grid w-full grid-cols-2">

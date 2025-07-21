@@ -10,7 +10,9 @@ import { Plus, Edit3, Sparkles } from "lucide-react";
 import { Expense } from "@/types";
 import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
-import { getSuggestedCategory, learnFromCorrection } from "@/utils/expenseCategorizationService";
+import { getEnhancedSuggestedCategory, learnFromCorrection } from "@/utils/expenseCategorizationService";
+import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
+import { useBudgetData } from "@/hooks/data/useBudgetData";
 
 interface ExpenseFormProps {
   onSubmit: (data: Omit<Expense, 'id'>) => void;
@@ -20,6 +22,8 @@ interface ExpenseFormProps {
 
 export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProps) => {
   const { showError } = useToastNotifications();
+  const { budgets } = useBudgetData();
+  const { checkNewExpenseAlert } = useBudgetAlerts(budgets, []);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
@@ -48,7 +52,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   useEffect(() => {
     if (!hasUserOverridden && description.trim() && !initialData) {
       const amountNum = amount ? parseFloat(amount) : undefined;
-      const suggestion = getSuggestedCategory(description, amountNum);
+      const suggestion = getEnhancedSuggestedCategory(description, amountNum);
       
       if (suggestion.category !== "Other") {
         setSuggestedCategory(suggestion);
@@ -116,13 +120,20 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
         learnFromCorrection(description, category);
       }
 
-      onSubmit({
+      const newExpense = {
         amount: validatedAmount,
         currency,
         description: sanitizedDescription,
         category,
         date,
-      });
+      };
+
+      // Check for budget alerts before submitting
+      if (!initialData) {
+        checkNewExpenseAlert(newExpense as Expense);
+      }
+
+      onSubmit(newExpense);
 
       if (!initialData) {
         setAmount("");
