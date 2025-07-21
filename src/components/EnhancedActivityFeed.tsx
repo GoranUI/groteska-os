@@ -109,16 +109,10 @@ export const EnhancedActivityFeed = ({
                 
                 {/* Transaction Details */}
                 <div className="min-w-0 flex-1 max-w-xs">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="mb-1">
                     <p className="font-medium text-foreground truncate max-w-60" title={transaction.description || transaction.client || 'Transaction'}>
                       {transaction.description || transaction.client || 'Transaction'}
                     </p>
-                    <Badge 
-                      variant="outline" 
-                      className={cn("text-xs flex-shrink-0", getCategoryColor(transaction.category, transaction.type))}
-                    >
-                      {transaction.category}
-                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(transaction.date), 'MMM dd, yyyy')}
@@ -126,8 +120,16 @@ export const EnhancedActivityFeed = ({
                 </div>
               </div>
               
-              {/* Amount and Delta */}
+              {/* Amount and Badge */}
               <div className="text-right">
+                <div className="mb-1">
+                  <Badge 
+                    variant="outline" 
+                    className={cn("text-xs mb-1", getCategoryColor(transaction.category, transaction.type))}
+                  >
+                    {transaction.category}
+                  </Badge>
+                </div>
                 <div className="mb-1">
                   <span className={cn(
                     "font-semibold text-lg",
