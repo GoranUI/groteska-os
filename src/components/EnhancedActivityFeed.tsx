@@ -110,7 +110,7 @@ export const EnhancedActivityFeed = ({
                 {/* Transaction Details */}
                 <div className="min-w-0 flex-1 max-w-xs">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-foreground truncate max-w-48" title={transaction.description || transaction.client || 'Transaction'}>
+                    <p className="font-medium text-foreground truncate max-w-60" title={transaction.description || transaction.client || 'Transaction'}>
                       {transaction.description || transaction.client || 'Transaction'}
                     </p>
                     <Badge 
