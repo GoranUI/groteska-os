@@ -128,31 +128,14 @@ export const EnhancedActivityFeed = ({
               
               {/* Amount and Delta */}
               <div className="text-right">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="mb-1">
                   <span className={cn(
-                    "font-semibold",
+                    "font-semibold text-lg",
                     transaction.type === 'income' ? "text-green-600" : "text-red-600"
                   )}>
                     {transaction.type === 'income' ? '+' : '-'}
                     {transaction.amountRSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD
                   </span>
-                  
-                  {/* Delta indicator */}
-                  <div className={cn(
-                    "flex items-center gap-1 text-xs px-2 py-1 rounded-full",
-                    transaction.delta > 0 
-                      ? "bg-green-50 text-green-600" 
-                      : "bg-red-50 text-red-600"
-                  )}>
-                    {transaction.delta > 0 ? (
-                      <TrendingUp className="h-3 w-3" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3" />
-                    )}
-                    <span>
-                      {Math.abs(transaction.delta).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                    </span>
-                  </div>
                 </div>
                 
                 {/* Original currency if different */}

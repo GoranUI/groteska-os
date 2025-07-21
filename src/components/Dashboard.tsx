@@ -199,7 +199,7 @@ export const Dashboard = ({
         {/* Enhanced Overview Cards */}
         <FinancialOverviewCards
           totalBalance={totalBalance}
-          cashAmount={filteredTotals.income}
+          cashAmount={filteredTotals.income - filteredTotals.expense}
           savingsAmount={savings.reduce((sum, saving) => {
             const rate = saving.currency === "RSD" ? 1 : rates[saving.currency as keyof typeof rates] || 1;
             const amount = Number(saving.amount) * rate;
