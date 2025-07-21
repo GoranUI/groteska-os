@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, FolderOpen, ListTodo, DollarSign } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, FolderOpen, ListTodo, DollarSign, Loader2 } from "lucide-react";
 import { ProjectForm } from "@/components/ProjectForm";
 import { SubTaskForm } from "@/components/SubTaskForm";
 import { ProjectList } from "@/components/ProjectList";
@@ -15,7 +16,7 @@ import { useSubTaskData } from "@/hooks/data/useSubTaskData";
 import { Project, SubTask } from "@/types";
 
 export default function ProjectsPage() {
-  const { clients } = useSupabaseData();
+  const { clients, loading } = useSupabaseData();
   const { projects, addProject, updateProject, deleteProject } = useProjectData();
   const { subTasks, addSubTask, updateSubTask, deleteSubTask, markAsPaid } = useSubTaskData();
   
@@ -90,43 +91,81 @@ export default function ProjectsPage() {
     await markAsPaid(subTaskId, clientName);
   };
 
-  return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Project Management</h2>
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => setShowProjectForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
-          <Button
-            onClick={() => setShowSubTaskForm(true)}
-            variant="outline"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Task
-          </Button>
-        </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="p-8 shadow-lg">
+          <CardContent className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading your project data...</p>
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="projects" className="flex items-center space-x-2">
-            <FolderOpen className="h-4 w-4" />
-            <span>Projects</span>
-          </TabsTrigger>
-          <TabsTrigger value="tasks" className="flex items-center space-x-2">
-            <ListTodo className="h-4 w-4" />
-            <span>All Tasks</span>
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center space-x-2">
-            <DollarSign className="h-4 w-4" />
-            <span>Payment Tracker</span>
-          </TabsTrigger>
-        </TabsList>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto p-4 lg:p-8 space-y-8">
+        {/* Enhanced Header */}
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="p-3 bg-primary/10 rounded-2xl">
+              <FolderOpen className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary">
+              Project Management
+            </h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Organize your projects, track tasks, and manage payments with powerful tools
+          </p>
+          <div className="flex justify-center gap-3">
+            <Button
+              onClick={() => setShowProjectForm(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              New Project
+            </Button>
+            <Button
+              onClick={() => setShowSubTaskForm(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              New Task
+            </Button>
+          </div>
+        </div>
+
+        {/* Enhanced Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full max-w-lg grid-cols-3 h-12 p-1 bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger 
+                value="projects" 
+                className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <FolderOpen className="h-4 w-4" />
+                Projects
+              </TabsTrigger>
+              <TabsTrigger 
+                value="tasks"
+                className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <ListTodo className="h-4 w-4" />
+                All Tasks
+              </TabsTrigger>
+              <TabsTrigger 
+                value="payments"
+                className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <DollarSign className="h-4 w-4" />
+                Payments
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
         <TabsContent value="projects" className="space-y-4">
           {showProjectForm && (
@@ -190,8 +229,8 @@ export default function ProjectsPage() {
             onMarkAsPaid={handleMarkAsPaid}
           />
         </TabsContent>
-      </Tabs>
-
+        </Tabs>
+      </div>
     </div>
   );
 }

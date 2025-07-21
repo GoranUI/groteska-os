@@ -18,8 +18,13 @@ const AnalyticsPage = () => {
 
   if (loading) {
     return (
-      <div className="p-8 flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="p-8 shadow-lg">
+          <CardContent className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading your analytics data...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -42,24 +47,34 @@ const AnalyticsPage = () => {
     : 'stable';
 
   return (
-    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">Financial Analytics</h1>
-          <p className="text-muted-foreground">Deep insights into your spending patterns and financial health</p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto p-4 lg:p-8 space-y-8">
+        {/* Enhanced Header */}
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="p-3 bg-primary/10 rounded-2xl">
+              <BarChart3 className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary">
+              Financial Analytics
+            </h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Deep insights into your spending patterns and financial health
+          </p>
+          <div className="flex justify-center">
+            <Select value={timeRange} onValueChange={(value: "3m" | "6m" | "1y") => setTimeRange(value)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3m">3 Months</SelectItem>
+                <SelectItem value="6m">6 Months</SelectItem>
+                <SelectItem value="1y">1 Year</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        
-        <Select value={timeRange} onValueChange={(value: "3m" | "6m" | "1y") => setTimeRange(value)}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="3m">3 Months</SelectItem>
-            <SelectItem value="6m">6 Months</SelectItem>
-            <SelectItem value="1y">1 Year</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -282,6 +297,7 @@ const AnalyticsPage = () => {
           )}
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };
