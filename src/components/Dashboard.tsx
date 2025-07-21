@@ -6,6 +6,10 @@ import { TrendingUp, TrendingDown, Users, Receipt, DollarSign, ChevronLeft, Chev
 import { Button } from "@/components/ui/button";
 import { Income, Expense, Project, SubTask } from "@/types";
 import MonthlyExpenseChart from "@/components/MonthlyExpenseChart";
+import { FinancialOverviewCards } from "@/components/FinancialOverviewCards";
+import { BalanceTrendChart } from "@/components/BalanceTrendChart";
+import { CashFlowSankey } from "@/components/CashFlowSankey";
+import { EnhancedActivityFeed } from "@/components/EnhancedActivityFeed";
 
 import { ExportButton } from "@/components/ExportButton";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
@@ -192,152 +196,48 @@ export const Dashboard = ({
           </div>
         )}
 
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6">
-          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-600 truncate">
-                    Total Balance (RSD)
-                  </p>
-                  <p className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                    {totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD
-                  </p>
-                </div>
-                <div className="p-2 lg:p-3 bg-gray-100 rounded-full flex-shrink-0">
-                  <DollarSign className="h-5 w-5 lg:h-6 lg:w-6 text-gray-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Enhanced Overview Cards */}
+        <FinancialOverviewCards
+          totalBalance={totalBalance}
+          cashAmount={filteredTotals.income}
+          savingsAmount={savings.reduce((sum, saving) => {
+            const rate = saving.currency === "RSD" ? 1 : rates[saving.currency as keyof typeof rates] || 1;
+            const amount = Number(saving.amount) * rate;
+            return saving.type === 'deposit' ? sum + amount : sum - amount;
+          }, 0)}
+          investmentsAmount={0} // You can add investments data later
+          historicalData={[]} // We'll calculate this from transaction history
+        />
 
-          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-600 truncate">
-                    Total Income (RSD)
-                    {(timeRange.from || timeRange.to) && (
-                      <span className="block text-xs text-orange-600">Filtered</span>
-                    )}
-                  </p>
-                  <p className="text-xl lg:text-2xl font-bold text-green-600 truncate">
-                    {filteredTotals.income.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                  </p>
-                </div>
-                <div className="p-2 lg:p-3 bg-green-50 rounded-full flex-shrink-0">
-                  <TrendingUp className="h-5 w-5 lg:h-6 lg:w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Enhanced Charts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-8">
+          {/* Balance Trend Chart */}
+          <BalanceTrendChart
+            incomes={filteredData.incomes}
+            expenses={filteredData.expenses}
+            savings={savings}
+            exchangeRates={rates}
+          />
 
-          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-600 truncate">
-                    Total Expenses (RSD)
-                    {(timeRange.from || timeRange.to) && (
-                      <span className="block text-xs text-orange-600">Filtered</span>
-                    )}
-                  </p>
-                  <p className="text-xl lg:text-2xl font-bold text-red-600 truncate">
-                    {filteredTotals.expense.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                  </p>
-                </div>
-                <div className="p-2 lg:p-3 bg-red-50 rounded-full flex-shrink-0">
-                  <Receipt className="h-5 w-5 lg:h-6 lg:w-6 text-red-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-600 truncate">Active Clients</p>
-                  <p className="text-xl lg:text-2xl font-bold text-gray-900">{clients.length}</p>
-                  <p className="text-sm text-gray-500">
-                    {clients.length > 0 ? 'Clients' : 'No clients yet'}
-                  </p>
-                </div>
-                <div className="p-2 lg:p-3 bg-gray-100 rounded-full flex-shrink-0">
-                  <Users className="h-5 w-5 lg:h-6 lg:w-6 text-gray-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-6">
-          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-900">Income vs Expenses</CardTitle>
-              <p className="text-sm text-gray-600">Comparison by currency</p>
-            </CardHeader>
-            <CardContent className="pb-6">
-              <div className="h-64 lg:h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={currencyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey="currency" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#64748b', fontSize: 12 }}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#64748b', fontSize: 12 }}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                      }}
-                    />
-                    <Bar dataKey="income" fill="#10b981" name="Income" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <MonthlyExpenseChart expenses={filteredData.expenses} />
+          {/* Cash Flow Sankey */}
+          <CashFlowSankey
+            incomes={filteredData.incomes}
+            expenses={filteredData.expenses}
+            savings={savings}
+            exchangeRates={rates}
+          />
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="bg-white shadow-md rounded-lg overflow-hidden">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Recent Expenses
-                </CardTitle>
-                <Button size="sm" onClick={() => setShowExpenseForm(true)}>
-                  Add Expense
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <ExpenseTable
-                  expenses={expenses}
-                  onEdit={setEditingExpense}
-                  onDelete={deleteExpense}
-                />
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Enhanced Activity Feed */}
+          <EnhancedActivityFeed
+            transactions={allTransactions as any}
+            exchangeRates={rates}
+          />
 
-          <div>
-            <Card className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+          <div className="space-y-6">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   Recent Income
@@ -349,14 +249,14 @@ export const Dashboard = ({
               <CardContent>
                 <div className="space-y-2">
                   {incomes.slice(0, 5).map((income) => (
-                    <div key={income.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div key={income.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <div>
                         <p className="font-medium">{income.client}</p>
-                        <p className="text-sm text-gray-500">{income.date}</p>
+                        <p className="text-sm text-muted-foreground">{income.date}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{income.amount} {income.currency}</p>
-                        <p className="text-sm text-gray-500">{income.category}</p>
+                        <p className="font-medium text-green-600">{income.amount} {income.currency}</p>
+                        <p className="text-sm text-muted-foreground">{income.category}</p>
                       </div>
                     </div>
                   ))}
@@ -364,7 +264,7 @@ export const Dashboard = ({
               </CardContent>
             </Card>
 
-            <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   Savings Overview
@@ -376,14 +276,14 @@ export const Dashboard = ({
               <CardContent>
                 <div className="space-y-2">
                   {savings.slice(0, 5).map((saving) => (
-                    <div key={saving.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div key={saving.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <div>
                         <p className="font-medium">{saving.description}</p>
-                        <p className="text-sm text-gray-500">{saving.date}</p>
+                        <p className="text-sm text-muted-foreground">{saving.date}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{saving.amount} {saving.currency}</p>
-                        <p className="text-sm text-gray-500">{saving.type}</p>
+                        <p className="font-medium text-blue-600">{saving.amount} {saving.currency}</p>
+                        <p className="text-sm text-muted-foreground">{saving.type}</p>
                       </div>
                     </div>
                   ))}
@@ -392,6 +292,25 @@ export const Dashboard = ({
             </Card>
           </div>
         </div>
+
+        {/* Expenses Table */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-semibold">
+              Recent Expenses
+            </CardTitle>
+            <Button size="sm" onClick={() => setShowExpenseForm(true)}>
+              Add Expense
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <ExpenseTable
+              expenses={expenses.slice(0, 10)}
+              onEdit={setEditingExpense}
+              onDelete={deleteExpense}
+            />
+          </CardContent>
+        </Card>
 
         {/* Recent Transactions */}
         <Card className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
