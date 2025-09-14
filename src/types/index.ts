@@ -70,26 +70,6 @@ export interface Expense {
   recurringFrequency?: "weekly" | "monthly" | "yearly";
 }
 
-export interface Savings {
-  id: string;
-  amount: number;
-  currency: "USD" | "EUR" | "RSD";
-  date: string;
-  type: "deposit" | "withdrawal";
-  description: string;
-}
-
-export interface Budget {
-  id: string;
-  userId: string;
-  category: string;
-  amount: number;
-  currency: "USD" | "EUR" | "RSD";
-  month: number;
-  year: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface InvoiceItem {
   id?: string;
@@ -128,34 +108,6 @@ export interface UserProfile {
   updated_at: string;
 }
 
-export interface FinancialGoal {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  goalType: "savings" | "debt_payoff" | "income" | "investment" | "expense_reduction" | "emergency_fund";
-  targetAmount: number;
-  currentAmount: number;
-  currency: "USD" | "EUR" | "RSD";
-  targetDate?: string;
-  status: "active" | "completed" | "paused" | "cancelled";
-  priority: "low" | "medium" | "high";
-  category?: string;
-  isRecurring: boolean;
-  recurringPeriod?: "weekly" | "monthly" | "quarterly" | "yearly";
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface GoalMilestone {
-  id: string;
-  goalId: string;
-  title: string;
-  targetAmount: number;
-  achievedAt?: string;
-  createdAt: string;
-  milestoneOrder: number;
-}
 
 export interface TimeEntry {
   id: string;

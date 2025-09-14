@@ -8,12 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CreditCard, TrendingDown, Upload } from "lucide-react";
 import { ImportExpenses } from "@/components/import/ImportExpenses";
 import { ExportButton } from "@/components/ExportButton";
-import { BudgetAlertsWidget } from "@/components/BudgetAlertsWidget";
-import { useBudgetData } from "@/hooks/data/useBudgetData";
 
 const ExpensesPage = () => {
   const { expenses, addExpense, updateExpense, deleteExpense, loading } = useExpenseData();
-  const { budgets } = useBudgetData();
   const [editingExpense, setEditingExpense] = useState(null);
 
   if (loading) {
@@ -50,12 +47,6 @@ const ExpensesPage = () => {
           </div>
         </div>
 
-        {/* Budget Alerts */}
-        <BudgetAlertsWidget 
-          budgets={budgets} 
-          expenses={expenses} 
-          className="animate-fade-in" 
-        />
 
         {/* Enhanced Tabs */}
         <Tabs defaultValue="manual" className="w-full">

@@ -14,14 +14,10 @@ import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
-import SavingsPage from "./pages/SavingsPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import SettingsPage from "./pages/SettingsPage";
 import ImportPage from "./pages/ImportPage";
 import TimeTrackerPage from "./pages/TimeTrackerPage";
-import BudgetPage from "./pages/BudgetPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import GoalsPage from "./pages/GoalsPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -57,12 +53,8 @@ const App = () => (
             <Route path="/expenses" element={<ProtectedLayout><ExpensesPage /></ProtectedLayout>} />
             <Route path="/clients" element={<ProtectedLayout><ClientsPage /></ProtectedLayout>} />
             <Route path="/projects" element={<ProtectedLayout><ProjectsPage /></ProtectedLayout>} />
-            <Route path="/savings" element={<ProtectedLayout><SavingsPage /></ProtectedLayout>} />
             <Route path="/invoices" element={<ProtectedLayout><InvoicesPage /></ProtectedLayout>} />
              <Route path="/time-tracker" element={<ProtectedLayout><TimeTrackerPage /></ProtectedLayout>} />
-             <Route path="/budget" element={<ProtectedLayout><BudgetPage /></ProtectedLayout>} />
-             <Route path="/analytics" element={<ProtectedLayout><AnalyticsPage /></ProtectedLayout>} />
-             <Route path="/goals" element={<ProtectedLayout><GoalsPage /></ProtectedLayout>} />
              <Route path="/import" element={<ProtectedLayout><ImportPage /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><SettingsPage /></ProtectedLayout>} />
             

@@ -11,8 +11,6 @@ import { Expense } from "@/types";
 import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { getEnhancedSuggestedCategory, learnFromCorrection } from "@/utils/expenseCategorizationService";
-import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
-import { useBudgetData } from "@/hooks/data/useBudgetData";
 import { cn } from "@/lib/utils";
 
 interface ExpenseFormProps {
@@ -23,8 +21,6 @@ interface ExpenseFormProps {
 
 export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProps) => {
   const { showError } = useToastNotifications();
-  const { budgets } = useBudgetData();
-  const { checkNewExpenseAlert } = useBudgetAlerts(budgets, []);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
@@ -129,10 +125,6 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
         date,
       };
 
-      // Check for budget alerts before submitting
-      if (!initialData) {
-        checkNewExpenseAlert(newExpense as Expense);
-      }
 
       onSubmit(newExpense);
 

@@ -1,5 +1,5 @@
 
-import { Income, Expense, Client, Savings } from '@/types';
+import { Income, Expense, Client } from '@/types';
 
 export class DataExportService {
   static exportToCSV(data: any[], filename: string) {
@@ -75,15 +75,4 @@ export class DataExportService {
     this.exportToCSV(exportData, `clients-${new Date().toISOString().split('T')[0]}`);
   }
 
-  static exportSavings(savings: Savings[]) {
-    const exportData = savings.map(saving => ({
-      Date: saving.date,
-      Description: saving.description,
-      Amount: saving.amount,
-      Currency: saving.currency,
-      Type: saving.type
-    }));
-    
-    this.exportToCSV(exportData, `savings-${new Date().toISOString().split('T')[0]}`);
-  }
 }

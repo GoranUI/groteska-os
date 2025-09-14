@@ -15,14 +15,12 @@ import '@xyflow/react/dist/style.css';
 interface CashFlowSankeyProps {
   incomes: any[];
   expenses: any[];
-  savings: any[];
   exchangeRates: { USD: number; EUR: number; };
 }
 
 export const CashFlowSankey = ({ 
   incomes, 
   expenses, 
-  savings, 
   exchangeRates 
 }: CashFlowSankeyProps) => {
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
@@ -46,15 +44,6 @@ export const CashFlowSankey = ({
       return acc;
     }, {});
 
-    // Calculate savings
-    const totalSavings = savings.reduce<number>((acc, saving) => {
-      const amountRSD = convertToRSD(Number(saving.amount), saving.currency);
-      if (saving.type === 'deposit') {
-        return acc + amountRSD;
-      } else {
-        return acc - amountRSD;
-      }
-    }, 0);
 
     const totalIncome = Object.values(incomeByCategory).reduce<number>((sum, amount) => sum + amount, 0);
     const totalExpenses = Object.values(expensesByCategory).reduce<number>((sum, amount) => sum + amount, 0);
@@ -130,25 +119,6 @@ export const CashFlowSankey = ({
       yPosition += nodeSpacing;
     });
 
-    // Savings node
-    if (totalSavings > 0) {
-      nodes.push({
-        id: 'savings',
-        type: 'default',
-        position: { x: 500, y: yPosition },
-        data: { 
-          label: `Savings\n${totalSavings.toLocaleString('en-US', { maximumFractionDigits: 0 })} RSD`
-        },
-        style: { 
-          backgroundColor: 'hsl(217 91% 60% / 0.1)',
-          border: '2px solid hsl(217 91% 60%)',
-          borderRadius: '8px',
-          padding: '8px',
-          width: 180,
-          fontSize: '12px'
-        }
-      });
-    }
 
     // Create edges
     Object.keys(incomeByCategory).forEach(category => {
@@ -171,18 +141,9 @@ export const CashFlowSankey = ({
       });
     });
 
-    if (totalSavings > 0) {
-      edges.push({
-        id: 'edge-savings',
-        source: 'total-income',
-        target: 'savings',
-        type: 'smoothstep',
-        style: { stroke: 'hsl(217 91% 60%)', strokeWidth: 2 }
-      });
-    }
 
     return { nodes, edges };
-  }, [incomes, expenses, savings, exchangeRates]);
+  }, [incomes, expenses, exchangeRates]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -192,7 +153,7 @@ export const CashFlowSankey = ({
       <CardHeader className="pb-4">
         <CardTitle className="text-xl font-semibold">Cash Flow Overview</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Income sources, expense categories, and savings flow visualization
+          Income sources and expense categories flow visualization
         </p>
       </CardHeader>
       <CardContent>

@@ -6,14 +6,12 @@ import { useMemo } from "react";
 interface BalanceTrendChartProps {
   incomes: any[];
   expenses: any[];
-  savings: any[];
   exchangeRates: { USD: number; EUR: number; };
 }
 
 export const BalanceTrendChart = ({ 
   incomes, 
   expenses, 
-  savings, 
   exchangeRates 
 }: BalanceTrendChartProps) => {
   const chartData = useMemo(() => {
@@ -33,9 +31,6 @@ export const BalanceTrendChart = ({
       const monthExpenses = expenses.filter(expense => 
         expense.date.startsWith(monthStr)
       );
-      const monthSavings = savings.filter(saving => 
-        saving.date.startsWith(monthStr)
-      );
       
       // Convert all to RSD and calculate totals
       const totalIncome = monthIncomes.reduce((sum, income) => {
@@ -48,33 +43,18 @@ export const BalanceTrendChart = ({
         return sum + (Number(expense.amount) * rate);
       }, 0);
       
-      const totalSavingsDeposits = monthSavings
-        .filter(saving => saving.type === 'deposit')
-        .reduce((sum, saving) => {
-          const rate = saving.currency === "RSD" ? 1 : exchangeRates[saving.currency as keyof typeof exchangeRates] || 1;
-          return sum + (Number(saving.amount) * rate);
-        }, 0);
-      
-      const totalSavingsWithdrawals = monthSavings
-        .filter(saving => saving.type === 'withdrawal')
-        .reduce((sum, saving) => {
-          const rate = saving.currency === "RSD" ? 1 : exchangeRates[saving.currency as keyof typeof exchangeRates] || 1;
-          return sum + (Number(saving.amount) * rate);
-        }, 0);
-      
-      const netFlow = totalIncome - totalExpenses + totalSavingsDeposits - totalSavingsWithdrawals;
+      const netFlow = totalIncome - totalExpenses;
       
       return {
         month: format(month, 'MMM'),
         fullMonth: format(month, 'MMM yyyy'),
         income: totalIncome,
         expenses: totalExpenses,
-        savings: totalSavingsDeposits - totalSavingsWithdrawals,
         netWorth: netFlow,
         cumulativeBalance: 0, // We'll calculate this in the next step
       };
     });
-  }, [incomes, expenses, savings, exchangeRates]);
+  }, [incomes, expenses, exchangeRates]);
 
   // Calculate cumulative balance
   const chartDataWithCumulative = useMemo(() => {
@@ -111,10 +91,6 @@ export const BalanceTrendChart = ({
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Expenses:</span>
               <span className="font-medium text-red-600">-{formatCurrency(data.expenses)}</span>
-            </div>
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Savings:</span>
-              <span className="font-medium text-blue-600">{formatCurrency(data.savings)}</span>
             </div>
             <hr className="my-1 border-border" />
             <div className="flex justify-between gap-4">

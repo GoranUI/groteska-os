@@ -403,32 +403,274 @@ export const HomeScreen = ({ className }: HomeScreenProps) => {
         </Alert>
       )}
 
+      {/* Dashboard Grid - 2 rows by 3 columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Row 1 */}
+        {/* RSD Account Card */}
+        <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">RSD Account</CardTitle>
+            <div className="h-4 w-4 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {rsdAccount.balance_available > 0 || rsdAccount.account_number ? (
+              <div className="space-y-1">
+                <div className="text-2xl font-bold">
+                  {rsdAccount.balance_available.toLocaleString('sr-RS', {
+                    style: 'currency',
+                    currency: 'RSD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Account: {rsdAccount.account_number || 'Not set'}
+                </div>
+                {rsdAccount.balance_pending > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    Pending: {rsdAccount.balance_pending.toLocaleString('sr-RS', {
+                      style: 'currency',
+                      currency: 'RSD',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3 text-center py-4">
+                <div className="text-4xl text-muted-foreground/50">🏦</div>
+                <div className="text-sm text-muted-foreground">No RSD account added</div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    // Trigger account form dialog
+                    const addButton = document.querySelector('[data-testid="add-account-button"]') as HTMLButtonElement;
+                    if (addButton) addButton.click();
+                  }}
+                  className="w-full"
+                >
+                  Add RSD Account
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* USD Account Card */}
+        <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">USD Account</CardTitle>
+            <div className="h-4 w-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {usdAccount.balance_available > 0 || usdAccount.account_number ? (
+              <div className="space-y-1">
+                <div className="text-2xl font-bold">
+                  {usdAccount.balance_available.toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Account: {usdAccount.account_number || 'Not set'}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  ≈ {(usdAccount.balance_available * rates.USD).toLocaleString('sr-RS', {
+                    style: 'currency',
+                    currency: 'RSD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} RSD
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 text-center py-4">
+                <div className="text-4xl text-muted-foreground/50">💵</div>
+                <div className="text-sm text-muted-foreground">No USD account added</div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    // Trigger account form dialog
+                    const addButton = document.querySelector('[data-testid="add-account-button"]') as HTMLButtonElement;
+                    if (addButton) addButton.click();
+                  }}
+                  className="w-full"
+                >
+                  Add USD Account
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Total in RSD Card */}
+        <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total in RSD</CardTitle>
+            <div className="h-4 w-4 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className="text-2xl font-bold">
+                {currentTotals.totalRsd.toLocaleString('sr-RS', {
+                  style: 'currency',
+                  currency: 'RSD',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Sum using current FX rate
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Row 2 */}
+        {/* Money In Card */}
+        <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Money In</CardTitle>
+            <div className="h-4 w-4 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {data.kpis.moneyInRsd > 0 ? (
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-green-600">
+                  {data.kpis.moneyInRsd.toLocaleString('sr-RS', {
+                    style: 'currency',
+                    currency: 'RSD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Total incoming payments
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 text-center py-4">
+                <div className="text-4xl text-muted-foreground/50">📈</div>
+                <div className="text-sm text-muted-foreground">No income recorded</div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleAddIncome}
+                  className="w-full"
+                >
+                  Add Income
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Money Out Card */}
+        <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Money Out</CardTitle>
+            <div className="h-4 w-4 bg-red-100 rounded-full flex items-center justify-center">
+              <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {data.kpis.moneyOutRsd > 0 ? (
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-red-600">
+                  {data.kpis.moneyOutRsd.toLocaleString('sr-RS', {
+                    style: 'currency',
+                    currency: 'RSD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Total outgoing payments
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 text-center py-4">
+                <div className="text-4xl text-muted-foreground/50">📉</div>
+                <div className="text-sm text-muted-foreground">No expenses recorded</div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleAddExpense}
+                  className="w-full"
+                >
+                  Add Expense
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Net Cash Flow Card */}
+        <Card className={`transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${
+          data.kpis.netRsd > 0 ? 'bg-green-50 border-green-200' : 
+          data.kpis.netRsd < 0 ? 'bg-red-50 border-red-200' : 
+          'bg-gray-50 border-gray-200'
+        }`}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Net Cash Flow</CardTitle>
+            <div className={`h-4 w-4 rounded-full flex items-center justify-center ${
+              data.kpis.netRsd > 0 ? 'bg-green-100' : 
+              data.kpis.netRsd < 0 ? 'bg-red-100' : 
+              'bg-gray-100'
+            }`}>
+              <div className={`h-2 w-2 rounded-full ${
+                data.kpis.netRsd > 0 ? 'bg-green-500' : 
+                data.kpis.netRsd < 0 ? 'bg-red-500' : 
+                'bg-gray-500'
+              }`}></div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className={`text-2xl font-bold ${
+                data.kpis.netRsd > 0 ? 'text-green-600' : 
+                data.kpis.netRsd < 0 ? 'text-red-600' : 
+                'text-gray-600'
+              }`}>
+                {data.kpis.netRsd.toLocaleString('sr-RS', {
+                  style: 'currency',
+                  currency: 'RSD',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Money In - Money Out
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* FX Rate Widget */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1">
-          <FxRateWidget
-            rate={rates.USD}
-            updatedAt={ratesLastUpdated?.toISOString() || new Date().toISOString()}
-            source="provider"
-            onRefresh={forceRefresh}
-            onUpdate={updateFxRate}
-            loading={ratesLoading}
-            error={ratesError}
-          />
-        </div>
-        
-        {/* KPI Cards */}
-        <div className="lg:col-span-3">
-          <FinancialKPIs
-            rsdAccount={rsdAccount}
-            usdAccount={usdAccount}
-            totalRsd={currentTotals.totalRsd}
-            moneyIn={data.kpis.moneyInRsd}
-            moneyOut={data.kpis.moneyOutRsd}
-            netCashFlow={data.kpis.netRsd}
-            fxRate={rates.USD}
-          />
-        </div>
+      <div className="mt-6">
+        <FxRateWidget
+          rate={rates.USD}
+          updatedAt={ratesLastUpdated?.toISOString() || new Date().toISOString()}
+          source="provider"
+          onRefresh={forceRefresh}
+          onUpdate={updateFxRate}
+          loading={ratesLoading}
+          error={ratesError}
+        />
       </div>
 
       {/* Accounts Management and Quick Actions */}

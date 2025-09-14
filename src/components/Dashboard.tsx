@@ -16,7 +16,6 @@ import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { format } from "date-fns";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { IncomeForm } from "@/components/IncomeForm";
-import { SavingsForm } from "@/components/SavingsForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
 
 interface DashboardProps {
@@ -29,18 +28,14 @@ interface DashboardProps {
   clients: any[];
   expenses: any[];
   incomes: any[];
-  savings: any[];
   projects: Project[];
   subTasks: SubTask[];
   addIncome: (data: any) => void;
   addExpense: (data: any) => void;
-  addSavings: (data: any) => void;
   updateIncome: (id: string, data: any) => void;
   updateExpense: (id: string, data: any) => void;
-  updateSavings: (id: string, data: any) => void;
   deleteIncome: (id: string) => void;
   deleteExpense: (id: string) => void;
-  deleteSavings: (id: string) => void;
 }
 
 export const Dashboard = ({
@@ -50,27 +45,21 @@ export const Dashboard = ({
   clients,
   expenses,
   incomes,
-  savings,
   projects,
   subTasks,
   addIncome,
   addExpense,
-  addSavings,
   updateIncome,
   updateExpense,
-  updateSavings,
   deleteIncome,
   deleteExpense,
-  deleteSavings,
 }: DashboardProps) => {
   const [recentTransactionsPage, setRecentTransactionsPage] = useState(1);
   const [timeRange, setTimeRange] = useState<{ from?: Date; to?: Date }>({ from: undefined, to: undefined });
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [showSavingsForm, setShowSavingsForm] = useState(false);
   const [editingIncome, setEditingIncome] = useState(null);
   const [editingExpense, setEditingExpense] = useState(null);
-  const [editingSavings, setEditingSavings] = useState(null);
   
   const { lastUpdated, refetch, forceRefresh, loading: ratesLoading, error: ratesError, rates } = useExchangeRates();
   const itemsPerPage = 10;
@@ -200,11 +189,7 @@ export const Dashboard = ({
         <FinancialOverviewCards
           totalBalance={totalBalance}
           cashAmount={filteredTotals.income - filteredTotals.expense}
-          savingsAmount={savings.reduce((sum, saving) => {
-            const rate = saving.currency === "RSD" ? 1 : rates[saving.currency as keyof typeof rates] || 1;
-            const amount = Number(saving.amount) * rate;
-            return saving.type === 'deposit' ? sum + amount : sum - amount;
-          }, 0)}
+          savingsAmount={0}
           investmentsAmount={0} // You can add investments data later
           historicalData={[]} // We'll calculate this from transaction history
         />
@@ -215,7 +200,7 @@ export const Dashboard = ({
           <BalanceTrendChart
             incomes={filteredData.incomes}
             expenses={filteredData.expenses}
-            savings={savings}
+            savings={[]}
             exchangeRates={rates}
           />
 
@@ -223,7 +208,7 @@ export const Dashboard = ({
           <CashFlowSankey
             incomes={filteredData.incomes}
             expenses={filteredData.expenses}
-            savings={savings}
+            savings={[]}
             exchangeRates={rates}
           />
         </div>
@@ -264,32 +249,6 @@ export const Dashboard = ({
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Savings Overview
-                </CardTitle>
-                <Button size="sm" onClick={() => setShowSavingsForm(true)}>
-                  Add Savings
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {savings.slice(0, 5).map((saving) => (
-                    <div key={saving.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{saving.description}</p>
-                        <p className="text-sm text-muted-foreground">{saving.date}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-blue-600">{saving.amount} {saving.currency}</p>
-                        <p className="text-sm text-muted-foreground">{saving.type}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
 
@@ -400,15 +359,6 @@ export const Dashboard = ({
           />
         )}
 
-        {showSavingsForm && (
-          <SavingsForm
-            onSubmit={(data) => {
-              addSavings(data);
-              setShowSavingsForm(false);
-            }}
-            onCancel={() => setShowSavingsForm(false)}
-          />
-        )}
       </div>
     </div>
   );

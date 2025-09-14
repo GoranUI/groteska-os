@@ -118,7 +118,7 @@ export const AccountForm = ({
                             Clear All
                 </Button>
               )}
-              <Button size="sm" onClick={resetForm}>
+              <Button size="sm" onClick={resetForm} data-testid="add-account-button">
                 <Plus className="h-3 w-3 mr-1" />
                 Add Account
               </Button>

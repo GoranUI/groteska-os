@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useClientData } from './data/useClientData';
 import { useIncomeData } from './data/useIncomeData';
 import { useExpenseData } from './data/useExpenseData';
-import { useSavingsData } from './data/useSavingsData';
 import { useProjectData } from './data/useProjectData';
 import { useSubTaskData } from './data/useSubTaskData';
 import { useFinancialCalculations } from './data/useFinancialCalculations';
@@ -20,7 +19,6 @@ export const useSupabaseData = () => {
   const clientHook = useClientData();
   const incomeHook = useIncomeData();
   const expenseHook = useExpenseData();
-  const savingsHook = useSavingsData();
   const projectHook = useProjectData();
   const subTaskHook = useSubTaskData();
   const calculations = useFinancialCalculations();
@@ -29,15 +27,14 @@ export const useSupabaseData = () => {
   useEffect(() => {
     const allHooksLoaded = !clientHook.loading && 
                           !incomeHook.loading && 
-                          !expenseHook.loading && 
-                          !savingsHook.loading &&
+                          !expenseHook.loading &&
                           !projectHook.loading &&
                           !subTaskHook.loading;
     
     if (allHooksLoaded) {
       setLoading(false);
     }
-  }, [clientHook.loading, incomeHook.loading, expenseHook.loading, savingsHook.loading, projectHook.loading, subTaskHook.loading]);
+  }, [clientHook.loading, incomeHook.loading, expenseHook.loading, projectHook.loading, subTaskHook.loading]);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -60,11 +57,6 @@ export const useSupabaseData = () => {
           expenseHook.fetchExpenses();
         }),
       supabase
-        .channel('savings_changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'savings' }, () => {
-          savingsHook.fetchSavings();
-        }),
-      supabase
         .channel('projects_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
           projectHook.fetchProjects();
@@ -81,14 +73,13 @@ export const useSupabaseData = () => {
     return () => {
       channels.forEach(channel => supabase.removeChannel(channel));
     };
-  }, [user, clientHook, incomeHook, expenseHook, savingsHook, projectHook, subTaskHook]);
+  }, [user, clientHook, incomeHook, expenseHook, projectHook, subTaskHook]);
 
   return {
     // Data
     clients: clientHook.clients,
     incomes: incomeHook.incomes,
     expenses: expenseHook.expenses,
-    savings: savingsHook.savings,
     projects: projectHook.projects,
     subTasks: subTaskHook.subTasks,
     loading,
@@ -110,10 +101,6 @@ export const useSupabaseData = () => {
     updateExpense: expenseHook.updateExpense,
     deleteExpense: expenseHook.deleteExpense,
     
-    // Savings CRUD
-    addSavings: savingsHook.addSavings,
-    updateSavings: savingsHook.updateSavings,
-    deleteSavings: savingsHook.deleteSavings,
     
     // Project CRUD
     addProject: projectHook.addProject,

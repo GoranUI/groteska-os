@@ -5,7 +5,6 @@ import { LineChart, Line, ResponsiveContainer } from "recharts";
 interface FinancialOverviewCardsProps {
   totalBalance: number;
   cashAmount: number;
-  savingsAmount: number;
   investmentsAmount: number;
   historicalData: Array<{ month: string; balance: number; }>;
 }
@@ -13,7 +12,6 @@ interface FinancialOverviewCardsProps {
 export const FinancialOverviewCards = ({
   totalBalance,
   cashAmount,
-  savingsAmount,
   investmentsAmount,
   historicalData,
 }: FinancialOverviewCardsProps) => {
@@ -43,14 +41,6 @@ export const FinancialOverviewCards = ({
       icon: Wallet,
       color: "hsl(142 76% 36%)",
       bgColor: "hsl(142 76% 36% / 0.1)",
-    },
-    {
-      title: "Savings",
-      value: savingsAmount,
-      change: 8.1,
-      icon: PiggyBank,
-      color: "hsl(217 91% 60%)",
-      bgColor: "hsl(217 91% 60% / 0.1)",
     },
     {
       title: "Investments",

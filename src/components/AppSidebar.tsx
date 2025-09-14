@@ -1,6 +1,6 @@
 
 import { NavLink, useLocation } from "react-router-dom";
-import { BarChart3, TrendingUp, Receipt, Users, PiggyBank, FileText, Settings, Search, FolderOpen, Upload, Clock, Target, Brain, Trophy } from "lucide-react";
+import { BarChart3, TrendingUp, Receipt, Users, FileText, Settings, Search, FolderOpen, Upload, Clock } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,13 +18,9 @@ const mainNavigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Income", href: "/income", icon: TrendingUp },
   { name: "Expenses", href: "/expenses", icon: Receipt },
-  { name: "Budget", href: "/budget", icon: Target },
-  { name: "Goals", href: "/goals", icon: Trophy },
-  { name: "Analytics", href: "/analytics", icon: Brain },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Projects", href: "/projects", icon: FolderOpen },
   { name: "Time Tracker", href: "/time-tracker", icon: Clock, disabled: true },
-  { name: "Savings", href: "/savings", icon: PiggyBank },
   { name: "Invoices", href: "/invoices", icon: FileText },
   { name: "Import", href: "/import", icon: Upload },
 ];
