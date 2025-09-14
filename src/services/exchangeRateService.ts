@@ -32,7 +32,7 @@ export class ExchangeRateService {
     this.loadFromLocalStorage();
     
     // For debugging: force fresh fetch by reducing cache duration temporarily
-    const debugMode = true;
+    const debugMode = false; // Set to true only when debugging
     const cacheExpired = debugMode || (now - this.lastFetchTime) > this.CACHE_DURATION;
     
     // Return cached rates if they're still fresh (unless in debug mode)

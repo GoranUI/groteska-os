@@ -18,21 +18,27 @@ interface ClientFormProps {
 
 export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps) => {
   const { toast } = useToast();
-  const [name, setName] = useState("");
+  const [company_name, setCompanyName] = useState("");
+  const [contact_person, setContactPerson] = useState("");
   const [email, setEmail] = useState("");
-  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
 
   useEffect(() => {
     if (initialData) {
-      setName(initialData.name);
+      setCompanyName(initialData.company_name);
+      setContactPerson(initialData.contact_person || "");
       setEmail(initialData.email || "");
-      setCompany(initialData.company || "");
+      setPhone(initialData.phone || "");
+      setAddress(initialData.address || "");
       setStatus(initialData.status);
     } else {
-      setName("");
+      setCompanyName("");
+      setContactPerson("");
       setEmail("");
-      setCompany("");
+      setPhone("");
+      setAddress("");
       setStatus("active");
     }
   }, [initialData]);
@@ -44,11 +50,11 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
   };
 
   const validateInputs = () => {
-    // Validate required name
-    if (!name.trim()) {
+    // Validate required company name
+    if (!company_name.trim()) {
       toast({
         title: "Validation Error",
-        description: "Client name is required",
+        description: "Company name is required",
         variant: "destructive",
       });
       return false;
@@ -75,21 +81,27 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
     }
 
     try {
-      const sanitizedName = sanitizeClientName(name);
+      const sanitizedCompanyName = sanitizeInput(company_name);
+      const sanitizedContactPerson = contact_person ? sanitizeInput(contact_person) : undefined;
       const sanitizedEmail = email ? sanitizeInput(email) : undefined;
-      const sanitizedCompany = company ? sanitizeInput(company) : undefined;
+      const sanitizedPhone = phone ? sanitizeInput(phone) : undefined;
+      const sanitizedAddress = address ? sanitizeInput(address) : undefined;
 
       onSubmit({
-        name: sanitizedName,
+        company_name: sanitizedCompanyName,
+        contact_person: sanitizedContactPerson,
         email: sanitizedEmail,
-        company: sanitizedCompany,
+        phone: sanitizedPhone,
+        address: sanitizedAddress,
         status,
       });
 
       if (!initialData) {
-        setName("");
+        setCompanyName("");
+        setContactPerson("");
         setEmail("");
-        setCompany("");
+        setPhone("");
+        setAddress("");
         setStatus("active");
       }
     } catch (error: any) {
@@ -101,16 +113,24 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
     }
   };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
+  const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCompanyName(e.target.value);
+  };
+
+  const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setContactPerson(e.target.value);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
 
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCompany(e.target.value);
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setAddress(e.target.value);
   };
 
 
@@ -134,48 +154,87 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={handleNameChange}
-              placeholder="Client name"
-              className="h-10"
-              maxLength={100}
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Company Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-foreground">Company Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="company_name" className="text-sm font-medium text-gray-700">
+                  Company Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="company_name"
+                  value={company_name}
+                  onChange={handleCompanyNameChange}
+                  placeholder="Enter company name"
+                  className="h-10"
+                  maxLength={200}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact_person" className="text-sm font-medium text-gray-700">
+                  Contact Person <span className="text-xs text-muted-foreground">(optional)</span>
+                </Label>
+                <Input
+                  id="contact_person"
+                  value={contact_person}
+                  onChange={handleContactPersonChange}
+                  placeholder="Enter contact person name"
+                  className="h-10"
+                  maxLength={100}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              placeholder="client@email.com"
-              className="h-10"
-              maxLength={254}
-            />
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-foreground">Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="company@example.com"
+                  className="h-10"
+                  maxLength={254}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  placeholder="+1 555 123 4567"
+                  className="h-10"
+                  maxLength={20}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address</Label>
+              <Textarea
+                id="address"
+                value={address}
+                onChange={handleAddressChange}
+                placeholder="Enter company address"
+                className="min-h-[80px] resize-none"
+                maxLength={500}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="company" className="text-sm font-medium text-gray-700">Company</Label>
-            <Input
-              id="company"
-              value={company}
-              onChange={handleCompanyChange}
-              placeholder="Company name"
-              className="h-10"
-              maxLength={200}
-            />
-          </div>
-
-
+          {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium text-gray-700">
               Status <span className="text-red-500">*</span>
@@ -191,10 +250,10 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
             </Select>
           </div>
 
-          <div className="md:col-span-2 flex gap-3">
+          <div className="flex gap-3 pt-4">
             <Button 
               type="submit" 
-              className="btn-primary focus-ring"
+              className="btn-primary focus-ring flex-1"
             >
               {initialData ? <Edit3 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
               {initialData ? "Update Client" : "Add Client"}
@@ -204,7 +263,7 @@ export const ClientForm = ({ onSubmit, initialData, onCancel }: ClientFormProps)
                 type="button"
                 variant="outline"
                 onClick={onCancel}
-                className="btn-secondary focus-ring"
+                className="btn-secondary focus-ring px-6"
               >
                 Cancel
               </Button>

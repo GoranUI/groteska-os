@@ -38,9 +38,10 @@ export const ClientList = ({ clients, onEdit, onDelete }: ClientListProps) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold text-gray-900">Name</TableHead>
-                  <TableHead className="font-semibold text-gray-900">Email</TableHead>
                   <TableHead className="font-semibold text-gray-900">Company</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Contact Person</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Email</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Phone</TableHead>
                   <TableHead className="font-semibold text-gray-900">Status</TableHead>
                   <TableHead className="font-semibold text-gray-900">Created</TableHead>
                   <TableHead className="font-semibold text-gray-900">Actions</TableHead>
@@ -49,9 +50,10 @@ export const ClientList = ({ clients, onEdit, onDelete }: ClientListProps) => {
               <TableBody>
                 {clients.map((client) => (
                   <TableRow key={client.id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium text-gray-900">{client.name}</TableCell>
+                    <TableCell className="font-medium text-gray-900">{client.company_name}</TableCell>
+                    <TableCell className="text-gray-700">{client.contact_person || "-"}</TableCell>
                     <TableCell className="text-gray-700">{client.email || "-"}</TableCell>
-                    <TableCell className="text-gray-700">{client.company || "-"}</TableCell>
+                    <TableCell className="text-gray-700">{client.phone || "-"}</TableCell>
                     <TableCell>
                       <Badge 
                         variant={client.status === 'active' ? 'default' : 'secondary'}

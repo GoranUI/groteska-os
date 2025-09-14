@@ -155,30 +155,103 @@ const parseCSVLine = (line: string): string[] => {
 const categorizeExpense = (description: string): string => {
   const desc = description.toLowerCase();
   
-  if (desc.includes('upwork')) {
-    return 'Office';
-  }
-  if (desc.includes('wolt') || desc.includes('glovo') || desc.includes('donesi')) {
-    return 'External Food';
-  }
-  if (desc.includes('pekara') || desc.includes('hleb') || desc.includes('kifle')) {
-    return 'Food';
-  }
-  if (desc.includes('zdravlja') || desc.includes('medigroup') || desc.includes('apoteka') || desc.includes('medical')) {
-    return 'Utilities';
-  }
-  if (desc.includes('prevoz') || desc.includes('bus') || desc.includes('taxi') || desc.includes('putevi')) {
-    return 'Transport';
-  }
-  if (desc.includes('market') || desc.includes('shop') || desc.includes('store') || desc.includes('maxi') || desc.includes('tempo') || desc.includes('lidl')) {
-    return 'Food';
-  }
-  if (desc.includes('spotify') || desc.includes('netflix') || desc.includes('google') || desc.includes('openai') || desc.includes('midjourney')) {
-    return 'Software';
-  }
-  if (desc.includes('telekom') || desc.includes('mts') || desc.includes('eps') || desc.includes('infostan')) {
-    return 'Utilities';
+  // Software subscriptions
+  if (desc.includes('adobe') || desc.includes('figma') || desc.includes('sketch') || desc.includes('notion') || 
+      desc.includes('slack') || desc.includes('zoom') || desc.includes('teams') || desc.includes('google') || 
+      desc.includes('microsoft') || desc.includes('canva') || desc.includes('miro') || desc.includes('invision') || 
+      desc.includes('spotify') || desc.includes('netflix') || desc.includes('openai') || desc.includes('midjourney')) {
+    return 'software-subscriptions';
   }
   
-  return 'Recurring';
+  // Equipment
+  if (desc.includes('computer') || desc.includes('laptop') || desc.includes('monitor') || desc.includes('printer') || 
+      desc.includes('camera') || desc.includes('desk') || desc.includes('chair') || desc.includes('hardware') || 
+      desc.includes('macbook') || desc.includes('imac') || desc.includes('ipad') || desc.includes('wacom')) {
+    return 'equipment';
+  }
+  
+  // Office supplies
+  if (desc.includes('paper') || desc.includes('pen') || desc.includes('pencil') || desc.includes('notebook') || 
+      desc.includes('binder') || desc.includes('folder') || desc.includes('stapler') || desc.includes('clips') || 
+      desc.includes('markers') || desc.includes('supplies') || desc.includes('stationery') || 
+      desc.includes('papir') || desc.includes('olovka') || desc.includes('bilježnica')) {
+    return 'office-supplies';
+  }
+  
+  // Client entertainment
+  if (desc.includes('restaurant') || desc.includes('dinner') || desc.includes('lunch') || desc.includes('coffee') || 
+      desc.includes('meal') || desc.includes('entertainment') || desc.includes('client') || desc.includes('business') || 
+      desc.includes('meeting') || desc.includes('restoran') || desc.includes('ručak') || desc.includes('večera') || 
+      desc.includes('kafe') || desc.includes('klijent') || desc.includes('wolt') || desc.includes('glovo') || 
+      desc.includes('donesi')) {
+    return 'client-entertainment';
+  }
+  
+  // Travel and client meetings
+  if (desc.includes('travel') || desc.includes('flight') || desc.includes('hotel') || desc.includes('taxi') || 
+      desc.includes('uber') || desc.includes('bus') || desc.includes('train') || desc.includes('meeting') || 
+      desc.includes('conference') || desc.includes('workshop') || desc.includes('putovanje') || 
+      desc.includes('sastanak') || desc.includes('prevoz') || desc.includes('putevi')) {
+    return 'travel-client-meetings';
+  }
+  
+  // Marketing and advertising
+  if (desc.includes('facebook') || desc.includes('instagram') || desc.includes('linkedin') || desc.includes('google ads') || 
+      desc.includes('twitter') || desc.includes('tiktok') || desc.includes('youtube') || desc.includes('marketing') || 
+      desc.includes('advertising') || desc.includes('promotion') || desc.includes('campaign') || desc.includes('social media') || 
+      desc.includes('reklama') || desc.includes('ads')) {
+    return 'marketing-advertising';
+  }
+  
+  // Professional services
+  if (desc.includes('lawyer') || desc.includes('accountant') || desc.includes('consultant') || desc.includes('legal') || 
+      desc.includes('tax') || desc.includes('bookkeeping') || desc.includes('audit') || desc.includes('advokat') || 
+      desc.includes('knjigovodstvo') || desc.includes('računovodstvo') || desc.includes('pravni') || desc.includes('konsultant')) {
+    return 'professional-services';
+  }
+  
+  // Utilities
+  if (desc.includes('internet') || desc.includes('phone') || desc.includes('electricity') || desc.includes('water') || 
+      desc.includes('gas') || desc.includes('eps') || desc.includes('mts') || desc.includes('telekom') || 
+      desc.includes('vodovod') || desc.includes('struja') || desc.includes('voda') || desc.includes('wifi') || 
+      desc.includes('broadband') || desc.includes('infostan')) {
+    return 'utilities';
+  }
+  
+  // Banking fees
+  if (desc.includes('bank') || desc.includes('fee') || desc.includes('transaction') || desc.includes('wire') || 
+      desc.includes('transfer') || desc.includes('processing') || desc.includes('payment') || desc.includes('card') || 
+      desc.includes('banka') || desc.includes('naknada') || desc.includes('provizija')) {
+    return 'banking-fees';
+  }
+  
+  // Insurance
+  if (desc.includes('insurance') || desc.includes('policy') || desc.includes('coverage') || desc.includes('liability') || 
+      desc.includes('professional') || desc.includes('business') || desc.includes('osiguranje') || desc.includes('polisa')) {
+    return 'insurance';
+  }
+  
+  // Taxes and compliance
+  if (desc.includes('tax') || desc.includes('vat') || desc.includes('sales tax') || desc.includes('income tax') || 
+      desc.includes('business tax') || desc.includes('permit') || desc.includes('license') || desc.includes('registration') || 
+      desc.includes('compliance') || desc.includes('porez') || desc.includes('pdv') || desc.includes('dozvola') || 
+      desc.includes('licenca')) {
+    return 'taxes-compliance';
+  }
+  
+  // Office rent
+  if (desc.includes('rent') || desc.includes('lease') || desc.includes('office') || desc.includes('workspace') || 
+      desc.includes('coworking') || desc.includes('kancelarija') || desc.includes('prostor')) {
+    return 'office-rent';
+  }
+  
+  // Education and training
+  if (desc.includes('course') || desc.includes('training') || desc.includes('workshop') || desc.includes('seminar') || 
+      desc.includes('education') || desc.includes('learning') || desc.includes('skillshare') || desc.includes('udemy') || 
+      desc.includes('coursera') || desc.includes('masterclass') || desc.includes('kurs') || desc.includes('obuka') || 
+      desc.includes('edukacija')) {
+    return 'education-training';
+  }
+  
+  return 'other-business';
 };

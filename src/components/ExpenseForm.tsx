@@ -28,7 +28,7 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<"Recurring" | "Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Cash Withdrawal" | "Medical/Health" | "Fees" | "Other">("Food");
+  const [category, setCategory] = useState<"office-rent" | "equipment" | "software-subscriptions" | "marketing-advertising" | "professional-services" | "travel-client-meetings" | "education-training" | "insurance" | "utilities" | "office-supplies" | "client-entertainment" | "banking-fees" | "taxes-compliance" | "other-business">("software-subscriptions");
   const [date, setDate] = useState("");
   const [suggestedCategory, setSuggestedCategory] = useState<{category: string, confidence: 'high' | 'medium' | 'low'} | null>(null);
   const [hasUserOverridden, setHasUserOverridden] = useState(false);
@@ -203,19 +203,20 @@ export const ExpenseForm = ({ onSubmit, initialData, onCancel }: ExpenseFormProp
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                  { value: "Recurring", label: "Recurring", icon: "🔄", description: "Regular monthly expenses" },
-                  { value: "Food", label: "Food", icon: "🍽️", description: "Groceries and food items" },
-                  { value: "External Food", label: "External Food", icon: "🍕", description: "Restaurants and takeout" },
-                  { value: "Transport", label: "Transport", icon: "🚗", description: "Travel and commute costs" },
-                  { value: "Holiday", label: "Holiday", icon: "🏖️", description: "Vacation expenses" },
-                  { value: "Utilities", label: "Utilities", icon: "⚡", description: "Power, water, internet" },
-                  { value: "Software", label: "Software", icon: "💻", description: "Apps and subscriptions" },
-                  { value: "Marketing", label: "Marketing", icon: "📢", description: "Advertising and promotion" },
-                  { value: "Office", label: "Office", icon: "🏢", description: "Office supplies and equipment" },
-                  { value: "Cash Withdrawal", label: "Cash Withdrawal", icon: "💸", description: "ATM withdrawals" },
-                  { value: "Medical/Health", label: "Medical/Health", icon: "🏥", description: "Healthcare expenses" },
-                  { value: "Fees", label: "Fees", icon: "📊", description: "Bank and service fees" },
-                  { value: "Other", label: "Other", icon: "📦", description: "Miscellaneous expenses" }
+                  { value: "office-rent", label: "Office Rent", icon: "🏢", description: "Workspace and rent costs" },
+                  { value: "equipment", label: "Equipment", icon: "💻", description: "Computers, hardware, tools" },
+                  { value: "software-subscriptions", label: "Software", icon: "🔧", description: "Design tools and subscriptions" },
+                  { value: "marketing-advertising", label: "Marketing", icon: "📢", description: "Ads and promotion" },
+                  { value: "professional-services", label: "Professional", icon: "⚖️", description: "Legal, accounting, consulting" },
+                  { value: "travel-client-meetings", label: "Travel", icon: "✈️", description: "Client meetings and travel" },
+                  { value: "education-training", label: "Education", icon: "🎓", description: "Courses and training" },
+                  { value: "insurance", label: "Insurance", icon: "🛡️", description: "Business insurance" },
+                  { value: "utilities", label: "Utilities", icon: "⚡", description: "Internet, phone, electricity" },
+                  { value: "office-supplies", label: "Office Supplies", icon: "📝", description: "Stationery and materials" },
+                  { value: "client-entertainment", label: "Client Entertainment", icon: "🍽️", description: "Business meals and events" },
+                  { value: "banking-fees", label: "Banking Fees", icon: "🏦", description: "Transaction and banking costs" },
+                  { value: "taxes-compliance", label: "Taxes", icon: "📊", description: "Business taxes and permits" },
+                  { value: "other-business", label: "Other Business", icon: "📦", description: "Miscellaneous business expenses" }
                 ].map((cat) => (
                   <button
                     key={cat.value}

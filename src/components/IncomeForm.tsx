@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, Edit3, Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { Plus, Edit3, Check, ChevronsUpDown, UserPlus, Upload, FileText } from "lucide-react";
 import { Client, Income } from "@/types";
 import { sanitizeDescription, validateAmount } from "@/utils/securityUtils";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
@@ -31,13 +31,14 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
   const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">("USD");
   const [clientId, setClientId] = useState("");
   const [date, setDate] = useState("");
-  const [category, setCategory] = useState<"main-bank" | "savings" | "cash" | "one-time">("one-time");
+  const [category, setCategory] = useState<"investment" | "individual" | "corporate">("investment");
   const [description, setDescription] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   const [showClientPopover, setShowClientPopover] = useState(false);
   const [newClientName, setNewClientName] = useState("");
   const [newClientEmail, setNewClientEmail] = useState("");
   const [newClientCompany, setNewClientCompany] = useState("");
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -87,6 +88,25 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
     
     if (selectedDate > futureLimit) {
       showError("Validation Error", "Date cannot be more than 1 year in the future");
+      return false;
+    }
+
+    // Validate invoice upload
+    if (!invoiceFile) {
+      showError("Validation Error", "Invoice upload is required");
+      return false;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(invoiceFile.type)) {
+      showError("Validation Error", "Invoice must be a PDF or image file (JPG, PNG)");
+      return false;
+    }
+
+    // Validate file size (max 10MB)
+    if (invoiceFile.size > 10 * 1024 * 1024) {
+      showError("Validation Error", "Invoice file size must be less than 10MB");
       return false;
     }
 
@@ -187,17 +207,12 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
             <Label className="text-sm font-medium text-foreground">
               Income Category <span className="text-destructive">*</span>
             </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-              {[
-                { value: "freelance", label: "Freelance Work", icon: "💼", description: "Independent project work" },
-                { value: "salary", label: "Salary", icon: "💰", description: "Regular employment income" },
-                { value: "consulting", label: "Consulting", icon: "🎯", description: "Advisory services" },
-                { value: "investment", label: "Investment", icon: "📈", description: "Returns from investments" },
-                { value: "main-bank", label: "Main Bank", icon: "🏦", description: "Primary bank account" },
-                { value: "savings", label: "Savings", icon: "🐷", description: "Savings account income" },
-                { value: "cash", label: "Cash", icon: "💵", description: "Cash payments" },
-                { value: "one-time", label: "One-time Project", icon: "➕", description: "Single project payment" }
-              ].map((cat) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {[
+                              { value: "investment", label: "Investment", icon: "💰", description: "Investments and capital gains" },
+                              { value: "individual", label: "Individual", icon: "👤", description: "Income from individuals" },
+                              { value: "corporate", label: "Corporate", icon: "🏢", description: "Income from corporations" }
+                            ].map((cat) => (
                 <button
                   key={cat.value}
                   type="button"
@@ -393,6 +408,47 @@ export const IncomeForm = ({ clients, onSubmit, initialData, onCancel }: IncomeF
               className="focus-ring h-11"
               required
             />
+          </div>
+
+          {/* Invoice Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="invoice" className="text-sm font-medium text-foreground">
+              Invoice Upload <span className="text-destructive">*</span>
+            </Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+              <input
+                id="invoice"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
+                className="hidden"
+              />
+              <label htmlFor="invoice" className="cursor-pointer">
+                <div className="flex flex-col items-center space-y-2">
+                  {invoiceFile ? (
+                    <>
+                      <FileText className="h-8 w-8 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{invoiceFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(invoiceFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Upload Invoice</p>
+                        <p className="text-xs text-muted-foreground">
+                          PDF, JPG, PNG (max 10MB)
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </label>
+            </div>
           </div>
 
           <div className="space-y-2">

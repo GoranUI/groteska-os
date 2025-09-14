@@ -10,42 +10,68 @@ export interface CategoryRules {
   [category: string]: CategoryRule;
 }
 
-// Enhanced categorization rules based on your data
+// Enhanced categorization rules for design agency business operations
 const CATEGORIZATION_RULES: CategoryRules = {
-  "Food": {
-    contains: ["HLEB", "LIDL", "MARKET", "MAXI", "PEKARA", "TEMPO", "SPIN", "UNIVEREXPORT", "RODA", "IDEA", "MERCATOR"],
-    starts_with: ["ZLATAN"]
+  "office-rent": {
+    contains: ["RENT", "LEASE", "OFFICE", "WORKSPACE", "COWORKING", "KANCELARIJA", "PROSTOR"],
+    starts_with: ["RENT", "LEASE"]
   },
-  "External Food": {
-    contains: ["WOLT", "GLOVO", "MISTER", "DONESI", "FOOD"]
+  "equipment": {
+    contains: ["COMPUTER", "LAPTOP", "MONITOR", "PRINTER", "CAMERA", "DESK", "CHAIR", "HARDWARE", "MACBOOK", "IMAC", "IPAD", "WACOM", "EQUIPMENT"],
+    starts_with: ["APPLE", "DELL", "HP", "LENOVO"]
   },
-  "Transport": {
-    contains: ["BS", "GAZPROM", "GORIVO", "OMV", "PETROL", "PUT", "PREVOZ", "BUS", "TAXI", "PUTEVI"]
+  "software-subscriptions": {
+    contains: ["ADOBE", "FIGMA", "SKETCH", "NOTION", "SLACK", "ZOOM", "TEAMS", "GOOGLE", "MICROSOFT", "CANVA", "MIRO", "INVISION", "PRINCIPLE", "AFTER", "PHOTOSHOP", "ILLUSTRATOR", "INDESIGN", "XD", "SUBSCRIPTION", "MONTHLY", "ANNUAL"],
+    starts_with: ["ADOBE", "GOOGLE", "MICROSOFT", "FIGMA", "SKETCH"]
   },
-  "Utilities": {
-    contains: ["EPS", "INFOSTAN", "MTS", "TELEKOM", "VODOVOD", "STRUJA", "VODA", "GAS"]
+  "marketing-advertising": {
+    contains: ["FACEBOOK", "INSTAGRAM", "LINKEDIN", "GOOGLE ADS", "TWITTER", "TIKTOK", "YOUTUBE", "MARKETING", "ADVERTISING", "PROMOTION", "CAMPAIGN", "SOCIAL MEDIA", "REKLAMA", "ADS"],
+    starts_with: ["FACEBOOK", "GOOGLE ADS", "LINKEDIN"]
   },
-  "Software": {
-    contains: ["FIVERR", "GOOGLE", "UPWORK", "MIDJOURNEY", "NAMECHEAP", "PAYPAL", "ADOBE", "SPOTIFY", "NETFLIX", "OPENAI", "GITHUB"],
-    starts_with: ["GOOGLE", "ADOBE"]
+  "professional-services": {
+    contains: ["LAWYER", "ACCOUNTANT", "CONSULTANT", "LEGAL", "TAX", "BOOKKEEPING", "AUDIT", "ADVOKAT", "KNJIGOVODSTVO", "RAČUNOVODSTVO", "PRAVNI", "KONSULTANT"],
+    starts_with: ["LEGAL", "TAX", "AUDIT"]
   },
-  "Office": {
-    contains: ["KANCELARIJA", "OFFICE", "SUPPLIES", "PRINTER", "PAPIR"]
+  "travel-client-meetings": {
+    contains: ["TRAVEL", "FLIGHT", "HOTEL", "TAXI", "UBER", "BUS", "TRAIN", "MEETING", "CLIENT", "CONFERENCE", "WORKSHOP", "PUTOVANJE", "SASTANAK", "KLIJENT"],
+    starts_with: ["TRAVEL", "MEETING", "CONFERENCE"]
   },
-  "Marketing": {
-    contains: ["MARKETING", "REKLAMA", "ADS", "FACEBOOK", "INSTAGRAM", "LINKEDIN"]
+  "education-training": {
+    contains: ["COURSE", "TRAINING", "WORKSHOP", "SEMINAR", "EDUCATION", "LEARNING", "SKILLSHARE", "UDEMY", "COURSERA", "MASTERCLASS", "KURS", "OBUKA", "EDUKACIJA"],
+    starts_with: ["COURSE", "TRAINING", "WORKSHOP"]
   },
-  "Holiday": {
-    contains: ["HOTEL", "BOOKING", "AIRBNB", "TRAVEL", "PUTOVANJE", "ODMOR"]
+  "insurance": {
+    contains: ["INSURANCE", "POLICY", "COVERAGE", "LIABILITY", "PROFESSIONAL", "BUSINESS", "OSIGURANJE", "POLISA"],
+    starts_with: ["INSURANCE", "POLICY"]
   },
-  "Recurring": {
-    contains: ["NAKN", "PRENOS", "PROVIZIJA", "TROŠKOVI", "USLUGA", "MESEČNO", "GODIŠNJE"],
-    amount_range: { min: 1000 } // Large recurring payments
+  "utilities": {
+    contains: ["INTERNET", "PHONE", "ELECTRICITY", "WATER", "GAS", "EPS", "MTS", "TELEKOM", "VODOVOD", "STRUJA", "VODA", "GAS", "WIFI", "BROADBAND"],
+    starts_with: ["INTERNET", "PHONE", "ELECTRICITY"]
+  },
+  "office-supplies": {
+    contains: ["PAPER", "PEN", "PENCIL", "NOTEBOOK", "BINDER", "FOLDER", "STAPLER", "CLIPS", "MARKERS", "SUPPLIES", "STATIONERY", "PAPIR", "OLOVKA", "BILJEŽNICA"],
+    starts_with: ["PAPER", "PEN", "NOTEBOOK"]
+  },
+  "client-entertainment": {
+    contains: ["RESTAURANT", "DINNER", "LUNCH", "COFFEE", "MEAL", "ENTERTAINMENT", "CLIENT", "BUSINESS", "MEETING", "RESTORAN", "RUČAK", "VEČERA", "KAFE", "KLIJENT"],
+    starts_with: ["RESTAURANT", "DINNER", "LUNCH"]
+  },
+  "banking-fees": {
+    contains: ["BANK", "FEE", "TRANSACTION", "WIRE", "TRANSFER", "PROCESSING", "PAYMENT", "CARD", "BANKA", "NAKNADA", "PROVIZIJA", "TRANSFER"],
+    starts_with: ["BANK", "FEE", "TRANSACTION"]
+  },
+  "taxes-compliance": {
+    contains: ["TAX", "VAT", "SALES TAX", "INCOME TAX", "BUSINESS TAX", "PERMIT", "LICENSE", "REGISTRATION", "COMPLIANCE", "POREZ", "PDV", "DOZVOLA", "LICENCA"],
+    starts_with: ["TAX", "VAT", "PERMIT"]
+  },
+  "other-business": {
+    contains: ["BUSINESS", "MISC", "OTHER", "GENERAL", "VARIOUS", "SUNDRY", "POSLOVNI", "OSTALO", "RAZNO"],
+    amount_range: { min: 100 } // Catch-all for business expenses
   }
 };
 
 export const categorizeExpense = (description: string, amount?: number): string => {
-  if (!description) return "Other";
+  if (!description) return "other-business";
   
   const upperDescription = description.toUpperCase();
   
@@ -80,7 +106,7 @@ export const categorizeExpense = (description: string, amount?: number): string 
     }
   }
   
-  return "Other";
+  return "other-business";
 };
 
 export const getSuggestedCategory = (description: string, amount?: number): {
@@ -89,7 +115,7 @@ export const getSuggestedCategory = (description: string, amount?: number): {
 } => {
   const category = categorizeExpense(description, amount);
   
-  if (category === "Other") {
+  if (category === "other-business") {
     return { category, confidence: 'low' };
   }
   
@@ -99,14 +125,14 @@ export const getSuggestedCategory = (description: string, amount?: number): {
   
   let confidence: 'high' | 'medium' | 'low' = 'medium';
   
-  // High confidence for exact merchant matches
-  const highConfidenceKeywords = ["MAXI", "LIDL", "WOLT", "GLOVO", "EPS", "MTS", "TELEKOM"];
+  // High confidence for exact business service matches
+  const highConfidenceKeywords = ["ADOBE", "FIGMA", "GOOGLE", "MICROSOFT", "FACEBOOK", "LINKEDIN", "APPLE", "DELL"];
   if (highConfidenceKeywords.some(keyword => upperDescription.includes(keyword))) {
     confidence = 'high';
   }
   
   // Low confidence for generic patterns
-  const lowConfidenceKeywords = ["MARKET", "PUT", "USLUGA"];
+  const lowConfidenceKeywords = ["BUSINESS", "MISC", "OTHER", "GENERAL"];
   if (lowConfidenceKeywords.some(keyword => upperDescription.includes(keyword))) {
     confidence = 'low';
   }
@@ -191,7 +217,7 @@ export const getEnhancedSuggestedCategory = (description: string, amount?: numbe
   category: string;
   confidence: 'high' | 'medium' | 'low';
 } => {
-  if (!description) return { category: "Other", confidence: 'low' };
+  if (!description) return { category: "other-business", confidence: 'low' };
 
   // First check if we've learned this pattern before
   const learnedCategory = learner.getLearnedCategory(description);
@@ -204,13 +230,13 @@ export const getEnhancedSuggestedCategory = (description: string, amount?: numbe
   
   // Enhance confidence based on additional factors
   if (amount) {
-    // Large amounts in utilities or recurring get confidence boost
-    if ((result.category === "Utilities" || result.category === "Recurring") && amount > 5000) {
+    // Large amounts in equipment or professional services get confidence boost
+    if ((result.category === "equipment" || result.category === "professional-services") && amount > 10000) {
       result.confidence = result.confidence === 'low' ? 'medium' : 'high';
     }
     
-    // Small amounts in food categories get confidence boost
-    if ((result.category === "Food" || result.category === "External Food") && amount < 2000) {
+    // Small amounts in office supplies get confidence boost
+    if (result.category === "office-supplies" && amount < 5000) {
       result.confidence = result.confidence === 'low' ? 'medium' : 'high';
     }
   }

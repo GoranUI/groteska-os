@@ -1,8 +1,10 @@
 export interface Client {
   id: string;
-  name: string;
+  company_name: string; // Company name (required)
+  contact_person?: string; // Contact person (optional)
   email?: string;
-  company?: string;
+  phone?: string;
+  address?: string;
   status: "active" | "inactive";
   createdAt: string;
 }
@@ -52,7 +54,7 @@ export interface Income {
   projectId?: string | null;
   subTaskId?: string | null;
   date: string;
-  category: "main-bank" | "savings" | "cash" | "one-time";
+  category: "client-projects" | "retainer-services" | "consulting" | "product-sales" | "licensing" | "partnerships" | "other-business";
   description?: string;
   status?: "paid" | "pending";
 }
@@ -62,7 +64,7 @@ export interface Expense {
   amount: number;
   currency: "USD" | "EUR" | "RSD";
   date: string;
-  category: "Recurring" | "Food" | "External Food" | "Transport" | "Holiday" | "Utilities" | "Software" | "Marketing" | "Office" | "Cash Withdrawal" | "Medical/Health" | "Fees" | "Other";
+  category: "office-rent" | "equipment" | "software-subscriptions" | "marketing-advertising" | "professional-services" | "travel-client-meetings" | "education-training" | "insurance" | "utilities" | "office-supplies" | "client-entertainment" | "banking-fees" | "taxes-compliance" | "other-business";
   description: string;
   isRecurring?: boolean;
   recurringFrequency?: "weekly" | "monthly" | "yearly";

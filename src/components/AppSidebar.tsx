@@ -23,7 +23,7 @@ const mainNavigation = [
   { name: "Analytics", href: "/analytics", icon: Brain },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Projects", href: "/projects", icon: FolderOpen },
-  { name: "Time Tracker", href: "/time-tracker", icon: Clock },
+  { name: "Time Tracker", href: "/time-tracker", icon: Clock, disabled: true },
   { name: "Savings", href: "/savings", icon: PiggyBank },
   { name: "Invoices", href: "/invoices", icon: FileText },
   { name: "Import", href: "/import", icon: Upload },
@@ -56,22 +56,29 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {mainNavigation.map((item) => (
                 <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.href}
-                      end={item.href === "/"}
-                      className={({ isActive }) =>
-                        `flex items-center px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
-                          isActive
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground border-r-2 border-sidebar-primary"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        }`
-                      }
-                    >
+                  {item.disabled ? (
+                    <div className="flex items-center px-3 py-2.5 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed">
                       <item.icon className="mr-3 h-5 w-5" />
                       {item.name}
-                    </NavLink>
-                  </SidebarMenuButton>
+                    </div>
+                  ) : (
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.href}
+                        end={item.href === "/"}
+                        className={({ isActive }) =>
+                          `flex items-center px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
+                            isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground border-r-2 border-sidebar-primary"
+                              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          }`
+                        }
+                      >
+                        <item.icon className="mr-3 h-5 w-5" />
+                        {item.name}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
